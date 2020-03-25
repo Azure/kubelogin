@@ -1,0 +1,51 @@
+name: Release
+on:
+#  push   
+  release:
+    types: [created]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    env:
+      GO111MODULE: on 
+    steps:
+    - name: Set up Go 1.13
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.13
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Build (linux)
+      env:
+        GOOS: linux
+        GOARCH: amd64
+      run: make
+      
+    - name: Build (darwin)
+      env:
+        GOOS: darwin
+        GOARCH: amd64
+      run: make
+      
+    - name: Build (windows)
+      env:
+        GOOS: windows
+        GOARCH: amd64
+      run: make
+    
+    - name: Zip
+      uses: montudor/action-zip@v0.1.0
+      with:
+        args: zip -qq -r kubelogin.zip bin
+    
+    - name: Publish
+      uses: skx/github-action-publish-binaries@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        args: kubelogin.zip
