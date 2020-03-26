@@ -1,10 +1,10 @@
 # kubelogin
 
-This is a [client-go credential (exec) plugin](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#client-go-credential-plugins) implementing azure authentication. This plugin provides features that are not available in kubectl.
+This is a [client-go credential (exec) plugin](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#client-go-credential-plugins) implementing azure authentication. This plugin provides features that are not available in kubectl. It is supported on kubectl v1.11+
 
 ## Features
 
-* convert command to convert kubeconfig with existing azure auth provider to exec credential plugin
+* `convert-kubeconfig` command to converts kubeconfig with existing azure auth provider format to exec credential plugin format
 * device code login
 * non-interactive service principal login
 * non-interactive user principal login using [Resource owner login flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc) 
