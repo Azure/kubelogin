@@ -71,6 +71,31 @@ Whenever you want to remove the cached token, to change login method, or to chan
 kubelogin remove-token
 ```
 
+## Exec Plugin Format
+
+Below is what a kubeconfig with exec plugin would look like. By default, the `audience` claim will not have `spn:` prefix. If it's desired to keep the prefix, add `--legacy` to the args.
+
+```yaml
+kind: Config
+preferences: {}
+users:
+- name: user-name
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1beta1
+      command: kubelogin
+      args:
+      - get-token
+      - --environment
+      - AzurePublicCloud
+      - --server-id
+      - <AAD server app ID>
+      - --client-id
+      - <AAD client app ID>
+      - --tenant-id
+      - <AAD tenant ID>
+```
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
