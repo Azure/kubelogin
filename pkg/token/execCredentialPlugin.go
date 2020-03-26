@@ -25,7 +25,8 @@ type execCredentialPlugin struct {
 }
 
 func New(o *Options) (ExecCredentialPlugin, error) {
-	provider, err := newTokenProvider(o, nil)
+	klog.V(10).Info(o)
+	provider, err := newTokenProvider(o)
 	if err != nil {
 		return nil, err
 	}
