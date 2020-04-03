@@ -8,7 +8,7 @@ import (
 
 type Options struct {
 	Flags        *pflag.FlagSet
-	configFlags  *genericclioptions.ConfigFlags
+	configFlags  genericclioptions.RESTClientGetter
 	TokenOptions token.Options
 }
 
@@ -23,7 +23,9 @@ func New() Options {
 
 func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	o.TokenOptions = token.NewOptions()
-	o.configFlags.AddFlags(fs)
+	if cf, ok := o.configFlags.(*genericclioptions.ConfigFlags); ok {
+		cf.AddFlags(fs)
+	}
 	o.TokenOptions.AddFlags(fs)
 }
 

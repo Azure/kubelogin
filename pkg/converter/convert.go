@@ -24,6 +24,20 @@ const (
 	argUsername     = "--username"
 	argPassword     = "--password"
 	argLoginMethod  = "--login"
+
+	flagClientID     = "client-id"
+	flagServerID     = "server-id"
+	flagTenantID     = "tenant-id"
+	flagEnvironment  = "environment"
+	flagClientSecret = "client-secret"
+	flagIsLegacy     = "legacy"
+	flagUsername     = "username"
+	flagPassword     = "password"
+	flagLoginMethod  = "login"
+
+	execName        = "kubelogin"
+	getTokenCommand = "get-token"
+	execAPIVersion  = "client.authentication.k8s.io/v1beta1"
 )
 
 func Convert(o Options) error {
@@ -38,58 +52,58 @@ func Convert(o Options) error {
 				continue
 			}
 			exec := &api.ExecConfig{
-				Command: "kubelogin",
+				Command: execName,
 				Args: []string{
-					"get-token",
+					getTokenCommand,
 				},
-				APIVersion: "client.authentication.k8s.io/v1beta1",
+				APIVersion: execAPIVersion,
 			}
-			if o.isSet("environment") {
+			if o.isSet(flagEnvironment) {
 				exec.Args = append(exec.Args, argEnvironment)
 				exec.Args = append(exec.Args, o.TokenOptions.Environment)
 			} else if authInfo.AuthProvider.Config[cfgEnvironment] != "" {
 				exec.Args = append(exec.Args, argEnvironment)
 				exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgEnvironment])
 			}
-			if o.isSet("server-id") {
+			if o.isSet(flagServerID) {
 				exec.Args = append(exec.Args, argServerID)
 				exec.Args = append(exec.Args, o.TokenOptions.ServerID)
 			} else if authInfo.AuthProvider.Config[cfgApiserverID] != "" {
 				exec.Args = append(exec.Args, argServerID)
 				exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgApiserverID])
 			}
-			if o.isSet("client-id") {
+			if o.isSet(flagClientID) {
 				exec.Args = append(exec.Args, argClientID)
 				exec.Args = append(exec.Args, o.TokenOptions.ClientID)
 			} else if authInfo.AuthProvider.Config[cfgClientID] != "" {
 				exec.Args = append(exec.Args, argClientID)
 				exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgClientID])
 			}
-			if o.isSet("tenant-id") {
+			if o.isSet(flagClientID) {
 				exec.Args = append(exec.Args, argTenantID)
 				exec.Args = append(exec.Args, o.TokenOptions.TenantID)
 			} else if authInfo.AuthProvider.Config[cfgClientID] != "" {
 				exec.Args = append(exec.Args, argTenantID)
 				exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgTenantID])
 			}
-			if o.isSet("legacy") && o.TokenOptions.IsLegacy {
+			if o.isSet(flagIsLegacy) && o.TokenOptions.IsLegacy {
 				exec.Args = append(exec.Args, argIsLegacy)
-			} else if authInfo.AuthProvider.Config[cfgConfigMode] == "" {
+			} else if authInfo.AuthProvider.Config[cfgConfigMode] == "" || authInfo.AuthProvider.Config[cfgConfigMode] == "0" {
 				exec.Args = append(exec.Args, argIsLegacy)
 			}
-			if o.isSet("client-secret") {
+			if o.isSet(flagClientSecret) {
 				exec.Args = append(exec.Args, argClientSecret)
 				exec.Args = append(exec.Args, o.TokenOptions.ClientSecret)
 			}
-			if o.isSet("username") {
+			if o.isSet(flagUsername) {
 				exec.Args = append(exec.Args, argUsername)
 				exec.Args = append(exec.Args, o.TokenOptions.Username)
 			}
-			if o.isSet("password") {
+			if o.isSet(flagPassword) {
 				exec.Args = append(exec.Args, argPassword)
 				exec.Args = append(exec.Args, o.TokenOptions.Password)
 			}
-			if o.isSet("login") {
+			if o.isSet(flagLoginMethod) {
 				exec.Args = append(exec.Args, argLoginMethod)
 				exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
 			}
