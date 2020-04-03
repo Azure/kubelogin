@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"os"
-	"path"
 
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
@@ -11,13 +10,12 @@ import (
 // NewRemoveTokenCacheCmd provides a cobra command for removing token cache sub command
 func NewRemoveTokenCacheCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:          "remove-token",
-		Short:        "Remove cached token from filesystem",
+		Use:          "remove-tokens",
+		Short:        "Remove all cached tokens from filesystem",
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) error {
-			cache := path.Join(tokenCacheDir, cacheFile)
-			if err := os.Remove(cache); err != nil {
-				klog.V(5).Infof("unable to delete token cache '%s': %s", cache, err)
+			if err := os.RemoveAll(tokenCacheDir); err != nil {
+				klog.V(5).Infof("unable to delete tokens cache in '%s': %s", tokenCacheDir, err)
 			}
 			return nil
 		},

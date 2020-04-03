@@ -65,10 +65,10 @@ kubectl get no
 
 ### Clean up
 
-Whenever you want to remove the cached token, to change login method, or to change tenant, you should remove the cached token
+Whenever you want to remove cached tokens
 
 ```sh
-kubelogin remove-token
+kubelogin remove-tokens
 ```
 
 ## Exec Plugin Format
