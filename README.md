@@ -8,7 +8,7 @@ This is a [client-go credential (exec) plugin](https://kubernetes.io/docs/refere
 * device code login
 * non-interactive service principal login
 * non-interactive user principal login using [Resource owner login flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc) 
-* AAD token will be cached locally for renewal. By default, it is saved in `~/.kube/cache/kubelogin/azure.json`
+* AAD token will be cached locally for renewal. By default, it is saved in `~/.kube/cache/kubelogin/`
 * addresses https://github.com/kubernetes/kubernetes/issues/86410 to remove `spn:` prefix in `audience` claim, if necessary. (based on kubeconfig or commandline argument `--legacy`)
 
 ## Getting Started
@@ -65,10 +65,10 @@ kubectl get no
 
 ### Clean up
 
-Whenever you want to remove the cached token, to change login method, or to change tenant, you should remove the cached token
+Whenever you want to remove cached tokens
 
 ```sh
-kubelogin remove-token
+kubelogin remove-tokens
 ```
 
 ## Exec Plugin Format

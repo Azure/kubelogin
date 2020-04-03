@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"path"
 
 	"github.com/Azure/kubelogin/pkg/token"
@@ -8,8 +9,6 @@ import (
 	"github.com/spf13/pflag"
 	"k8s.io/client-go/util/homedir"
 )
-
-const cacheFile = "azure.json"
 
 var tokenCacheDir = homedir.HomeDir() + "/.kube/cache/kubelogin"
 
@@ -22,9 +21,10 @@ func NewTokenCmd() *cobra.Command {
 		Short:        "get AAD token",
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) error {
-			o.TokenCacheFile = path.Join(tokenCacheDir, cacheFile)
-
 			o.UpdateFromEnv()
+
+			cacheFile := getCacheFileName(o.Environment, o.ServerID, o.ClientID, o.TenantID, o.IsLegacy)
+			o.TokenCacheFile = path.Join(tokenCacheDir, cacheFile)
 
 			if err := o.Validate(); err != nil {
 				return err
@@ -48,4 +48,13 @@ func NewTokenCmd() *cobra.Command {
 
 func addTokenCacheDirFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&tokenCacheDir, "token-cache-dir", tokenCacheDir, "directory to cache token")
+}
+
+func getCacheFileName(environment, serverID, clientID, tenantID string, legacy bool) string {
+	// format: ${environment}-${server-id}-${client-id}-${tenant-id}[_legacy].json
+	cacheFileNameFormat := "%s-%s-%s-%s.json"
+	if legacy {
+		cacheFileNameFormat = "%s-%s-%s-%s_legacy.json"
+	}
+	return fmt.Sprintf(cacheFileNameFormat, environment, serverID, clientID, tenantID)
 }
