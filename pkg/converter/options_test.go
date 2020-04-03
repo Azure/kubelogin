@@ -8,9 +8,7 @@ import (
 
 func TestOptions(t *testing.T) {
 	o := New()
-	flags := &pflag.FlagSet{}
-	flags.Set("login", "devicecode")
-	o.AddFlags(flags)
+	o.AddFlags(&pflag.FlagSet{})
 	o.UpdateFromEnv()
 	if err := o.Validate(); err != nil {
 		t.Fatalf("option validation failed: %s", err)

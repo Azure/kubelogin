@@ -23,6 +23,9 @@ LDFLAGS    := -X main.version=$(VERSION) \
 
 all: $(TARGET)
 
+test:
+	go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+
 version:
 	@echo VERSION: $(VERSION)
 
