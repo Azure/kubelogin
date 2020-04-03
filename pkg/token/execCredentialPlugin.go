@@ -47,7 +47,11 @@ func (p *execCredentialPlugin) Do() error {
 	}
 
 	// verify resource
-	if (token.Resource == p.o.ServerID || token.Resource == fmt.Sprintf("%s:%s", servicePrincipalLogin, p.o.ServerID)) && !token.IsZero() {
+	targetAudience := p.o.ServerID
+	if p.o.IsLegacy {
+		targetAudience = fmt.Sprintf("spn:%s", p.o.ServerID)
+	}
+	if token.Resource == targetAudience && !token.IsZero() {
 		// if not expired, return
 		if !token.WillExpireIn(expirationDelta) {
 			klog.V(10).Info("access token is still valid. will return")
