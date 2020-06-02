@@ -3,6 +3,7 @@ package converter
 import (
 	"testing"
 
+	"github.com/Azure/kubelogin/pkg/token"
 	"github.com/spf13/pflag"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/tools/clientcmd"
@@ -29,6 +30,44 @@ func TestConvert(t *testing.T) {
 	}{
 		{
 			name: "non azure kubeconfig",
+		},
+		{
+			name: "when convert token with msi login, client id should be empty",
+			authProviderConfig: map[string]string{
+				cfgEnvironment: envName,
+				cfgApiserverID: serverID,
+				cfgClientID:    clientID,
+				cfgTenantID:    tenantID,
+				cfgConfigMode:  "0",
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.MSILogin,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argLoginMethod, token.MSILogin,
+			},
+		},
+		{
+			name: "convert token with msi login and override",
+			authProviderConfig: map[string]string{
+				cfgEnvironment: envName,
+				cfgApiserverID: serverID,
+				cfgClientID:    clientID,
+				cfgTenantID:    tenantID,
+				cfgConfigMode:  "0",
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.MSILogin,
+				flagClientID:    "msi-client-id",
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, "msi-client-id",
+				argLoginMethod, token.MSILogin,
+			},
 		},
 		{
 			name: "convert token with override flags in default legacy mode",

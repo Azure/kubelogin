@@ -20,12 +20,14 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 		return nil, fmt.Errorf("failed to get oAuthConfig. isLegacy: %t, err: %s", o.IsLegacy, err)
 	}
 	switch o.LoginMethod {
-	case deviceCodeLogin:
+	case DeviceCodeLogin:
 		return newDeviceCodeTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID)
-	case servicePrincipalLogin:
+	case ServicePrincipalLogin:
 		return newServicePrincipalToken(*oAuthConfig, o.ClientID, o.ClientSecret, o.ServerID, o.TenantID)
-	case ropcLogin:
+	case ROPCLogin:
 		return newResourceOwnerToken(*oAuthConfig, o.ClientID, o.Username, o.Password, o.ServerID, o.TenantID)
+	case MSILogin:
+		return newManagedIdentityToken(o.ClientID, o.ServerID)
 	}
 
 	return nil, errors.New("unsupported token provider")
