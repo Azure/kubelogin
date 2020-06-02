@@ -3,6 +3,7 @@ package converter
 import (
 	"fmt"
 
+	"github.com/Azure/kubelogin/pkg/token"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 )
@@ -46,6 +47,7 @@ func Convert(o Options) error {
 		return fmt.Errorf("unable to load kubeconfig: %s", err)
 	}
 
+	isMSI := o.TokenOptions.LoginMethod == token.MSILogin
 	for _, authInfo := range config.AuthInfos {
 		if authInfo != nil {
 			if authInfo.AuthProvider == nil || authInfo.AuthProvider.Name != azureAuthProvider {
@@ -58,10 +60,10 @@ func Convert(o Options) error {
 				},
 				APIVersion: execAPIVersion,
 			}
-			if o.isSet(flagEnvironment) {
+			if !isMSI && o.isSet(flagEnvironment) {
 				exec.Args = append(exec.Args, argEnvironment)
 				exec.Args = append(exec.Args, o.TokenOptions.Environment)
-			} else if authInfo.AuthProvider.Config[cfgEnvironment] != "" {
+			} else if !isMSI && authInfo.AuthProvider.Config[cfgEnvironment] != "" {
 				exec.Args = append(exec.Args, argEnvironment)
 				exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgEnvironment])
 			}
@@ -75,31 +77,32 @@ func Convert(o Options) error {
 			if o.isSet(flagClientID) {
 				exec.Args = append(exec.Args, argClientID)
 				exec.Args = append(exec.Args, o.TokenOptions.ClientID)
-			} else if authInfo.AuthProvider.Config[cfgClientID] != "" {
+			} else if !isMSI && authInfo.AuthProvider.Config[cfgClientID] != "" {
+				// when MSI is enabled, the clientID in azure authInfo will be disregarded
 				exec.Args = append(exec.Args, argClientID)
 				exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgClientID])
 			}
-			if o.isSet(flagClientID) {
+			if !isMSI && o.isSet(flagTenantID) {
 				exec.Args = append(exec.Args, argTenantID)
 				exec.Args = append(exec.Args, o.TokenOptions.TenantID)
-			} else if authInfo.AuthProvider.Config[cfgClientID] != "" {
+			} else if !isMSI && authInfo.AuthProvider.Config[cfgTenantID] != "" {
 				exec.Args = append(exec.Args, argTenantID)
 				exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgTenantID])
 			}
-			if o.isSet(flagIsLegacy) && o.TokenOptions.IsLegacy {
+			if !isMSI && o.isSet(flagIsLegacy) && o.TokenOptions.IsLegacy {
 				exec.Args = append(exec.Args, argIsLegacy)
-			} else if authInfo.AuthProvider.Config[cfgConfigMode] == "" || authInfo.AuthProvider.Config[cfgConfigMode] == "0" {
+			} else if !isMSI && (authInfo.AuthProvider.Config[cfgConfigMode] == "" || authInfo.AuthProvider.Config[cfgConfigMode] == "0") {
 				exec.Args = append(exec.Args, argIsLegacy)
 			}
-			if o.isSet(flagClientSecret) {
+			if !isMSI && o.isSet(flagClientSecret) {
 				exec.Args = append(exec.Args, argClientSecret)
 				exec.Args = append(exec.Args, o.TokenOptions.ClientSecret)
 			}
-			if o.isSet(flagUsername) {
+			if !isMSI && o.isSet(flagUsername) {
 				exec.Args = append(exec.Args, argUsername)
 				exec.Args = append(exec.Args, o.TokenOptions.Username)
 			}
-			if o.isSet(flagPassword) {
+			if !isMSI && o.isSet(flagPassword) {
 				exec.Args = append(exec.Args, argPassword)
 				exec.Args = append(exec.Args, o.TokenOptions.Password)
 			}

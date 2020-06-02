@@ -23,10 +23,12 @@ type Options struct {
 
 const (
 	defaultEnvironmentName = "AzurePublicCloud"
-	deviceCodeLogin        = "devicecode"
-	servicePrincipalLogin  = "spn"
-	ropcLogin              = "ropc"
-	manualTokenLogin       = "manual_token"
+
+	DeviceCodeLogin       = "devicecode"
+	ServicePrincipalLogin = "spn"
+	ROPCLogin             = "ropc"
+	MSILogin              = "msi"
+	manualTokenLogin      = "manual_token"
 
 	envServicePrincipalClientID     = "AAD_SERVICE_PRINCIPAL_CLIENT_ID"
 	envServicePrincipalClientSecret = "AAD_SERVICE_PRINCIPAL_CLIENT_SECRET"
@@ -38,7 +40,7 @@ const (
 var supportedLogin []string
 
 func init() {
-	supportedLogin = []string{deviceCodeLogin, servicePrincipalLogin, ropcLogin}
+	supportedLogin = []string{DeviceCodeLogin, ServicePrincipalLogin, ROPCLogin, MSILogin}
 }
 
 func GetSupportedLogins() string {
@@ -47,7 +49,7 @@ func GetSupportedLogins() string {
 
 func NewOptions() Options {
 	return Options{
-		LoginMethod: deviceCodeLogin,
+		LoginMethod: DeviceCodeLogin,
 		Environment: defaultEnvironmentName,
 	}
 }

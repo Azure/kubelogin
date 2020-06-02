@@ -8,7 +8,8 @@ This is a [client-go credential (exec) plugin](https://kubernetes.io/docs/refere
 * device code login
 * non-interactive service principal login
 * non-interactive user principal login using [Resource owner login flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc) 
-* AAD token will be cached locally for renewal. By default, it is saved in `~/.kube/cache/kubelogin/`
+* non-interactive managed service identity login
+* AAD token will be cached locally for renewal in device code login and user principal login (ropc) flow. By default, it is saved in `~/.kube/cache/kubelogin/`
 * addresses https://github.com/kubernetes/kubernetes/issues/86410 to remove `spn:` prefix in `audience` claim, if necessary. (based on kubeconfig or commandline argument `--legacy`)
 
 ## Getting Started
@@ -33,7 +34,7 @@ If you are using kubeconfig from AKS AADv1 clusters, `convert-kubeconfig` comman
 
 #### Service principal login flow (non interactive)
 
-> On AKS, it will only work with AADv2
+> On AKS, it will only work with managed AAD
 
 ```sh
 export KUBECONFIG=/path/to/kubeconfig
@@ -44,6 +45,25 @@ export AAD_SERVICE_PRINCIPAL_CLIENT_ID=<spn client id>
 export AAD_SERVICE_PRINCIPAL_CLIENT_SECRET=<spn secret>
 
 kubectl get no
+```
+
+To configure the role binding on Azure Kubernetes Service, the user in rolebinding should be the AAD Object ID.
+
+For example,
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: msi-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: <service-principal-object-id>
 ```
 
 #### User Principal login flow (non interactive)
@@ -63,6 +83,45 @@ export AAD_USER_PRINCIPAL_PASSWORD=<password>
 kubectl get no
 ```
 
+#### Managed Service Identity (non interactive)
+
+```sh
+export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l msi
+
+kubectl get no
+```
+
+To configure the role binding on Azure Kubernetes Service, the user in rolebinding should be the MSI's AAD Object ID.
+
+For example,
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: msi-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: <service-principal-object-id>
+```
+
+#### Managed Service Identity with specific identity (non interactive)
+
+```sh
+export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l msi --client-id msi-client-id
+
+kubectl get no
+```
+
 ### Clean up
 
 Whenever you want to remove cached tokens
@@ -74,6 +133,10 @@ kubelogin remove-tokens
 ## Exec Plugin Format
 
 Below is what a kubeconfig with exec plugin would look like. By default, the `audience` claim will not have `spn:` prefix. If it's desired to keep the prefix, add `--legacy` to the args.
+
+> cluster info including cluster CA and FQDN are omitted in below examples
+
+### Device Code Flow (default)
 
 ```yaml
 kind: Config
@@ -94,6 +157,46 @@ users:
       - <AAD client app ID>
       - --tenant-id
       - <AAD tenant ID>
+```
+
+### Managed Service Identity
+
+```yaml
+kind: Config
+preferences: {}
+users:
+- name: user-name
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1beta1
+      command: kubelogin
+      args:
+      - get-token
+      - --server-id
+      - <AAD server app ID>
+      - --login
+      - msi
+```
+
+### Managed Service Identity with specific client ID
+
+```yaml
+kind: Config
+preferences: {}
+users:
+- name: user-name
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1beta1
+      command: kubelogin
+      args:
+      - get-token
+      - --server-id
+      - <AAD server app ID>
+      - --client-id
+      - <msi-client-id>
+      - --login
+      - msi
 ```
 
 ## Contributing

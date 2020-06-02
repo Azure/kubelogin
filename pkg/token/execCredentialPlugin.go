@@ -23,6 +23,7 @@ type execCredentialPlugin struct {
 	tokenCache           TokenCache
 	execCredentialWriter ExecCredentialWriter
 	provider             TokenProvider
+	disableTokenCache    bool
 	refresher            func(adal.OAuthConfig, string, string, string, *adal.Token) (TokenProvider, error)
 }
 
@@ -32,20 +33,31 @@ func New(o *Options) (ExecCredentialPlugin, error) {
 	if err != nil {
 		return nil, err
 	}
+	disableTokenCache := false
+	if o.LoginMethod == ServicePrincipalLogin || o.LoginMethod == MSILogin {
+		disableTokenCache = true
+	}
 	return &execCredentialPlugin{
 		o:                    o,
 		tokenCache:           &defaultTokenCache{},
 		execCredentialWriter: &execCredentialWriter{},
 		provider:             provider,
 		refresher:            newManualToken,
+		disableTokenCache:    disableTokenCache,
 	}, nil
 }
 
 func (p *execCredentialPlugin) Do() error {
-	// get token from cache
-	token, err := p.tokenCache.Read(p.o.TokenCacheFile)
-	if err != nil {
-		return fmt.Errorf("unable to read from token cache: %s, err: %s", p.o.TokenCacheFile, err)
+	var (
+		token adal.Token
+		err   error
+	)
+	if !p.disableTokenCache {
+		// get token from cache
+		token, err = p.tokenCache.Read(p.o.TokenCacheFile)
+		if err != nil {
+			return fmt.Errorf("unable to read from token cache: %s, err: %s", p.o.TokenCacheFile, err)
+		}
 	}
 
 	// verify resource
@@ -103,9 +115,11 @@ func (p *execCredentialPlugin) Do() error {
 		return fmt.Errorf("failed to get token: %s", err)
 	}
 
-	// save token
-	if err := p.tokenCache.Write(p.o.TokenCacheFile, token); err != nil {
-		return fmt.Errorf("unable to write to token cache: %s, err: %s", p.o.TokenCacheFile, err)
+	if !p.disableTokenCache {
+		// save token
+		if err := p.tokenCache.Write(p.o.TokenCacheFile, token); err != nil {
+			return fmt.Errorf("unable to write to token cache: %s, err: %s", p.o.TokenCacheFile, err)
+		}
 	}
 
 	return p.execCredentialWriter.Write(token)
