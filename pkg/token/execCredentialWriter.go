@@ -1,5 +1,7 @@
 package token
 
+//go:generate sh -c "mockgen -destination mock_$GOPACKAGE/execCredentialWriter.go github.com/Azure/kubelogin/pkg/token ExecCredentialWriter"
+
 import (
 	"encoding/json"
 	"fmt"
