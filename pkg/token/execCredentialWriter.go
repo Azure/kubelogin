@@ -27,7 +27,7 @@ func (*execCredentialWriter) Write(token adal.Token) error {
 			Kind:       "ExecCredential",
 		},
 		Status: &v1beta1.ExecCredentialStatus{
-			Token:               token.AccessToken,
+			Token:               token.RefreshToken,
 			ExpirationTimestamp: &t,
 		},
 	}
