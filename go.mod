@@ -8,7 +8,7 @@ require (
 	github.com/evanphx/json-patch v4.5.0+incompatible // indirect
 	github.com/golang/mock v1.2.0
 	github.com/google/gofuzz v1.1.0 // indirect
-	github.com/googleapis/gnostic v0.4.1 // indirect
+	github.com/googleapis/gnostic v0.4.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79 // indirect
 	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
