@@ -43,7 +43,8 @@ az ad sp create-for-rbac --skip-assignment --name myAKSAutomationServicePrincipa
 ```
 The output is similar to the following example. 
 
-```JSON
+```json
+
 {
   "appId": "<spn client id>",
   "displayName": "myAKSAutomationServicePrincipal",
