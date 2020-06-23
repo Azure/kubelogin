@@ -34,17 +34,29 @@ If you are using kubeconfig from AKS AADv1 clusters, `convert-kubeconfig` comman
 
 #### Service principal login flow (non interactive)
 
-> On AKS, it will only work with managed AAD
+> On AKS, it will only work with managed AAD. Service principal can be member of maximum 250 AAD groups.
+
+Create a service principal or use an existing one.
 
 ```sh
-export KUBECONFIG=/path/to/kubeconfig
+az ad sp create-for-rbac --skip-assignment --name myAKSAutomationServicePrincipal
+```
+The output is similar to the following example. 
 
-kubelogin convert-kubeconfig -l spn
+```JSON
+{
+  "appId": "<spn client id>",
+  "displayName": "myAKSAutomationServicePrincipal",
+  "name": "http://myAKSAutomationServicePrincipal",
+  "password": "<spn secret>",
+  "tenant": "<aad tenant id>"
+}
+```
 
-export AAD_SERVICE_PRINCIPAL_CLIENT_ID=<spn client id>
-export AAD_SERVICE_PRINCIPAL_CLIENT_SECRET=<spn secret>
+Query your service principal AAD Object ID by using the command below.
 
-kubectl get no
+```sh
+az ad sp show --id <spn client id> --query "objectId"
 ```
 
 To configure the role binding on Azure Kubernetes Service, the user in rolebinding should be the AAD Object ID.
@@ -55,7 +67,7 @@ For example,
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: msi-role-binding
+  name: sp-role-binding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -65,6 +77,21 @@ subjects:
   kind: User
   name: <service-principal-object-id>
 ```
+
+Use Kubelogin to convert your kubeconfig 
+
+```sh
+export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l *spn*
+
+export AAD_SERVICE_PRINCIPAL_CLIENT_ID=<spn client id>
+export AAD_SERVICE_PRINCIPAL_CLIENT_SECRET=<spn secret>
+
+kubectl get no
+```
+
+
 
 #### User Principal login flow (non interactive)
 
