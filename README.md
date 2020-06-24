@@ -84,7 +84,7 @@ Use Kubelogin to convert your kubeconfig
 ```sh
 export KUBECONFIG=/path/to/kubeconfig
 
-kubelogin convert-kubeconfig -l *spn*
+kubelogin convert-kubeconfig -l spn
 
 export AAD_SERVICE_PRINCIPAL_CLIENT_ID=<spn client id>
 export AAD_SERVICE_PRINCIPAL_CLIENT_SECRET=<spn secret>
