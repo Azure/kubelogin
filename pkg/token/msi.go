@@ -37,6 +37,12 @@ func (p *managedIdentityToken) Token() (adal.Token, error) {
 		return nil
 	}
 	msiEndpoint, _ := adal.GetMSIVMEndpoint()
+
+	// there are multiple options to login with MSI: https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-to-use-vm-token#get-a-token-using-http
+	// 1. use clientId if present
+	// 2. use identityResourceID if present
+	// 3. IMDS default
+
 	if p.clientID == "" {
 		if p.identityResourceID == "" {
 			// no identity specified, use whatever IMDS default to
