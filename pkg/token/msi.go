@@ -8,18 +8,20 @@ import (
 )
 
 type managedIdentityToken struct {
-	clientID   string
-	resourceID string
+	clientID           string
+	identityResourceID string
+	resourceID         string
 }
 
-func newManagedIdentityToken(clientID, resourceID string) (TokenProvider, error) {
+func newManagedIdentityToken(clientID, identityResourceID, resourceID string) (TokenProvider, error) {
 	if resourceID == "" {
 		return nil, errors.New("resourceID cannot be empty")
 	}
 
 	provider := &managedIdentityToken{
-		clientID:   clientID,
-		resourceID: resourceID,
+		clientID:           clientID,
+		identityResourceID: identityResourceID,
+		resourceID:         resourceID,
 	}
 
 	return provider, nil
@@ -36,21 +38,36 @@ func (p *managedIdentityToken) Token() (adal.Token, error) {
 	}
 	msiEndpoint, _ := adal.GetMSIVMEndpoint()
 	if p.clientID == "" {
-		spt, err = adal.NewServicePrincipalTokenFromMSI(
+		if p.identityResourceID == "" {
+			// no identity specified, use whatever IMDS default to
+			spt, err = adal.NewServicePrincipalTokenFromMSI(
+				msiEndpoint,
+				p.resourceID,
+				callback)
+			if err != nil {
+				return emptyToken, fmt.Errorf("failed to create service principal from managed identity for token refresh: %s", err)
+			}
+		}
+
+		// use a specified managedIdentity resource id
+		spt, err = adal.NewServicePrincipalTokenFromMSIWithIdentityResourceID(
 			msiEndpoint,
 			p.resourceID,
+			p.identityResourceID,
 			callback)
 		if err != nil {
-			return emptyToken, fmt.Errorf("failed to create service principal from managed identity for token refresh: %s", err)
+			return emptyToken, fmt.Errorf("failed to create service principal from managed identity %s for token refresh: %s", p.identityResourceID, err)
 		}
 	} else {
+
+		// use a specified clientId
 		spt, err = adal.NewServicePrincipalTokenFromMSIWithUserAssignedID(
 			msiEndpoint,
 			p.resourceID,
 			p.clientID,
 			callback)
 		if err != nil {
-			return emptyToken, fmt.Errorf("failed to create service principal from managed identity using user assigned ID for token refresh: %s", err)
+			return emptyToken, fmt.Errorf("failed to create service principal from managed identity %s for token refresh: %s", p.clientID, err)
 		}
 	}
 

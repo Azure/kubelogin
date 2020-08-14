@@ -9,16 +9,17 @@ import (
 )
 
 type Options struct {
-	LoginMethod    string
-	ClientID       string
-	ClientSecret   string
-	Username       string
-	Password       string
-	ServerID       string
-	TenantID       string
-	Environment    string
-	IsLegacy       bool
-	TokenCacheFile string
+	LoginMethod        string
+	ClientID           string
+	ClientSecret       string
+	Username           string
+	Password           string
+	ServerID           string
+	TenantID           string
+	Environment        string
+	IsLegacy           bool
+	TokenCacheFile     string
+	IdentityResourceId string
 }
 
 const (
@@ -60,6 +61,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&o.ClientSecret, "client-secret", o.ClientSecret, fmt.Sprintf("AAD client application secret. Used in spn login. It may be specified in %s environment variable", envServicePrincipalClientSecret))
 	fs.StringVar(&o.Username, "username", o.Username, fmt.Sprintf("user name for ropc login flow. It may be specified in %s environment variable", envROPCUsername))
 	fs.StringVar(&o.Password, "password", o.Password, fmt.Sprintf("password for ropc login flow. It may be specified in %s environment variable", envROPCPassword))
+	fs.StringVar(&o.IdentityResourceId, "identity-resource-id", o.IdentityResourceId, "Managed Identity resource id.")
 	fs.StringVar(&o.ServerID, "server-id", o.ServerID, "AAD server application ID")
 	fs.StringVarP(&o.TenantID, "tenant-id", "t", o.TenantID, "AAD tenant ID")
 	fs.StringVarP(&o.Environment, "environment", "e", o.Environment, "Azure environment name")
