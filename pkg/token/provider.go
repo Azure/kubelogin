@@ -27,7 +27,7 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 	case ROPCLogin:
 		return newResourceOwnerToken(*oAuthConfig, o.ClientID, o.Username, o.Password, o.ServerID, o.TenantID)
 	case MSILogin:
-		return newManagedIdentityToken(o.ClientID, o.ServerID)
+		return newManagedIdentityToken(o.ClientID, o.IdentityResourceId, o.ServerID)
 	}
 
 	return nil, errors.New("unsupported token provider")
