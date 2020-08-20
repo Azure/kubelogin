@@ -101,11 +101,12 @@ func (o *Options) UpdateFromEnv() {
 }
 
 func (o *Options) String() string {
-	return fmt.Sprintf("Login Method: %s, Environment: %s, TenantID: %s, ServerID: %s, ClientID: %s, IsLegacy: %t",
+	return fmt.Sprintf("Login Method: %s, Environment: %s, TenantID: %s, ServerID: %s, ClientID: %s, IsLegacy: %t, msiResourceID: %s",
 		o.LoginMethod,
 		o.Environment,
 		o.TenantID,
 		o.ServerID,
 		o.ClientID,
-		o.IsLegacy)
+		o.IsLegacy,
+		o.IdentityResourceId)
 }
