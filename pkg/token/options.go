@@ -12,6 +12,7 @@ type Options struct {
 	LoginMethod    string
 	ClientID       string
 	ClientSecret   string
+	ClientCert     string
 	Username       string
 	Password       string
 	ServerID       string
@@ -32,6 +33,7 @@ const (
 
 	envServicePrincipalClientID     = "AAD_SERVICE_PRINCIPAL_CLIENT_ID"
 	envServicePrincipalClientSecret = "AAD_SERVICE_PRINCIPAL_CLIENT_SECRET"
+	envServicePrincipalClientCert   = "AAD_SERVICE_PRINCIPAL_CLIENT_CERT"
 	envROPCUsername                 = "AAD_USER_PRINCIPAL_NAME"
 	envROPCPassword                 = "AAD_USER_PRINCIPAL_PASSWORD"
 	envLoginMethod                  = "AAD_LOGIN_METHOD"
@@ -58,6 +60,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&o.LoginMethod, "login", "l", o.LoginMethod, fmt.Sprintf("Login method. Supported methods: %s. It may be specified in %s environment variable", GetSupportedLogins(), envLoginMethod))
 	fs.StringVar(&o.ClientID, "client-id", o.ClientID, fmt.Sprintf("AAD client application ID. It may be specified in %s environment variable", envServicePrincipalClientID))
 	fs.StringVar(&o.ClientSecret, "client-secret", o.ClientSecret, fmt.Sprintf("AAD client application secret. Used in spn login. It may be specified in %s environment variable", envServicePrincipalClientSecret))
+	fs.StringVar(&o.ClientCert, "client-cert", o.ClientCert, fmt.Sprintf("AAD client application cert. Used in spn login. It may be specified in %s environment variable", envServicePrincipalClientCert))
 	fs.StringVar(&o.Username, "username", o.Username, fmt.Sprintf("user name for ropc login flow. It may be specified in %s environment variable", envROPCUsername))
 	fs.StringVar(&o.Password, "password", o.Password, fmt.Sprintf("password for ropc login flow. It may be specified in %s environment variable", envROPCPassword))
 	fs.StringVar(&o.ServerID, "server-id", o.ServerID, "AAD server application ID")
@@ -86,6 +89,9 @@ func (o *Options) UpdateFromEnv() {
 	}
 	if v, ok := os.LookupEnv(envServicePrincipalClientSecret); ok {
 		o.ClientSecret = v
+	}
+	if v, ok := os.LookupEnv(envServicePrincipalClientCert); ok {
+		o.ClientCert = v
 	}
 	if v, ok := os.LookupEnv(envROPCUsername); ok {
 		o.Username = v
