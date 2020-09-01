@@ -18,6 +18,12 @@ This is a [client-go credential (exec) plugin](https://kubernetes.io/docs/refere
 
 Copy the latest [Releases](https://github.com/Azure/kubelogin/releases) to shell's search path.
 
+### Setup (homebrew)
+
+```sh
+brew install Azure/kubelogin/kubelogin
+```
+
 ### Run
 
 #### Device code flow (interactive)

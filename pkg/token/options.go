@@ -9,17 +9,18 @@ import (
 )
 
 type Options struct {
-	LoginMethod    string
-	ClientID       string
-	ClientSecret   string
-	ClientCert     string
-	Username       string
-	Password       string
-	ServerID       string
-	TenantID       string
-	Environment    string
-	IsLegacy       bool
-	TokenCacheFile string
+	LoginMethod        string
+	ClientID           string
+	ClientSecret       string
+	ClientCert         string
+	Username           string
+	Password           string
+	ServerID           string
+	TenantID           string
+	Environment        string
+	IsLegacy           bool
+	TokenCacheFile     string
+	IdentityResourceId string
 }
 
 const (
@@ -63,6 +64,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&o.ClientCert, "client-cert", o.ClientCert, fmt.Sprintf("AAD client application cert. Used in spn login. It may be specified in %s environment variable", envServicePrincipalClientCert))
 	fs.StringVar(&o.Username, "username", o.Username, fmt.Sprintf("user name for ropc login flow. It may be specified in %s environment variable", envROPCUsername))
 	fs.StringVar(&o.Password, "password", o.Password, fmt.Sprintf("password for ropc login flow. It may be specified in %s environment variable", envROPCPassword))
+	fs.StringVar(&o.IdentityResourceId, "identity-resource-id", o.IdentityResourceId, "Managed Identity resource id.")
 	fs.StringVar(&o.ServerID, "server-id", o.ServerID, "AAD server application ID")
 	fs.StringVarP(&o.TenantID, "tenant-id", "t", o.TenantID, "AAD tenant ID")
 	fs.StringVarP(&o.Environment, "environment", "e", o.Environment, "Azure environment name")
@@ -105,11 +107,12 @@ func (o *Options) UpdateFromEnv() {
 }
 
 func (o *Options) String() string {
-	return fmt.Sprintf("Login Method: %s, Environment: %s, TenantID: %s, ServerID: %s, ClientID: %s, IsLegacy: %t",
+	return fmt.Sprintf("Login Method: %s, Environment: %s, TenantID: %s, ServerID: %s, ClientID: %s, IsLegacy: %t, msiResourceID: %s",
 		o.LoginMethod,
 		o.Environment,
 		o.TenantID,
 		o.ServerID,
 		o.ClientID,
-		o.IsLegacy)
+		o.IsLegacy,
+		o.IdentityResourceId)
 }

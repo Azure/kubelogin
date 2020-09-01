@@ -30,7 +30,7 @@ version:
 	@echo VERSION: $(VERSION)
 
 $(TARGET): clean
-	go build -o $(BIN) -ldflags "$(LDFLAGS)"
+	CGO_ENABLED=0 go build -o $(BIN) -ldflags "$(LDFLAGS)"
 
 clean:
 	-rm -f $(BIN)
