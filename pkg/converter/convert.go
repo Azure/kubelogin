@@ -21,7 +21,7 @@ const (
 	argTenantID     = "--tenant-id"
 	argEnvironment  = "--environment"
 	argClientSecret = "--client-secret"
-	argClientCert   = "--client-cert"
+	argClientCert   = "--client-certificate"
 	argIsLegacy     = "--legacy"
 	argUsername     = "--username"
 	argPassword     = "--password"
