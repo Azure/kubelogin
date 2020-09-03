@@ -34,7 +34,7 @@ const (
 
 	envServicePrincipalClientID     = "AAD_SERVICE_PRINCIPAL_CLIENT_ID"
 	envServicePrincipalClientSecret = "AAD_SERVICE_PRINCIPAL_CLIENT_SECRET"
-	envServicePrincipalClientCert   = "AAD_SERVICE_PRINCIPAL_CLIENT_CERT"
+	envServicePrincipalClientCert   = "AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE"
 	envROPCUsername                 = "AAD_USER_PRINCIPAL_NAME"
 	envROPCPassword                 = "AAD_USER_PRINCIPAL_PASSWORD"
 	envLoginMethod                  = "AAD_LOGIN_METHOD"
