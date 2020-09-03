@@ -32,7 +32,7 @@ const (
 	flagTenantID     = "tenant-id"
 	flagEnvironment  = "environment"
 	flagClientSecret = "client-secret"
-	flagClientCert   = "client-cert"
+	flagClientCert   = "client-certificate"
 	flagIsLegacy     = "legacy"
 	flagUsername     = "username"
 	flagPassword     = "password"
