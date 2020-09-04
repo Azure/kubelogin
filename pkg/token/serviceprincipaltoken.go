@@ -165,9 +165,6 @@ func parseKeyPairFromPEMBlock(pemBlock []byte) (*x509.Certificate, *rsa.PrivateK
 		return nil, nil, err
 	}
 
-	// Mooncake certificate signed by external provider is a certificate chain, we need to get the non-CA certificate,
-	// i.e. the one with private key present.
-	// Here is to locate the certificate only that matches the private key.
 	found := false
 	var cert *x509.Certificate
 	for {
