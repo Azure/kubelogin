@@ -38,6 +38,9 @@ func newServicePrincipalToken(oAuthConfig adal.OAuthConfig, clientID, clientSecr
 	if clientSecret == "" && clientCert == "" {
 		return nil, errors.New("Both clientSecret and clientcert cannot be empty")
 	}
+	if clientSecret != "" && clientCert != "" {
+		return nil, errors.New("Both clientSecret and clientcert cannot be set.Only one has to be specified")
+	}
 	if resourceID == "" {
 		return nil, errors.New("resourceID cannot be empty")
 	}
@@ -62,9 +65,8 @@ func (p *servicePrincipalToken) Token() (adal.Token, error) {
 	}
 
 	var (
-		spt       *adal.ServicePrincipalToken
-		callbacks []adal.TokenRefreshCallback
-		err       error
+		spt *adal.ServicePrincipalToken
+		err error
 	)
 
 	if p.clientSecret != "" {
@@ -89,15 +91,13 @@ func (p *servicePrincipalToken) Token() (adal.Token, error) {
 			return emptyToken, fmt.Errorf("failed to decode pkcs12 certificate while creating spt: %v", err)
 		}
 
-		callbacks = append(callbacks, callback)
-
 		spt, err = adal.NewServicePrincipalTokenFromCertificate(
 			p.oAuthConfig,
 			p.clientID,
 			cert,
 			rsaPrivateKey,
 			p.resourceID,
-			callbacks...)
+			callback)
 		if err != nil {
 			return emptyToken, fmt.Errorf("failed to create service principal token using cert: %s", err)
 		}
