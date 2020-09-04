@@ -193,6 +193,62 @@ users:
       - <AAD tenant ID>
 ```
 
+### Spn login with secret
+
+```yaml
+kind: Config
+preferences: {}
+users:
+- name: demouser
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1beta1
+      args:
+      - get-token
+      - --environment
+      - AzurePublicCloud
+      - --server-id
+      - <server_Appid>
+      - --client-id
+      - <client_Appid>
+      - --client-secret
+      - <client_secret>
+      - --tenant-id
+      - <Server_Tenant_id>
+      - --login
+      - spn
+      command: kubelogin
+      env: null
+```
+
+### Spn login with pfx certificate
+
+```yaml
+kind: Config
+preferences: {}
+users:
+- name: demouser
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1beta1
+      args:
+      - get-token
+      - --environment
+      - AzurePublicCloud
+      - --server-id
+      - <server_Appid>
+      - --client-id
+      - <client_Appid>
+      - --client-certificate
+      - <client_certificate>
+      - --tenant-id
+      - <Server_Tenant_id>
+      - --login
+      - spn
+      command: kubelogin
+      env: null
+```
+
 ### Managed Service Identity
 
 ```yaml
