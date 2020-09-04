@@ -177,7 +177,7 @@ func parseKeyPairFromPEMBlock(pemBlock []byte) (*x509.Certificate, *rsa.PrivateK
 
 		cert, err = x509.ParseCertificate(certBlock.Bytes)
 		if err != nil {
-			return nil, nil, fmt.Errorf("unable to get client certificate PEM. %v", err)
+			return nil, nil, fmt.Errorf("unable to parse certificate. %w", err)
 		}
 
 		certPublicKey, ok := cert.PublicKey.(*rsa.PublicKey)
