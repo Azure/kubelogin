@@ -86,7 +86,7 @@ func (p *servicePrincipalToken) Token() (adal.Token, error) {
 		// Get the certificate and private key from pfx file
 		cert, rsaPrivateKey, err := decodePkcs12(certData, "")
 		if err != nil {
-			return emptyToken, fmt.Errorf("failed to decode pkcs12 certificate while creating spt: %v", err)
+			return emptyToken, fmt.Errorf("failed to decode pkcs12 certificate while creating spt: %w", err)
 		}
 
 		callbacks = append(callbacks, callback)
