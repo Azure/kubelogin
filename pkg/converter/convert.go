@@ -21,6 +21,7 @@ const (
 	argTenantID     = "--tenant-id"
 	argEnvironment  = "--environment"
 	argClientSecret = "--client-secret"
+	argClientCert   = "--client-certificate"
 	argIsLegacy     = "--legacy"
 	argUsername     = "--username"
 	argPassword     = "--password"
@@ -31,6 +32,7 @@ const (
 	flagTenantID     = "tenant-id"
 	flagEnvironment  = "environment"
 	flagClientSecret = "client-secret"
+	flagClientCert   = "client-certificate"
 	flagIsLegacy     = "legacy"
 	flagUsername     = "username"
 	flagPassword     = "password"
@@ -97,6 +99,10 @@ func Convert(o Options) error {
 			if !isMSI && o.isSet(flagClientSecret) {
 				exec.Args = append(exec.Args, argClientSecret)
 				exec.Args = append(exec.Args, o.TokenOptions.ClientSecret)
+			}
+			if !isMSI && o.isSet(flagClientCert) {
+				exec.Args = append(exec.Args, argClientCert)
+				exec.Args = append(exec.Args, o.TokenOptions.ClientCert)
 			}
 			if !isMSI && o.isSet(flagUsername) {
 				exec.Args = append(exec.Args, argUsername)

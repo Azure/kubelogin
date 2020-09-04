@@ -23,7 +23,7 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 	case DeviceCodeLogin:
 		return newDeviceCodeTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID)
 	case ServicePrincipalLogin:
-		return newServicePrincipalToken(*oAuthConfig, o.ClientID, o.ClientSecret, o.ServerID, o.TenantID)
+		return newServicePrincipalToken(*oAuthConfig, o.ClientID, o.ClientSecret, o.ClientCert, o.ServerID, o.TenantID)
 	case ROPCLogin:
 		return newResourceOwnerToken(*oAuthConfig, o.ClientID, o.Username, o.Password, o.ServerID, o.TenantID)
 	case MSILogin:

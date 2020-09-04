@@ -18,6 +18,7 @@ func TestConvert(t *testing.T) {
 		clientID     = "clientID"
 		tenantID     = "tenantID"
 		clientSecret = "foosecret"
+		clientCert   = "/tmp/clientcert"
 		username     = "foo123"
 		password     = "foobar"
 		loginMethod  = "device"
@@ -77,6 +78,7 @@ func TestConvert(t *testing.T) {
 				flagClientID:     clientID,
 				flagTenantID:     tenantID,
 				flagClientSecret: clientSecret,
+				flagClientCert:   clientCert,
 				flagUsername:     username,
 				flagPassword:     password,
 				flagLoginMethod:  loginMethod,
@@ -89,6 +91,7 @@ func TestConvert(t *testing.T) {
 				argTenantID, tenantID,
 				argIsLegacy,
 				argClientSecret, clientSecret,
+				argClientCert, clientCert,
 				argUsername, username,
 				argPassword, password,
 				argLoginMethod, loginMethod,
@@ -105,6 +108,7 @@ func TestConvert(t *testing.T) {
 				flagClientID:     clientID,
 				flagTenantID:     tenantID,
 				flagClientSecret: clientSecret,
+				flagClientCert:   clientCert,
 				flagUsername:     username,
 				flagPassword:     password,
 				flagLoginMethod:  loginMethod,
@@ -118,6 +122,7 @@ func TestConvert(t *testing.T) {
 				argTenantID, tenantID,
 				argIsLegacy,
 				argClientSecret, clientSecret,
+				argClientCert, clientCert,
 				argUsername, username,
 				argPassword, password,
 				argLoginMethod, loginMethod,
