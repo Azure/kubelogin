@@ -7,7 +7,7 @@ This is a [client-go credential (exec) plugin](https://kubernetes.io/docs/refere
 * `convert-kubeconfig` command to converts kubeconfig with existing azure auth provider format to exec credential plugin format
 * device code login
 * non-interactive service principal login
-* non-interactive user principal login using [Resource owner login flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc) 
+* non-interactive user principal login using [Resource owner login flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc)
 * non-interactive managed service identity login
 * AAD token will be cached locally for renewal in device code login and user principal login (ropc) flow. By default, it is saved in `~/.kube/cache/kubelogin/`
 * addresses https://github.com/kubernetes/kubernetes/issues/86410 to remove `spn:` prefix in `audience` claim, if necessary. (based on kubeconfig or commandline argument `--legacy`)
@@ -47,7 +47,7 @@ Create a service principal or use an existing one.
 ```sh
 az ad sp create-for-rbac --skip-assignment --name myAKSAutomationServicePrincipal
 ```
-The output is similar to the following example. 
+The output is similar to the following example.
 
 ```json
 
@@ -85,7 +85,7 @@ subjects:
   name: <service-principal-object-id>
 ```
 
-Use Kubelogin to convert your kubeconfig 
+Use Kubelogin to convert your kubeconfig
 
 ```sh
 export KUBECONFIG=/path/to/kubeconfig
@@ -191,6 +191,62 @@ users:
       - <AAD client app ID>
       - --tenant-id
       - <AAD tenant ID>
+```
+
+### Spn login with secret
+
+```yaml
+kind: Config
+preferences: {}
+users:
+- name: demouser
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1beta1
+      args:
+      - get-token
+      - --environment
+      - AzurePublicCloud
+      - --server-id
+      - <server_Appid>
+      - --client-id
+      - <client_Appid>
+      - --client-secret
+      - <client_secret>
+      - --tenant-id
+      - <Server_Tenant_id>
+      - --login
+      - spn
+      command: kubelogin
+      env: null
+```
+
+### Spn login with pfx certificate
+
+```yaml
+kind: Config
+preferences: {}
+users:
+- name: demouser
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1beta1
+      args:
+      - get-token
+      - --environment
+      - AzurePublicCloud
+      - --server-id
+      - <server_Appid>
+      - --client-id
+      - <client_Appid>
+      - --client-certificate
+      - <client_certificate_path>
+      - --tenant-id
+      - <Server_Tenant_id>
+      - --login
+      - spn
+      command: kubelogin
+      env: null
 ```
 
 ### Managed Service Identity
