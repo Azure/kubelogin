@@ -39,7 +39,7 @@ func newServicePrincipalToken(oAuthConfig adal.OAuthConfig, clientID, clientSecr
 		return nil, errors.New("Both clientSecret and clientcert cannot be empty")
 	}
 	if clientSecret != "" && clientCert != "" {
-		return nil, errors.New("Both clientSecret and clientcert cannot be set.Only one has to be specified")
+		return nil, errors.New("Client secret and client certificate cannot be set at the same time. Only one has to be specified")
 	}
 	if resourceID == "" {
 		return nil, errors.New("resourceID cannot be empty")
