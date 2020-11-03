@@ -61,7 +61,7 @@ func (p *managedIdentityToken) Token() (adal.Token, error) {
 				p.identityResourceID,
 				callback)
 			if err != nil {
-				return emptyToken, fmt.Errorf("failed to create service principal from managed identity %s for token refresh: %s", p.identityResourceID, err)
+				return emptyToken, fmt.Errorf("failed to create service principal from managed identity with identityResourceID %s for token refresh: %s", p.identityResourceID, err)
 			}
 		}
 	} else {
