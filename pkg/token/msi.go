@@ -53,19 +53,18 @@ func (p *managedIdentityToken) Token() (adal.Token, error) {
 			if err != nil {
 				return emptyToken, fmt.Errorf("failed to create service principal from managed identity for token refresh: %s", err)
 			}
-		}
-
-		// use a specified managedIdentity resource id
-		spt, err = adal.NewServicePrincipalTokenFromMSIWithIdentityResourceID(
-			msiEndpoint,
-			p.resourceID,
-			p.identityResourceID,
-			callback)
-		if err != nil {
-			return emptyToken, fmt.Errorf("failed to create service principal from managed identity %s for token refresh: %s", p.identityResourceID, err)
+		} else {
+			// use a specified managedIdentity resource id
+			spt, err = adal.NewServicePrincipalTokenFromMSIWithIdentityResourceID(
+				msiEndpoint,
+				p.resourceID,
+				p.identityResourceID,
+				callback)
+			if err != nil {
+				return emptyToken, fmt.Errorf("failed to create service principal from managed identity %s for token refresh: %s", p.identityResourceID, err)
+			}
 		}
 	} else {
-
 		// use a specified clientId
 		spt, err = adal.NewServicePrincipalTokenFromMSIWithUserAssignedID(
 			msiEndpoint,
