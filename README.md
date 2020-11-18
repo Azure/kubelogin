@@ -175,7 +175,7 @@ kubelogin remove-tokens
 
 You can specify `--environment` for `kubelogin convert-kubeconfig`.
 
-Azure Stack has different API endpoints, depending on the Azure Stack deployment. To run kubelogin in Azure Stack environment, you need to specify `--environment AzureStackCloud` and an environment variable `AZURE_ENVIRONMENT_FILEPATH` which contains the path to the file to be used while populating the Azure Stack Environment.
+When using `AzureStackCloud` you will need to specify the actual endpoints in a config file, and set the environment variable `AZURE_ENVIRONMENT_FILEPATH` to that file.
 
 The configuration parameters of this file:
 
