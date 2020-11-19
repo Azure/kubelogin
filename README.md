@@ -168,7 +168,7 @@ kubelogin remove-tokens
 
 `kubelogin` supports Azure Environments:
 
-* AzurepublicCloud (default value)
+* AzurePublicCloud (default value)
 * AzureChinaCloud
 * AzureUSGovernmentCloud
 * AzureStackCloud
