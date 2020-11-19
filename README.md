@@ -164,6 +164,56 @@ Whenever you want to remove cached tokens
 kubelogin remove-tokens
 ```
 
+## Azure Environment
+
+`kubelogin` supports Azure Environments:
+
+* AzurepublicCloud (default value)
+* AzureChinaCloud
+* AzureUSGovernmentCloud
+* AzureStackCloud
+
+You can specify `--environment` for `kubelogin convert-kubeconfig`.
+
+When using `AzureStackCloud` you will need to specify the actual endpoints in a config file, and set the environment variable `AZURE_ENVIRONMENT_FILEPATH` to that file.
+
+The configuration parameters of this file:
+
+```
+{
+  "name": "AzureStackCloud",
+  "managementPortalURL": "...",
+  "publishSettingsURL": "...",
+  "serviceManagementEndpoint": "...",
+  "resourceManagerEndpoint": "...",
+  "activeDirectoryEndpoint": "...",
+  "galleryEndpoint": "...",
+  "keyVaultEndpoint": "...",
+  "graphEndpoint": "...",
+  "serviceBusEndpoint": "...",
+  "batchManagementEndpoint": "...",
+  "storageEndpointSuffix": "...",
+  "sqlDatabaseDNSSuffix": "...",
+  "trafficManagerDNSSuffix": "...",
+  "keyVaultDNSSuffix": "...",
+  "serviceBusEndpointSuffix": "...",
+  "serviceManagementVMDNSSuffix": "...",
+  "resourceManagerVMDNSSuffix": "...",
+  "containerRegistryDNSSuffix": "...",
+  "cosmosDBDNSSuffix": "...",
+  "tokenAudience": "...",
+  "resourceIdentifiers": {
+    "graph": "...",
+    "keyVault": "...",
+    "datalake": "...",
+    "batch": "...",
+    "operationalInsights": "..."
+  }
+}
+```
+
+The full configuration is available in the source code at https://github.com/Azure/go-autorest/blob/master/autorest/azure/environments.go.
+
 ## Exec Plugin Format
 
 Below is what a kubeconfig with exec plugin would look like. By default, the `audience` claim will not have `spn:` prefix. If it's desired to keep the prefix, add `--legacy` to the args.
