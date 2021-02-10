@@ -36,7 +36,6 @@ func (p *managedIdentityToken) Token() (adal.Token, error) {
 	callback := func(t adal.Token) error {
 		return nil
 	}
-	msiEndpoint, _ := adal.GetMSIVMEndpoint()
 
 	// there are multiple options to login with MSI: https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-to-use-vm-token#get-a-token-using-http
 	// 1. use clientId if present
@@ -46,19 +45,20 @@ func (p *managedIdentityToken) Token() (adal.Token, error) {
 	if p.clientID == "" {
 		if p.identityResourceID == "" {
 			// no identity specified, use whatever IMDS default to
-			spt, err = adal.NewServicePrincipalTokenFromMSI(
-				msiEndpoint,
+			spt, err = adal.NewServicePrincipalTokenFromManagedIdentity(
 				p.resourceID,
+				nil,
 				callback)
 			if err != nil {
 				return emptyToken, fmt.Errorf("failed to create service principal from managed identity for token refresh: %s", err)
 			}
 		} else {
 			// use a specified managedIdentity resource id
-			spt, err = adal.NewServicePrincipalTokenFromMSIWithIdentityResourceID(
-				msiEndpoint,
+			spt, err = adal.NewServicePrincipalTokenFromManagedIdentity(
 				p.resourceID,
-				p.identityResourceID,
+				&adal.ManagedIdentityOptions{
+					IdentityResourceID: p.identityResourceID,
+				},
 				callback)
 			if err != nil {
 				return emptyToken, fmt.Errorf("failed to create service principal from managed identity with identityResourceID %s for token refresh: %s", p.identityResourceID, err)
@@ -66,10 +66,11 @@ func (p *managedIdentityToken) Token() (adal.Token, error) {
 		}
 	} else {
 		// use a specified clientId
-		spt, err = adal.NewServicePrincipalTokenFromMSIWithUserAssignedID(
-			msiEndpoint,
+		spt, err = adal.NewServicePrincipalTokenFromManagedIdentity(
 			p.resourceID,
-			p.clientID,
+			&adal.ManagedIdentityOptions{
+				ClientID: p.clientID,
+			},
 			callback)
 		if err != nil {
 			return emptyToken, fmt.Errorf("failed to create service principal from managed identity %s for token refresh: %s", p.clientID, err)
