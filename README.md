@@ -4,13 +4,14 @@ This is a [client-go credential (exec) plugin](https://kubernetes.io/docs/refere
 
 ## Features
 
-* `convert-kubeconfig` command to converts kubeconfig with existing azure auth provider format to exec credential plugin format
-* device code login
-* non-interactive service principal login
-* non-interactive user principal login using [Resource owner login flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc)
-* non-interactive managed service identity login
-* AAD token will be cached locally for renewal in device code login and user principal login (ropc) flow. By default, it is saved in `~/.kube/cache/kubelogin/`
-* addresses https://github.com/kubernetes/kubernetes/issues/86410 to remove `spn:` prefix in `audience` claim, if necessary. (based on kubeconfig or commandline argument `--legacy`)
+- `convert-kubeconfig` command to converts kubeconfig with existing azure auth provider format to exec credential plugin format
+- [device code login](<#device-code-flow-(interactive)>)
+- [non-interactive service principal login](<#service-principal-login-flow-(non-interactive)>)
+- [non-interactive user principal login](<#user-principal-login-flow-(non-interactive)>) using [Resource owner login flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc)
+- [non-interactive managed service identity login](<#managed-service-identity-(non-interactive)>)
+- [non-interactive Azure CLI token login](<#azure-cli-token-login-(non-interactive)>)
+- AAD token will be cached locally for renewal in device code login and user principal login (ropc) flow. By default, it is saved in `~/.kube/cache/kubelogin/`
+- addresses <https://github.com/kubernetes/kubernetes/issues/86410> to remove `spn:` prefix in `audience` claim, if necessary. (based on kubeconfig or commandline argument `--legacy`)
 
 ## Getting Started
 
@@ -47,10 +48,10 @@ Create a service principal or use an existing one.
 ```sh
 az ad sp create-for-rbac --skip-assignment --name myAKSAutomationServicePrincipal
 ```
+
 The output is similar to the following example.
 
 ```json
-
 {
   "appId": "<spn client id>",
   "displayName": "myAKSAutomationServicePrincipal",
@@ -80,9 +81,9 @@ roleRef:
   kind: ClusterRole
   name: cluster-admin
 subjects:
-- apiGroup: rbac.authorization.k8s.io
-  kind: User
-  name: <service-principal-object-id>
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: <service-principal-object-id>
 ```
 
 Use Kubelogin to convert your kubeconfig
@@ -97,8 +98,6 @@ export AAD_SERVICE_PRINCIPAL_CLIENT_SECRET=<spn secret>
 
 kubectl get no
 ```
-
-
 
 #### User Principal login flow (non interactive)
 
@@ -141,9 +140,9 @@ roleRef:
   kind: ClusterRole
   name: cluster-admin
 subjects:
-- apiGroup: rbac.authorization.k8s.io
-  kind: User
-  name: <service-principal-object-id>
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: <service-principal-object-id>
 ```
 
 #### Managed Service Identity with specific identity (non interactive)
@@ -155,6 +154,18 @@ kubelogin convert-kubeconfig -l msi --client-id msi-client-id
 
 kubectl get no
 ```
+
+#### Azure CLI token login (non interactive)
+
+```sh
+export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l azurecli
+
+kubectl get no
+```
+
+Uses an [access token](https://docs.microsoft.com/en-us/cli/azure/account?view=azure-cli-latest#az_account_get_access_token) from [Azure CLI](https://github.com/Azure/azure-cli) to log in. The token will be issued against whatever tenant was logged in at the time `kubelogin convert-kubeconfig -l azurecli` was run.
 
 ### Clean up
 
@@ -168,10 +179,10 @@ kubelogin remove-tokens
 
 `kubelogin` supports Azure Environments:
 
-* AzurePublicCloud (default value)
-* AzureChinaCloud
-* AzureUSGovernmentCloud
-* AzureStackCloud
+- AzurePublicCloud (default value)
+- AzureChinaCloud
+- AzureUSGovernmentCloud
+- AzureStackCloud
 
 You can specify `--environment` for `kubelogin convert-kubeconfig`.
 
@@ -212,7 +223,7 @@ The configuration parameters of this file:
 }
 ```
 
-The full configuration is available in the source code at https://github.com/Azure/go-autorest/blob/master/autorest/azure/environments.go.
+The full configuration is available in the source code at <https://github.com/Azure/go-autorest/blob/master/autorest/azure/environments.go>.
 
 ## Exec Plugin Format
 
@@ -226,21 +237,21 @@ Below is what a kubeconfig with exec plugin would look like. By default, the `au
 kind: Config
 preferences: {}
 users:
-- name: user-name
-  user:
-    exec:
-      apiVersion: client.authentication.k8s.io/v1beta1
-      command: kubelogin
-      args:
-      - get-token
-      - --environment
-      - AzurePublicCloud
-      - --server-id
-      - <AAD server app ID>
-      - --client-id
-      - <AAD client app ID>
-      - --tenant-id
-      - <AAD tenant ID>
+  - name: user-name
+    user:
+      exec:
+        apiVersion: client.authentication.k8s.io/v1beta1
+        command: kubelogin
+        args:
+          - get-token
+          - --environment
+          - AzurePublicCloud
+          - --server-id
+          - <AAD server app ID>
+          - --client-id
+          - <AAD client app ID>
+          - --tenant-id
+          - <AAD tenant ID>
 ```
 
 ### Spn login with secret
@@ -249,26 +260,26 @@ users:
 kind: Config
 preferences: {}
 users:
-- name: demouser
-  user:
-    exec:
-      apiVersion: client.authentication.k8s.io/v1beta1
-      args:
-      - get-token
-      - --environment
-      - AzurePublicCloud
-      - --server-id
-      - <server_Appid>
-      - --client-id
-      - <client_Appid>
-      - --client-secret
-      - <client_secret>
-      - --tenant-id
-      - <Server_Tenant_id>
-      - --login
-      - spn
-      command: kubelogin
-      env: null
+  - name: demouser
+    user:
+      exec:
+        apiVersion: client.authentication.k8s.io/v1beta1
+        args:
+          - get-token
+          - --environment
+          - AzurePublicCloud
+          - --server-id
+          - <server_Appid>
+          - --client-id
+          - <client_Appid>
+          - --client-secret
+          - <client_secret>
+          - --tenant-id
+          - <Server_Tenant_id>
+          - --login
+          - spn
+        command: kubelogin
+        env: null
 ```
 
 ### Spn login with pfx certificate
@@ -277,26 +288,26 @@ users:
 kind: Config
 preferences: {}
 users:
-- name: demouser
-  user:
-    exec:
-      apiVersion: client.authentication.k8s.io/v1beta1
-      args:
-      - get-token
-      - --environment
-      - AzurePublicCloud
-      - --server-id
-      - <server_Appid>
-      - --client-id
-      - <client_Appid>
-      - --client-certificate
-      - <client_certificate_path>
-      - --tenant-id
-      - <Server_Tenant_id>
-      - --login
-      - spn
-      command: kubelogin
-      env: null
+  - name: demouser
+    user:
+      exec:
+        apiVersion: client.authentication.k8s.io/v1beta1
+        args:
+          - get-token
+          - --environment
+          - AzurePublicCloud
+          - --server-id
+          - <server_Appid>
+          - --client-id
+          - <client_Appid>
+          - --client-certificate
+          - <client_certificate_path>
+          - --tenant-id
+          - <Server_Tenant_id>
+          - --login
+          - spn
+        command: kubelogin
+        env: null
 ```
 
 ### Managed Service Identity
@@ -305,17 +316,17 @@ users:
 kind: Config
 preferences: {}
 users:
-- name: user-name
-  user:
-    exec:
-      apiVersion: client.authentication.k8s.io/v1beta1
-      command: kubelogin
-      args:
-      - get-token
-      - --server-id
-      - <AAD server app ID>
-      - --login
-      - msi
+  - name: user-name
+    user:
+      exec:
+        apiVersion: client.authentication.k8s.io/v1beta1
+        command: kubelogin
+        args:
+          - get-token
+          - --server-id
+          - <AAD server app ID>
+          - --login
+          - msi
 ```
 
 ### Managed Service Identity with specific client ID
@@ -324,26 +335,52 @@ users:
 kind: Config
 preferences: {}
 users:
-- name: user-name
-  user:
-    exec:
-      apiVersion: client.authentication.k8s.io/v1beta1
-      command: kubelogin
-      args:
-      - get-token
-      - --server-id
-      - <AAD server app ID>
-      - --client-id
-      - <msi-client-id>
-      - --login
-      - msi
+  - name: user-name
+    user:
+      exec:
+        apiVersion: client.authentication.k8s.io/v1beta1
+        command: kubelogin
+        args:
+          - get-token
+          - --server-id
+          - <AAD server app ID>
+          - --client-id
+          - <msi-client-id>
+          - --login
+          - msi
+```
+
+### Azure CLI token login
+
+```yaml
+kind: Config
+preferences: {}
+users:
+  - name: demouser
+    user:
+      exec:
+        apiVersion: client.authentication.k8s.io/v1beta1
+        args:
+          - get-token
+          - --environment
+          - AzurePublicCloud
+          - --server-id
+          - <Server_Appid>
+          - --client-id
+          - <Client_Appid>
+          - --tenant-id
+          - <Server_Tenant_id>
+          - --login
+          - azurecli
+        command: kubelogin
+        env: null
 ```
 
 ## Contributing
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
+This project welcomes contributions and suggestions. Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+the rights to use your contribution. For details, visit <https://cla.opensource.microsoft.com>.
 
 When you submit a pull request, a CLA bot will automatically determine whether you need to provide
 a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions

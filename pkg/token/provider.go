@@ -28,6 +28,8 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 		return newResourceOwnerToken(*oAuthConfig, o.ClientID, o.Username, o.Password, o.ServerID, o.TenantID)
 	case MSILogin:
 		return newManagedIdentityToken(o.ClientID, o.IdentityResourceId, o.ServerID)
+	case azureCLILogin:
+		return newAzureCLIToken(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID)
 	}
 
 	return nil, errors.New("unsupported token provider")

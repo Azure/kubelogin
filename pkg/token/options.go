@@ -31,6 +31,7 @@ const (
 	ROPCLogin             = "ropc"
 	MSILogin              = "msi"
 	manualTokenLogin      = "manual_token"
+	azureCLILogin         = "azurecli"
 
 	envServicePrincipalClientID     = "AAD_SERVICE_PRINCIPAL_CLIENT_ID"
 	envServicePrincipalClientSecret = "AAD_SERVICE_PRINCIPAL_CLIENT_SECRET"
@@ -43,7 +44,7 @@ const (
 var supportedLogin []string
 
 func init() {
-	supportedLogin = []string{DeviceCodeLogin, ServicePrincipalLogin, ROPCLogin, MSILogin}
+	supportedLogin = []string{DeviceCodeLogin, ServicePrincipalLogin, ROPCLogin, MSILogin, azureCLILogin}
 }
 
 func GetSupportedLogins() string {
