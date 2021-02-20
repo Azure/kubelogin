@@ -9,7 +9,7 @@ This is a [client-go credential (exec) plugin](https://kubernetes.io/docs/refere
 - [non-interactive service principal login](<#service-principal-login-flow-(non-interactive)>)
 - [non-interactive user principal login](<#user-principal-login-flow-(non-interactive)>) using [Resource owner login flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc)
 - [non-interactive managed service identity login](<#managed-service-identity-(non-interactive)>)
-- [non-interactive Azure CLI token login](<#azure-cli-token-login-(non-interactive)>)
+- [non-interactive Azure CLI token login (AKS only)](<#azure-cli-token-login-(non-interactive)>)
 - AAD token will be cached locally for renewal in device code login and user principal login (ropc) flow. By default, it is saved in `~/.kube/cache/kubelogin/`
 - addresses <https://github.com/kubernetes/kubernetes/issues/86410> to remove `spn:` prefix in `audience` claim, if necessary. (based on kubeconfig or commandline argument `--legacy`)
 
@@ -165,7 +165,7 @@ kubelogin convert-kubeconfig -l azurecli
 kubectl get no
 ```
 
-Uses an [access token](https://docs.microsoft.com/en-us/cli/azure/account?view=azure-cli-latest#az_account_get_access_token) from [Azure CLI](https://github.com/Azure/azure-cli) to log in. The token will be issued against whatever tenant was logged in at the time `kubelogin convert-kubeconfig -l azurecli` was run.
+Uses an [access token](https://docs.microsoft.com/en-us/cli/azure/account?view=azure-cli-latest#az_account_get_access_token) from [Azure CLI](https://github.com/Azure/azure-cli) to log in. The token will be issued against whatever tenant was logged in at the time `kubelogin convert-kubeconfig -l azurecli` was run. This login option only works with managed AKS.
 
 ### Clean up
 
@@ -366,8 +366,6 @@ users:
           - AzurePublicCloud
           - --server-id
           - <Server_Appid>
-          - --client-id
-          - <Client_Appid>
           - --tenant-id
           - <Server_Tenant_id>
           - --login

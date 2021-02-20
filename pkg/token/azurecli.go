@@ -12,36 +12,26 @@ import (
 	"github.com/Azure/go-autorest/autorest/adal"
 )
 
-type azureCLIToken struct {
-	clientID    string
+type AzureCLIToken struct {
 	resourceID  string
-	tenantID    string
 	oAuthConfig adal.OAuthConfig
 }
 
 // newAzureCLIToken returns a TokenProvider that will fetch a token for the user currently logged into the Azure CLI.
-// Required arguments include an oAuthConfiguration object, the clientID, the resourceID (which is used as the scope), and the AAD tenant ID.
-func newAzureCLIToken(oAuthConfig adal.OAuthConfig, clientID, resourceID, tenantID string) (TokenProvider, error) {
-	if clientID == "" {
-		return nil, errors.New("clientID cannot be empty")
-	}
+// Required arguments include an oAuthConfiguration object and the resourceID (which is used as the scope)
+func newAzureCLIToken(oAuthConfig adal.OAuthConfig, resourceID string) (TokenProvider, error) {
 	if resourceID == "" {
 		return nil, errors.New("resourceID cannot be empty")
 	}
-	if tenantID == "" {
-		return nil, errors.New("tenantID cannot be empty")
-	}
 
-	return &azureCLIToken{
-		clientID:    clientID,
+	return &AzureCLIToken{
 		resourceID:  resourceID,
-		tenantID:    tenantID,
 		oAuthConfig: oAuthConfig,
 	}, nil
 }
 
 // Token fetches an azcore.AccessToken from the Azure CLI SDK and converts it to an adal.Token for use with kubelogin.
-func (p *azureCLIToken) Token() (adal.Token, error) {
+func (p *AzureCLIToken) Token() (adal.Token, error) {
 	emptyToken := adal.Token{}
 
 	// Request a new Azure CLI token provider
