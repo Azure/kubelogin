@@ -366,8 +366,6 @@ users:
           - AzurePublicCloud
           - --server-id
           - <Server_Appid>
-          - --tenant-id
-          - <Server_Tenant_id>
           - --login
           - azurecli
         command: kubelogin
