@@ -49,7 +49,11 @@ func Convert(o Options) error {
 		return fmt.Errorf("unable to load kubeconfig: %s", err)
 	}
 
+	// MSI and AzureCLI login bypass most login fields, so we'll check for them and exclude them
 	isMSI := o.TokenOptions.LoginMethod == token.MSILogin
+	isAzureCLI := o.TokenOptions.LoginMethod == token.AzureCLILogin
+	isAlternativeLogin := isMSI || isAzureCLI
+
 	for _, authInfo := range config.AuthInfos {
 		if authInfo != nil {
 			if authInfo.AuthProvider == nil || authInfo.AuthProvider.Name != azureAuthProvider {
@@ -62,10 +66,10 @@ func Convert(o Options) error {
 				},
 				APIVersion: execAPIVersion,
 			}
-			if !isMSI && o.isSet(flagEnvironment) {
+			if !isAlternativeLogin && o.isSet(flagEnvironment) {
 				exec.Args = append(exec.Args, argEnvironment)
 				exec.Args = append(exec.Args, o.TokenOptions.Environment)
-			} else if !isMSI && authInfo.AuthProvider.Config[cfgEnvironment] != "" {
+			} else if !isAlternativeLogin && authInfo.AuthProvider.Config[cfgEnvironment] != "" {
 				exec.Args = append(exec.Args, argEnvironment)
 				exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgEnvironment])
 			}
@@ -79,36 +83,36 @@ func Convert(o Options) error {
 			if o.isSet(flagClientID) {
 				exec.Args = append(exec.Args, argClientID)
 				exec.Args = append(exec.Args, o.TokenOptions.ClientID)
-			} else if !isMSI && authInfo.AuthProvider.Config[cfgClientID] != "" {
+			} else if !isAlternativeLogin && authInfo.AuthProvider.Config[cfgClientID] != "" {
 				// when MSI is enabled, the clientID in azure authInfo will be disregarded
 				exec.Args = append(exec.Args, argClientID)
 				exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgClientID])
 			}
-			if !isMSI && o.isSet(flagTenantID) {
+			if !isAlternativeLogin && o.isSet(flagTenantID) {
 				exec.Args = append(exec.Args, argTenantID)
 				exec.Args = append(exec.Args, o.TokenOptions.TenantID)
-			} else if !isMSI && authInfo.AuthProvider.Config[cfgTenantID] != "" {
+			} else if !isAlternativeLogin && authInfo.AuthProvider.Config[cfgTenantID] != "" {
 				exec.Args = append(exec.Args, argTenantID)
 				exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgTenantID])
 			}
-			if !isMSI && o.isSet(flagIsLegacy) && o.TokenOptions.IsLegacy {
+			if !isAlternativeLogin && o.isSet(flagIsLegacy) && o.TokenOptions.IsLegacy {
 				exec.Args = append(exec.Args, argIsLegacy)
-			} else if !isMSI && (authInfo.AuthProvider.Config[cfgConfigMode] == "" || authInfo.AuthProvider.Config[cfgConfigMode] == "0") {
+			} else if !isAlternativeLogin && (authInfo.AuthProvider.Config[cfgConfigMode] == "" || authInfo.AuthProvider.Config[cfgConfigMode] == "0") {
 				exec.Args = append(exec.Args, argIsLegacy)
 			}
-			if !isMSI && o.isSet(flagClientSecret) {
+			if !isAlternativeLogin && o.isSet(flagClientSecret) {
 				exec.Args = append(exec.Args, argClientSecret)
 				exec.Args = append(exec.Args, o.TokenOptions.ClientSecret)
 			}
-			if !isMSI && o.isSet(flagClientCert) {
+			if !isAlternativeLogin && o.isSet(flagClientCert) {
 				exec.Args = append(exec.Args, argClientCert)
 				exec.Args = append(exec.Args, o.TokenOptions.ClientCert)
 			}
-			if !isMSI && o.isSet(flagUsername) {
+			if !isAlternativeLogin && o.isSet(flagUsername) {
 				exec.Args = append(exec.Args, argUsername)
 				exec.Args = append(exec.Args, o.TokenOptions.Username)
 			}
-			if !isMSI && o.isSet(flagPassword) {
+			if !isAlternativeLogin && o.isSet(flagPassword) {
 				exec.Args = append(exec.Args, argPassword)
 				exec.Args = append(exec.Args, o.TokenOptions.Password)
 			}
