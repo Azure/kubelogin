@@ -5,11 +5,11 @@ This is a [client-go credential (exec) plugin](https://kubernetes.io/docs/refere
 ## Features
 
 - `convert-kubeconfig` command to converts kubeconfig with existing azure auth provider format to exec credential plugin format
-- [device code login](<#device-code-flow-(interactive)>)
-- [non-interactive service principal login](<#service-principal-login-flow-(non-interactive)>)
-- [non-interactive user principal login](<#user-principal-login-flow-(non-interactive)>) using [Resource owner login flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc)
-- [non-interactive managed service identity login](<#managed-service-identity-(non-interactive)>)
-- [non-interactive Azure CLI token login (AKS only)](<#azure-cli-token-login-(non-interactive)>)
+- [device code login](<#device-code-flow-interactive>)
+- [non-interactive service principal login](<#service-principal-login-flow-non-interactive>)
+- [non-interactive user principal login](<#user-principal-login-flow-non-interactive>) using [Resource owner login flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc)
+- [non-interactive managed service identity login](<#managed-service-identity-non-interactive>)
+- [non-interactive Azure CLI token login (AKS only)](<#azure-cli-token-login-non-interactive>)
 - AAD token will be cached locally for renewal in device code login and user principal login (ropc) flow. By default, it is saved in `~/.kube/cache/kubelogin/`
 - addresses <https://github.com/kubernetes/kubernetes/issues/86410> to remove `spn:` prefix in `audience` claim, if necessary. (based on kubeconfig or commandline argument `--legacy`)
 
