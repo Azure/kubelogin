@@ -5,11 +5,11 @@ This is a [client-go credential (exec) plugin](https://kubernetes.io/docs/refere
 ## Features
 
 - `convert-kubeconfig` command to converts kubeconfig with existing azure auth provider format to exec credential plugin format
-- [device code login](<#device-code-flow-(interactive)>)
-- [non-interactive service principal login](<#service-principal-login-flow-(non-interactive)>)
-- [non-interactive user principal login](<#user-principal-login-flow-(non-interactive)>) using [Resource owner login flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc)
-- [non-interactive managed service identity login](<#managed-service-identity-(non-interactive)>)
-- [non-interactive Azure CLI token login (AKS only)](<#azure-cli-token-login-(non-interactive)>)
+- [device code login](<#device-code-flow-interactive>)
+- [non-interactive service principal login](<#service-principal-login-flow-non-interactive>)
+- [non-interactive user principal login](<#user-principal-login-flow-non-interactive>) using [Resource owner login flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc)
+- [non-interactive managed service identity login](<#managed-service-identity-non-interactive>)
+- [non-interactive Azure CLI token login (AKS only)](<#azure-cli-token-login-non-interactive>)
 - AAD token will be cached locally for renewal in device code login and user principal login (ropc) flow. By default, it is saved in `~/.kube/cache/kubelogin/`
 - addresses <https://github.com/kubernetes/kubernetes/issues/86410> to remove `spn:` prefix in `audience` claim, if necessary. (based on kubeconfig or commandline argument `--legacy`)
 
@@ -22,7 +22,12 @@ Copy the latest [Releases](https://github.com/Azure/kubelogin/releases) to shell
 ### Setup (homebrew)
 
 ```sh
+# install
 brew install Azure/kubelogin/kubelogin
+
+# upgrade
+brew update
+brew upgrade Azure/kubelogin/kubelogin
 ```
 
 ### Run
@@ -230,6 +235,8 @@ The full configuration is available in the source code at <https://github.com/Az
 
 Below is what a kubeconfig with exec plugin would look like. By default, the `audience` claim will not have `spn:` prefix. If it's desired to keep the prefix, add `--legacy` to the args.
 
+Note: The AAD server app ID of AKS Managed AAD is always `6dae42f8-4368-4678-94ff-3960e28e3630` in any environments.
+
 > cluster info including cluster CA and FQDN are omitted in below examples
 
 ### Device Code Flow (default)
@@ -270,13 +277,13 @@ users:
           - --environment
           - AzurePublicCloud
           - --server-id
-          - <server_Appid>
+          - <AAD server app ID>
           - --client-id
-          - <client_Appid>
+          - <AAD client app ID>
           - --client-secret
           - <client_secret>
           - --tenant-id
-          - <Server_Tenant_id>
+          - <AAD tenant ID>
           - --login
           - spn
         command: kubelogin
@@ -298,13 +305,13 @@ users:
           - --environment
           - AzurePublicCloud
           - --server-id
-          - <server_Appid>
+          - <AAD server app ID>
           - --client-id
-          - <client_Appid>
+          - <AAD client app ID>
           - --client-certificate
           - <client_certificate_path>
           - --tenant-id
-          - <Server_Tenant_id>
+          - <AAD tenant ID>
           - --login
           - spn
         command: kubelogin
@@ -346,7 +353,7 @@ users:
           - --server-id
           - <AAD server app ID>
           - --client-id
-          - <msi-client-id>
+          - <MSI app ID>
           - --login
           - msi
 ```
@@ -363,10 +370,8 @@ users:
         apiVersion: client.authentication.k8s.io/v1beta1
         args:
           - get-token
-          - --environment
-          - AzurePublicCloud
           - --server-id
-          - <Server_Appid>
+          - <AAD server app ID>
           - --login
           - azurecli
         command: kubelogin
