@@ -235,6 +235,8 @@ The full configuration is available in the source code at <https://github.com/Az
 
 Below is what a kubeconfig with exec plugin would look like. By default, the `audience` claim will not have `spn:` prefix. If it's desired to keep the prefix, add `--legacy` to the args.
 
+Note: The AAD server app ID of AKS Managed AAD is always `6dae42f8-4368-4678-94ff-3960e28e3630` in any environments.
+
 > cluster info including cluster CA and FQDN are omitted in below examples
 
 ### Device Code Flow (default)
@@ -275,13 +277,13 @@ users:
           - --environment
           - AzurePublicCloud
           - --server-id
-          - <server_Appid>
+          - <AAD server app ID>
           - --client-id
-          - <client_Appid>
+          - <AAD client app ID>
           - --client-secret
           - <client_secret>
           - --tenant-id
-          - <Server_Tenant_id>
+          - <AAD tenant ID>
           - --login
           - spn
         command: kubelogin
@@ -303,13 +305,13 @@ users:
           - --environment
           - AzurePublicCloud
           - --server-id
-          - <server_Appid>
+          - <AAD server app ID>
           - --client-id
-          - <client_Appid>
+          - <AAD client app ID>
           - --client-certificate
           - <client_certificate_path>
           - --tenant-id
-          - <Server_Tenant_id>
+          - <AAD tenant ID>
           - --login
           - spn
         command: kubelogin
@@ -351,7 +353,7 @@ users:
           - --server-id
           - <AAD server app ID>
           - --client-id
-          - <msi-client-id>
+          - <MSI app ID>
           - --login
           - msi
 ```
@@ -369,7 +371,7 @@ users:
         args:
           - get-token
           - --server-id
-          - <Server_Appid>
+          - <AAD server app ID>
           - --login
           - azurecli
         command: kubelogin
