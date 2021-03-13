@@ -165,7 +165,8 @@ kubelogin convert-kubeconfig -l azurecli
 kubectl get no
 ```
 
-Uses an [access token](https://docs.microsoft.com/en-us/cli/azure/account?view=azure-cli-latest#az_account_get_access_token) from [Azure CLI](https://github.com/Azure/azure-cli) to log in. The token will be issued against whatever tenant was logged in at the time `kubelogin convert-kubeconfig -l azurecli` was run. This login option only works with managed AKS.
+Uses an [access token](https://docs.microsoft.com/en-us/cli/azure/account?view=azure-cli-latest#az_account_get_access_token) from [Azure CLI](https://github.com/Azure/azure-cli) to log in. The token will be issued against whatever tenant was logged in at the time `kubelogin convert-kubeconfig -l azurecli` was run. This login option only works with managed AAD in AKS.
+
 
 ### Clean up
 
