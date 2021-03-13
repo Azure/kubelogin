@@ -368,8 +368,6 @@ users:
         apiVersion: client.authentication.k8s.io/v1beta1
         args:
           - get-token
-          - --environment
-          - AzurePublicCloud
           - --server-id
           - <Server_Appid>
           - --login
