@@ -22,7 +22,12 @@ Copy the latest [Releases](https://github.com/Azure/kubelogin/releases) to shell
 ### Setup (homebrew)
 
 ```sh
+# install
 brew install Azure/kubelogin/kubelogin
+
+# upgrade
+brew update
+brew upgrade Azure/kubelogin/kubelogin
 ```
 
 ### Run
