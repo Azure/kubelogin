@@ -85,12 +85,18 @@ func (p *execCredentialPlugin) Do() error {
 				return fmt.Errorf("failed to get refresher: %s", err)
 			}
 			klog.V(5).Info("refresh token")
+			refreshToken := token.RefreshToken
 			token, err := refresher.Token()
+
 			// if refresh fails, we will login using token provider
 			if err != nil {
 				klog.V(5).Infof("refresh failed, will continue to login: %s", err)
 			} else {
 				tokenRefreshed = true
+			}
+
+			if token.RefreshToken == "" {
+				token.RefreshToken = refreshToken
 			}
 
 			if tokenRefreshed {
