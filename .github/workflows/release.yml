@@ -31,7 +31,13 @@ jobs:
         GOOS: darwin
         GOARCH: amd64
       run: make
-      
+
+    - name: Build (darwin/arm)
+      env:
+        GOOS: darwin
+        GOARCH: arm64
+      run: make
+
     - name: Build (windows)
       env:
         GOOS: windows
@@ -53,6 +59,11 @@ jobs:
       with:
         args: zip -qq -r kubelogin-darwin-amd64.zip bin/darwin_amd64
 
+    - name: Zip (darwin-arm64)
+      uses: montudor/action-zip@v0.1.0
+      with:
+        args: zip -qq -r kubelogin-darwin-arm64.zip bin/darwin_arm64
+
     - name: Zip (linux-amd64)
       uses: montudor/action-zip@v0.1.0
       with:
@@ -63,4 +74,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        args: kubelogin.zip kubelogin-win-amd64.zip kubelogin-darwin-amd64.zip kubelogin-linux-amd64.zip
+        args: kubelogin.zip kubelogin-win-amd64.zip kubelogin-darwin-amd64.zip kubelogin-darwin-arm64.zip kubelogin-linux-amd64.zip
