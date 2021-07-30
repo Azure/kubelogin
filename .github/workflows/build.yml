@@ -7,10 +7,10 @@ jobs:
     env:
       GO111MODULE: on 
     steps:
-    - name: Set up Go 1.13
+    - name: Set up Go 1.16
       uses: actions/setup-go@v1
       with:
-        go-version: 1.13
+        go-version: 1.16
       id: go
 
     - name: Check out code into the Go module directory
@@ -21,3 +21,28 @@ jobs:
 
     - name: Test
       run: make test
+
+    - name: Build (linux)
+      env:
+        GOOS: linux
+        GOARCH: amd64
+      run: make
+      
+    - name: Build (darwin)
+      env:
+        GOOS: darwin
+        GOARCH: amd64
+      run: make
+
+    - name: Build (darwin/arm)
+      env:
+        GOOS: darwin
+        GOARCH: arm64
+      run: make
+
+    - name: Build (windows)
+      env:
+        GOOS: windows
+        GOARCH: amd64
+      run: make
+
