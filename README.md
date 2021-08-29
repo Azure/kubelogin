@@ -12,6 +12,7 @@ This is a [client-go credential (exec) plugin](https://kubernetes.io/docs/refere
 - [non-interactive Azure CLI token login (AKS only)](<#azure-cli-token-login-non-interactive>)
 - AAD token will be cached locally for renewal in device code login and user principal login (ropc) flow. By default, it is saved in `~/.kube/cache/kubelogin/`
 - addresses <https://github.com/kubernetes/kubernetes/issues/86410> to remove `spn:` prefix in `audience` claim, if necessary. (based on kubeconfig or commandline argument `--legacy`)
+- [Setup for Kubernetes OIDC Provider using Azure AD](<#setup-for-kubernetes-oidc-provider-using-azure-ad>)
 
 ## Getting Started
 
@@ -378,7 +379,7 @@ users:
         env: null
 ```
 
-## Non-AKS cluster setup
+## Setup for Kubernetes OIDC Provider using Azure AD
 
 Kubelogin can be used to authenticate to general kubernetes clusters using AAD as an OIDC provider. 
 
@@ -413,7 +414,7 @@ kubectl config use-context "$CLUSTER_NAME"
 
 ### Known limitation
 
-* [Maximum 200 groups will be included in the OIDC JWT](https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-fed-group-claims)
+* [Maximum 200 groups will be included in the OIDC JWT](https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-fed-group-claims). For more than 200 groups, consider using [Application Roles](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-add-app-roles-in-azure-ad-apps)
 * Groups created in AAD can only be included by their ObjectID and not name, as [`sAMAccountName` is only available for groups synchronized from Active Directory](https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-fed-group-claims#group-claims-for-applications-migrating-from-ad-fs-and-other-identity-providers)
 
 ## Contributing
