@@ -12,6 +12,7 @@ This is a [client-go credential (exec) plugin](https://kubernetes.io/docs/refere
 - [non-interactive Azure CLI token login (AKS only)](<#azure-cli-token-login-non-interactive>)
 - AAD token will be cached locally for renewal in device code login and user principal login (ropc) flow. By default, it is saved in `~/.kube/cache/kubelogin/`
 - addresses <https://github.com/kubernetes/kubernetes/issues/86410> to remove `spn:` prefix in `audience` claim, if necessary. (based on kubeconfig or commandline argument `--legacy`)
+- [Setup for Kubernetes OIDC Provider using Azure AD](<#setup-for-kubernetes-oidc-provider-using-azure-ad>)
 
 ## Getting Started
 
@@ -377,6 +378,44 @@ users:
         command: kubelogin
         env: null
 ```
+
+## Setup for Kubernetes OIDC Provider using Azure AD
+
+Kubelogin can be used to authenticate to general kubernetes clusters using AAD as an OIDC provider. 
+
+1. Create an AAD Enterprise Application and the corresponding App Registration. Check the `Allow public client flows` checkbox. Configure groups to be included in the response. Take a note of the directory (tenant) ID as `$AAD_TENANT_ID` and the application (client) ID as `$AAD_CLIENT_ID`
+2. Configure the API server with the following flags:
+* Issuer URL: `--oidc-issuer-url=https://sts.windows.net/$AAD_TENANT_ID`
+* Client ID: `--oidc-client-id=$AAD_CLIENT_ID`
+* Username claim: `--oidc-username-claim=upn`
+
+See the [kubernetes docs for optional flags](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#configuring-the-api-server). For EKS clusters [configure this on the Management Console](https://docs.amazonaws.cn/en_us/eks/latest/userguide/authenticate-oidc-identity-provider.html) or via [terraform](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_identity_provider_config).
+
+3. Configure kubelogin to use the application from the first step:
+```
+kubectl config set-credentials "azure-user" \
+  --exec-api-version=client.authentication.k8s.io/v1beta1 \
+  --exec-command=kubelogin \
+  --exec-arg=get-token \
+  --exec-arg=--environment \
+  --exec-arg=AzurePublicCloud \
+  --exec-arg=--server-id \
+  --exec-arg=$AAD_CLIENT_ID \
+  --exec-arg=--client-id \
+  --exec-arg=$AAD_CLIENT_ID \
+  --exec-arg=--tenant-id \
+  --exec-arg=$AAD_TENANT_ID
+```
+4. Use this credential to connect to the cluster:
+```
+kubectl config set-context "$CLUSTER_NAME" --cluster="$CLUSTER_NAME" --user=azure-user
+kubectl config use-context "$CLUSTER_NAME"
+```
+
+### Known limitation
+
+* [Maximum 200 groups will be included in the OIDC JWT](https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-fed-group-claims). For more than 200 groups, consider using [Application Roles](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-add-app-roles-in-azure-ad-apps)
+* Groups created in AAD can only be included by their ObjectID and not name, as [`sAMAccountName` is only available for groups synchronized from Active Directory](https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-fed-group-claims#group-claims-for-applications-migrating-from-ad-fs-and-other-identity-providers)
 
 ## Contributing
 
