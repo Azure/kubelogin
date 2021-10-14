@@ -69,9 +69,17 @@ jobs:
       with:
         args: zip -qq -r kubelogin-linux-amd64.zip bin/linux_amd64
 
+    - name: Create sha256 Checksums
+      run: |
+        sha256sum kubelogin.zip > kubelogin.zip.sha256
+        sha256sum kubelogin-win-amd64.zip > kubelogin-win-amd64.zip.sha256
+        sha256sum kubelogin-darwin-amd64.zip > kubelogin-darwin-amd64.zip.sha256
+        sha256sum kubelogin-darwin-arm64.zip > kubelogin-darwin-arm64.zip.sha256
+        sha256sum kubelogin-linux-amd64.zip > kubelogin-linux-amd64.zip.sha256
+
     - name: Publish
       uses: skx/github-action-publish-binaries@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        args: kubelogin.zip kubelogin-win-amd64.zip kubelogin-darwin-amd64.zip kubelogin-darwin-arm64.zip kubelogin-linux-amd64.zip
+        args: kubelogin.zip kubelogin-win-amd64.zip kubelogin-darwin-amd64.zip kubelogin-darwin-arm64.zip kubelogin-linux-amd64.zip kubelogin.zip.sha256 kubelogin-win-amd64.zip.sha256 kubelogin-darwin-amd64.zip.sha256 kubelogin-darwin-arm64.zip.sha256 kubelogin-linux-amd64.zip.sha256 
