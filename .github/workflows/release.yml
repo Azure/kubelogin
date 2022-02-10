@@ -9,7 +9,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     env:
-      GO111MODULE: on 
+      GO111MODULE: on
     steps:
     - name: Set up Go 1.16
       uses: actions/setup-go@v1
@@ -25,7 +25,13 @@ jobs:
         GOOS: linux
         GOARCH: amd64
       run: make
-      
+
+    - name: Build (linux/arm)
+      env:
+        GOOS: linux
+        GOARCH: arm64
+      run: make
+
     - name: Build (darwin)
       env:
         GOOS: darwin
@@ -43,7 +49,7 @@ jobs:
         GOOS: windows
         GOARCH: amd64
       run: make
-    
+
     - name: Zip
       uses: montudor/action-zip@v0.1.0
       with:
@@ -53,7 +59,7 @@ jobs:
       uses: montudor/action-zip@v0.1.0
       with:
         args: zip -qq -r kubelogin-win-amd64.zip bin/windows_amd64
-    
+
     - name: Zip (darwin-amd64)
       uses: montudor/action-zip@v0.1.0
       with:
@@ -69,6 +75,11 @@ jobs:
       with:
         args: zip -qq -r kubelogin-linux-amd64.zip bin/linux_amd64
 
+    - name: Zip (linux-arm64)
+      uses: montudor/action-zip@v0.1.0
+      with:
+        args: zip -qq -r kubelogin-linux-arm64.zip bin/linux_arm64
+
     - name: Create sha256 Checksums
       run: |
         sha256sum kubelogin.zip > kubelogin.zip.sha256
@@ -76,10 +87,11 @@ jobs:
         sha256sum kubelogin-darwin-amd64.zip > kubelogin-darwin-amd64.zip.sha256
         sha256sum kubelogin-darwin-arm64.zip > kubelogin-darwin-arm64.zip.sha256
         sha256sum kubelogin-linux-amd64.zip > kubelogin-linux-amd64.zip.sha256
+        sha256sum kubelogin-linux-arm64.zip > kubelogin-linux-arm64.zip.sha256
 
     - name: Publish
       uses: skx/github-action-publish-binaries@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        args: kubelogin.zip kubelogin-win-amd64.zip kubelogin-darwin-amd64.zip kubelogin-darwin-arm64.zip kubelogin-linux-amd64.zip kubelogin.zip.sha256 kubelogin-win-amd64.zip.sha256 kubelogin-darwin-amd64.zip.sha256 kubelogin-darwin-arm64.zip.sha256 kubelogin-linux-amd64.zip.sha256 
+        args: kubelogin.zip kubelogin-win-amd64.zip kubelogin-darwin-amd64.zip kubelogin-darwin-arm64.zip kubelogin-linux-amd64.zip kubelogin-linux-arm64.zip kubelogin.zip.sha256 kubelogin-win-amd64.zip.sha256 kubelogin-darwin-amd64.zip.sha256 kubelogin-darwin-arm64.zip.sha256 kubelogin-linux-amd64.zip.sha256 kubelogin-linux-arm64.zip.sha256
