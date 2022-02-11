@@ -27,7 +27,13 @@ jobs:
         GOOS: linux
         GOARCH: amd64
       run: make
-      
+
+    - name: Build (linux/arm)
+      env:
+        GOOS: linux
+        GOARCH: arm64
+      run: make
+
     - name: Build (darwin)
       env:
         GOOS: darwin
