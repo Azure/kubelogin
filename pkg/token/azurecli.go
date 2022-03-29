@@ -58,5 +58,6 @@ func (p *AzureCLIToken) Token() (adal.Token, error) {
 	return adal.Token{
 		AccessToken: cliAccessToken.Token,
 		ExpiresOn:   expiresOn,
+		Resource:    p.resourceID,
 	}, nil
 }
