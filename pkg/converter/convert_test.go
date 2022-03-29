@@ -71,6 +71,24 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
+			name: "convert token with workload identity",
+			authProviderConfig: map[string]string{
+				cfgEnvironment: envName,
+				cfgApiserverID: serverID,
+				cfgClientID:    clientID,
+				cfgTenantID:    tenantID,
+				cfgConfigMode:  "0",
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.WorkloadIdentityLogin,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argLoginMethod, token.WorkloadIdentityLogin,
+			},
+		},
+		{
 			name: "convert token with override flags in default legacy mode",
 			overrideFlags: map[string]string{
 				flagEnvironment:  envName,

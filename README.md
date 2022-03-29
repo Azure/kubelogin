@@ -10,6 +10,7 @@ This is a [client-go credential (exec) plugin](https://kubernetes.io/docs/refere
 - [non-interactive user principal login](<#user-principal-login-flow-non-interactive>) using [Resource owner login flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc)
 - [non-interactive managed service identity login](<#managed-service-identity-non-interactive>)
 - [non-interactive Azure CLI token login (AKS only)](<#azure-cli-token-login-non-interactive>)
+- [non-interactive workload identity login](<#azure-workload-federated-identity-non-interactive>)
 - AAD token will be cached locally for renewal in device code login and user principal login (ropc) flow. By default, it is saved in `~/.kube/cache/kubelogin/`
 - addresses <https://github.com/kubernetes/kubernetes/issues/86410> to remove `spn:` prefix in `audience` claim, if necessary. (based on kubeconfig or commandline argument `--legacy`)
 - [Setup for Kubernetes OIDC Provider using Azure AD](<#setup-for-kubernetes-oidc-provider-using-azure-ad>)
@@ -173,6 +174,17 @@ kubectl get no
 
 Uses an [access token](https://docs.microsoft.com/en-us/cli/azure/account?view=azure-cli-latest#az_account_get_access_token) from [Azure CLI](https://github.com/Azure/azure-cli) to log in. The token will be issued against whatever tenant was logged in at the time `kubelogin convert-kubeconfig -l azurecli` was run. This login option only works with managed AAD in AKS.
 
+#### Azure Workload Federated Identity (non interactive)
+
+```sh
+export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l workloadidentity
+
+kubectl get no
+```
+
+Workload identity uses [Azure AD federated identity credentials](https://docs.microsoft.com/en-us/graph/api/resources/federatedidentitycredentials-overview?view=graph-rest-beta) to authenticate to AKS. Using Azure Workload Identity in AKS this works by reading the environment variables `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_FEDERATED_TOKEN_FILE` and `AZURE_AUTHORITY_HOST`.
 
 ### Clean up
 
@@ -375,6 +387,26 @@ users:
           - <AAD server app ID>
           - --login
           - azurecli
+        command: kubelogin
+        env: null
+```
+
+### Workload Identity
+
+```yaml
+kind: Config
+preferences: {}
+users:
+  - name: demouser
+    user:
+      exec:
+        apiVersion: client.authentication.k8s.io/v1beta1
+        args:
+          - get-token
+          - --server-id
+          - <AAD server app ID>
+          - --login
+          - workloadidentity
         command: kubelogin
         env: null
 ```
