@@ -80,7 +80,7 @@ func (p *workloadIdentityToken) Token() (adal.Token, error) {
 
 	return adal.Token{
 		AccessToken: result.AccessToken,
-		ExpiresOn:   json.Number(fmt.Sprintf("%v", result.ExpiresOn.UTC().Second())),
+		ExpiresOn:   json.Number(fmt.Sprintf("%v", result.ExpiresOn.UTC().Unix())),
 	}, nil
 }
 
