@@ -34,7 +34,7 @@ func New(o *Options) (ExecCredentialPlugin, error) {
 		return nil, err
 	}
 	disableTokenCache := false
-	if o.LoginMethod == ServicePrincipalLogin || o.LoginMethod == MSILogin {
+	if o.LoginMethod == ServicePrincipalLogin || o.LoginMethod == MSILogin || o.LoginMethod == WorkloadIdentityLogin {
 		disableTokenCache = true
 	}
 	return &execCredentialPlugin{

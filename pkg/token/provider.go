@@ -30,6 +30,8 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 		return newManagedIdentityToken(o.ClientID, o.IdentityResourceId, o.ServerID)
 	case AzureCLILogin:
 		return newAzureCLIToken(*oAuthConfig, o.ServerID)
+	case WorkloadIdentityLogin:
+		return newWorkloadIdentityToken(o.ClientID, o.FederatedTokenFile, o.AuthorityHost, o.ServerID, o.TenantID)
 	}
 
 	return nil, errors.New("unsupported token provider")
