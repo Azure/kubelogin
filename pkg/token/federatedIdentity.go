@@ -17,10 +17,10 @@ type workloadIdentityToken struct {
 	tenantID           string
 	federatedTokenFile string
 	authorityHost      string
-	resourceID         string
+	serverID           string
 }
 
-func newWorkloadIdentityToken(clientID, federatedTokenFile, authorityHost, resourceID, tenantID string) (TokenProvider, error) {
+func newWorkloadIdentityToken(clientID, federatedTokenFile, authorityHost, serverID, tenantID string) (TokenProvider, error) {
 	if clientID == "" {
 		return nil, errors.New("clientID cannot be empty")
 	}
@@ -33,8 +33,8 @@ func newWorkloadIdentityToken(clientID, federatedTokenFile, authorityHost, resou
 	if authorityHost == "" {
 		return nil, errors.New("authorityHost cannot be empty")
 	}
-	if resourceID == "" {
-		return nil, errors.New("resourceID cannot be empty")
+	if serverID == "" {
+		return nil, errors.New("serverID cannot be empty")
 	}
 
 	return &workloadIdentityToken{
@@ -42,7 +42,7 @@ func newWorkloadIdentityToken(clientID, federatedTokenFile, authorityHost, resou
 		tenantID:           tenantID,
 		federatedTokenFile: federatedTokenFile,
 		authorityHost:      authorityHost,
-		resourceID:         resourceID,
+		serverID:           serverID,
 	}, nil
 }
 
@@ -51,7 +51,7 @@ func (p *workloadIdentityToken) Token() (adal.Token, error) {
 
 	signedAssertion, err := readJWTFromFS(p.federatedTokenFile)
 	if err != nil {
-		return emptyToken, fmt.Errorf("failed to read service account token: %s", err)
+		return emptyToken, fmt.Errorf("failed to read signed assertion from token file: %s", err)
 	}
 	cred, err := confidential.NewCredFromAssertion(signedAssertion)
 	if err != nil {
@@ -67,7 +67,7 @@ func (p *workloadIdentityToken) Token() (adal.Token, error) {
 		return emptyToken, fmt.Errorf("failed to create confidential client app. %s", err)
 	}
 
-	resource := strings.TrimSuffix(p.resourceID, "/")
+	resource := strings.TrimSuffix(p.serverID, "/")
 	// .default needs to be added to the scope
 	if !strings.HasSuffix(resource, ".default") {
 		resource += "/.default"
@@ -80,7 +80,8 @@ func (p *workloadIdentityToken) Token() (adal.Token, error) {
 
 	return adal.Token{
 		AccessToken: result.AccessToken,
-		ExpiresOn:   json.Number(fmt.Sprintf("%v", result.ExpiresOn.UTC().Unix())),
+		ExpiresOn:   json.Number(fmt.Sprintf("%d", result.ExpiresOn.UTC().Unix())),
+		Resource:    p.serverID,
 	}, nil
 }
 

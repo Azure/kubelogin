@@ -49,7 +49,7 @@ func Convert(o Options) error {
 		return fmt.Errorf("unable to load kubeconfig: %s", err)
 	}
 
-	// MSI and AzureCLI login bypass most login fields, so we'll check for them and exclude them
+	// MSI, AzureCLI, and WorkloadIdentity login bypass most login fields, so we'll check for them and exclude them
 	isMSI := o.TokenOptions.LoginMethod == token.MSILogin
 	isAzureCLI := o.TokenOptions.LoginMethod == token.AzureCLILogin
 	isWorkloadIdentity := o.TokenOptions.LoginMethod == token.WorkloadIdentityLogin
