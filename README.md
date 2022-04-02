@@ -188,7 +188,7 @@ Workload identity uses [Azure AD federated identity credentials](https://docs.mi
 * `AZURE_CLIENT_ID` is Azure Active Directory application ID that is federated with workload identity
 * `AZURE_TENANT_ID` is Azure Active Directory tenant ID
 * `AZURE_FEDERATED_TOKEN_FILE` is the file containing signed assertion of workload identity. E.g. Kubernetes projected service account (jwt) token
-* `AZURE_AUTHORITY_HOST` is the base URL of an Azure Active Directory authority. E.g. https://login.microsoftonline.com
+* `AZURE_AUTHORITY_HOST` is the base URL of an Azure Active Directory authority. E.g. `https://login.microsoftonline.com/`
 
 ### Clean up
 
