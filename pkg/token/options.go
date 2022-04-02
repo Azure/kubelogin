@@ -21,6 +21,8 @@ type Options struct {
 	IsLegacy           bool
 	TokenCacheFile     string
 	IdentityResourceId string
+	FederatedTokenFile string
+	AuthorityHost      string
 }
 
 const (
@@ -31,20 +33,25 @@ const (
 	ROPCLogin             = "ropc"
 	MSILogin              = "msi"
 	AzureCLILogin         = "azurecli"
+	WorkloadIdentityLogin = "workloadidentity"
 	manualTokenLogin      = "manual_token"
 
-	envServicePrincipalClientID     = "AAD_SERVICE_PRINCIPAL_CLIENT_ID"
-	envServicePrincipalClientSecret = "AAD_SERVICE_PRINCIPAL_CLIENT_SECRET"
-	envServicePrincipalClientCert   = "AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE"
-	envROPCUsername                 = "AAD_USER_PRINCIPAL_NAME"
-	envROPCPassword                 = "AAD_USER_PRINCIPAL_PASSWORD"
-	envLoginMethod                  = "AAD_LOGIN_METHOD"
+	envServicePrincipalClientID           = "AAD_SERVICE_PRINCIPAL_CLIENT_ID"
+	envServicePrincipalClientSecret       = "AAD_SERVICE_PRINCIPAL_CLIENT_SECRET"
+	envServicePrincipalClientCert         = "AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE"
+	envWorkloadIdentityClientID           = "AZURE_CLIENT_ID"
+	envWorkloadIdentityTenantID           = "AZURE_TENANT_ID"
+	envWorkloadIdentityFederatedTokenFile = "AZURE_FEDERATED_TOKEN_FILE"
+	envWorkloadIdentityAuthorityHost      = "AZURE_AUTHORITY_HOST"
+	envROPCUsername                       = "AAD_USER_PRINCIPAL_NAME"
+	envROPCPassword                       = "AAD_USER_PRINCIPAL_PASSWORD"
+	envLoginMethod                        = "AAD_LOGIN_METHOD"
 )
 
 var supportedLogin []string
 
 func init() {
-	supportedLogin = []string{DeviceCodeLogin, ServicePrincipalLogin, ROPCLogin, MSILogin, AzureCLILogin}
+	supportedLogin = []string{DeviceCodeLogin, ServicePrincipalLogin, ROPCLogin, MSILogin, AzureCLILogin, WorkloadIdentityLogin}
 }
 
 func GetSupportedLogins() string {
@@ -67,6 +74,8 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&o.Password, "password", o.Password, fmt.Sprintf("password for ropc login flow. It may be specified in %s environment variable", envROPCPassword))
 	fs.StringVar(&o.IdentityResourceId, "identity-resource-id", o.IdentityResourceId, "Managed Identity resource id.")
 	fs.StringVar(&o.ServerID, "server-id", o.ServerID, "AAD server application ID")
+	fs.StringVar(&o.FederatedTokenFile, "federated-token-file", o.FederatedTokenFile, "Workload Identity federated token file")
+	fs.StringVar(&o.AuthorityHost, "authority-host", o.AuthorityHost, "Workload Identity authority host")
 	fs.StringVarP(&o.TenantID, "tenant-id", "t", o.TenantID, "AAD tenant ID")
 	fs.StringVarP(&o.Environment, "environment", "e", o.Environment, "Azure environment name")
 	fs.BoolVar(&o.IsLegacy, "legacy", o.IsLegacy, "set to true to get token with 'spn:' prefix in audience claim")
@@ -104,6 +113,21 @@ func (o *Options) UpdateFromEnv() {
 	}
 	if v, ok := os.LookupEnv(envLoginMethod); ok {
 		o.LoginMethod = v
+	}
+
+	if o.LoginMethod == WorkloadIdentityLogin {
+		if v, ok := os.LookupEnv(envWorkloadIdentityClientID); ok {
+			o.ClientID = v
+		}
+		if v, ok := os.LookupEnv(envWorkloadIdentityTenantID); ok {
+			o.TenantID = v
+		}
+		if v, ok := os.LookupEnv(envWorkloadIdentityFederatedTokenFile); ok {
+			o.FederatedTokenFile = v
+		}
+		if v, ok := os.LookupEnv(envWorkloadIdentityAuthorityHost); ok {
+			o.AuthorityHost = v
+		}
 	}
 }
 
