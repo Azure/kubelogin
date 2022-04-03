@@ -190,6 +190,8 @@ Workload identity uses [Azure AD federated identity credentials](https://docs.mi
 * `AZURE_FEDERATED_TOKEN_FILE` is the file containing signed assertion of workload identity. E.g. Kubernetes projected service account (jwt) token
 * `AZURE_AUTHORITY_HOST` is the base URL of an Azure Active Directory authority. E.g. `https://login.microsoftonline.com/`
 
+With workload identity, it's possible to access Kubernetes clusters from CI/CD system such as Github, ArgoCD, etc. without storing Service Principal credentials in those external systems. To learn more, [here](https://github.com/weinong/azure-federated-identity-samples) is a sample to setup OIDC federation from Github.
+
 ### Clean up
 
 Whenever you want to remove cached tokens
