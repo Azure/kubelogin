@@ -4,8 +4,11 @@ package token
 
 import (
 	"os"
+	"time"
 
 	"github.com/Azure/go-autorest/autorest/adal"
+
+	"gopkg.in/retry.v1"
 )
 
 type TokenCache interface {
@@ -29,5 +32,19 @@ func (*defaultTokenCache) Read(file string) (adal.Token, error) {
 }
 
 func (*defaultTokenCache) Write(file string, token adal.Token) error {
-	return adal.SaveToken(file, 0700, token)
+	attempts := retry.Regular{
+		Total: 1 * time.Second,
+		Delay: 250 * time.Millisecond,
+	}
+
+	for attempt := attempts.Start(nil); attempt.Next(); {
+		err := adal.SaveToken(file, 0700, token)
+
+		if err != nil && attempt.More() {
+			continue
+		}
+
+		return err
+	}
+	return nil
 }
