@@ -56,73 +56,91 @@ func Convert(o Options) error {
 	isAlternativeLogin := isMSI || isAzureCLI || isWorkloadIdentity
 
 	for _, authInfo := range config.AuthInfos {
+		exec := &api.ExecConfig{
+			Command: execName,
+			Args: []string{
+				getTokenCommand,
+			},
+			APIVersion: execAPIVersion,
+		}
+
 		if authInfo != nil {
+
 			if authInfo.AuthProvider == nil || authInfo.AuthProvider.Name != azureAuthProvider {
-				continue
+				if isAzureCLI && !o.TokenOptions.IsLegacy {
+					exec.Args = append(exec.Args, argServerID)
+					serveridArg := o.TokenOptions.ServerID
+					if len(serveridArg) < 1 {
+						serveridArg = "6dae42f8-4368-4678-94ff-3960e28e3630"
+					}
+					exec.Args = append(exec.Args, serveridArg)
+					exec.Args = append(exec.Args, argLoginMethod)
+					exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
+					authInfo.Exec = exec
+					authInfo.AuthProvider = nil
+					break
+				} else {
+					continue
+				}
+			} else {
+
+				if !isAlternativeLogin && o.isSet(flagEnvironment) {
+					exec.Args = append(exec.Args, argEnvironment)
+					exec.Args = append(exec.Args, o.TokenOptions.Environment)
+				} else if !isAlternativeLogin && authInfo.AuthProvider.Config[cfgEnvironment] != "" {
+					exec.Args = append(exec.Args, argEnvironment)
+					exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgEnvironment])
+				}
+				if o.isSet(flagServerID) {
+					exec.Args = append(exec.Args, argServerID)
+					exec.Args = append(exec.Args, o.TokenOptions.ServerID)
+				} else if authInfo.AuthProvider.Config[cfgApiserverID] != "" {
+					exec.Args = append(exec.Args, argServerID)
+					exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgApiserverID])
+				}
+				if o.isSet(flagClientID) {
+					exec.Args = append(exec.Args, argClientID)
+					exec.Args = append(exec.Args, o.TokenOptions.ClientID)
+				} else if !isAlternativeLogin && authInfo.AuthProvider.Config[cfgClientID] != "" {
+					// when MSI is enabled, the clientID in azure authInfo will be disregarded
+					exec.Args = append(exec.Args, argClientID)
+					exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgClientID])
+				}
+				if !isAlternativeLogin && o.isSet(flagTenantID) {
+					exec.Args = append(exec.Args, argTenantID)
+					exec.Args = append(exec.Args, o.TokenOptions.TenantID)
+				} else if !isAlternativeLogin && authInfo.AuthProvider.Config[cfgTenantID] != "" {
+					exec.Args = append(exec.Args, argTenantID)
+					exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgTenantID])
+				}
+				if !isAlternativeLogin && o.isSet(flagIsLegacy) && o.TokenOptions.IsLegacy {
+					exec.Args = append(exec.Args, argIsLegacy)
+				} else if !isAlternativeLogin && (authInfo.AuthProvider.Config[cfgConfigMode] == "" || authInfo.AuthProvider.Config[cfgConfigMode] == "0") {
+					exec.Args = append(exec.Args, argIsLegacy)
+				}
+				if !isAlternativeLogin && o.isSet(flagClientSecret) {
+					exec.Args = append(exec.Args, argClientSecret)
+					exec.Args = append(exec.Args, o.TokenOptions.ClientSecret)
+				}
+				if !isAlternativeLogin && o.isSet(flagClientCert) {
+					exec.Args = append(exec.Args, argClientCert)
+					exec.Args = append(exec.Args, o.TokenOptions.ClientCert)
+				}
+				if !isAlternativeLogin && o.isSet(flagUsername) {
+					exec.Args = append(exec.Args, argUsername)
+					exec.Args = append(exec.Args, o.TokenOptions.Username)
+				}
+				if !isAlternativeLogin && o.isSet(flagPassword) {
+					exec.Args = append(exec.Args, argPassword)
+					exec.Args = append(exec.Args, o.TokenOptions.Password)
+				}
+				if o.isSet(flagLoginMethod) {
+					exec.Args = append(exec.Args, argLoginMethod)
+					exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
+				}
+				authInfo.Exec = exec
+				authInfo.AuthProvider = nil
 			}
-			exec := &api.ExecConfig{
-				Command: execName,
-				Args: []string{
-					getTokenCommand,
-				},
-				APIVersion: execAPIVersion,
-			}
-			if !isAlternativeLogin && o.isSet(flagEnvironment) {
-				exec.Args = append(exec.Args, argEnvironment)
-				exec.Args = append(exec.Args, o.TokenOptions.Environment)
-			} else if !isAlternativeLogin && authInfo.AuthProvider.Config[cfgEnvironment] != "" {
-				exec.Args = append(exec.Args, argEnvironment)
-				exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgEnvironment])
-			}
-			if o.isSet(flagServerID) {
-				exec.Args = append(exec.Args, argServerID)
-				exec.Args = append(exec.Args, o.TokenOptions.ServerID)
-			} else if authInfo.AuthProvider.Config[cfgApiserverID] != "" {
-				exec.Args = append(exec.Args, argServerID)
-				exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgApiserverID])
-			}
-			if o.isSet(flagClientID) {
-				exec.Args = append(exec.Args, argClientID)
-				exec.Args = append(exec.Args, o.TokenOptions.ClientID)
-			} else if !isAlternativeLogin && authInfo.AuthProvider.Config[cfgClientID] != "" {
-				// when MSI is enabled, the clientID in azure authInfo will be disregarded
-				exec.Args = append(exec.Args, argClientID)
-				exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgClientID])
-			}
-			if !isAlternativeLogin && o.isSet(flagTenantID) {
-				exec.Args = append(exec.Args, argTenantID)
-				exec.Args = append(exec.Args, o.TokenOptions.TenantID)
-			} else if !isAlternativeLogin && authInfo.AuthProvider.Config[cfgTenantID] != "" {
-				exec.Args = append(exec.Args, argTenantID)
-				exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgTenantID])
-			}
-			if !isAlternativeLogin && o.isSet(flagIsLegacy) && o.TokenOptions.IsLegacy {
-				exec.Args = append(exec.Args, argIsLegacy)
-			} else if !isAlternativeLogin && (authInfo.AuthProvider.Config[cfgConfigMode] == "" || authInfo.AuthProvider.Config[cfgConfigMode] == "0") {
-				exec.Args = append(exec.Args, argIsLegacy)
-			}
-			if !isAlternativeLogin && o.isSet(flagClientSecret) {
-				exec.Args = append(exec.Args, argClientSecret)
-				exec.Args = append(exec.Args, o.TokenOptions.ClientSecret)
-			}
-			if !isAlternativeLogin && o.isSet(flagClientCert) {
-				exec.Args = append(exec.Args, argClientCert)
-				exec.Args = append(exec.Args, o.TokenOptions.ClientCert)
-			}
-			if !isAlternativeLogin && o.isSet(flagUsername) {
-				exec.Args = append(exec.Args, argUsername)
-				exec.Args = append(exec.Args, o.TokenOptions.Username)
-			}
-			if !isAlternativeLogin && o.isSet(flagPassword) {
-				exec.Args = append(exec.Args, argPassword)
-				exec.Args = append(exec.Args, o.TokenOptions.Password)
-			}
-			if o.isSet(flagLoginMethod) {
-				exec.Args = append(exec.Args, argLoginMethod)
-				exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
-			}
-			authInfo.Exec = exec
-			authInfo.AuthProvider = nil
 		}
 	}
 
