@@ -2,6 +2,7 @@ package converter
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Azure/kubelogin/pkg/token"
 	"k8s.io/client-go/tools/clientcmd"
@@ -43,6 +44,44 @@ const (
 	execAPIVersion  = "client.authentication.k8s.io/v1beta1"
 )
 
+func getServerId(authInfoPtr *api.AuthInfo) (serverId string) {
+	if authInfoPtr == nil || authInfoPtr.Exec == nil || authInfoPtr.Exec.Args == nil {
+		return
+	}
+	if len(authInfoPtr.Exec.Args) < 1 {
+		return
+	}
+	for i := range authInfoPtr.Exec.Args {
+		if authInfoPtr.Exec.Args[i] == argServerID {
+			if len(authInfoPtr.Exec.Args) > i+1 {
+				return authInfoPtr.Exec.Args[i+1]
+			}
+		}
+	}
+	return
+}
+
+func isLegacyAADAuth(authInfoPtr *api.AuthInfo) (ok bool) {
+	if authInfoPtr == nil {
+		return
+	}
+	if authInfoPtr.AuthProvider == nil {
+		return
+	}
+	return authInfoPtr.AuthProvider.Name == azureAuthProvider
+}
+
+func isExecUsingkubelogin(authInfoPtr *api.AuthInfo) (ok bool) {
+	if authInfoPtr == nil {
+		return
+	}
+	if authInfoPtr.Exec == nil {
+		return
+	}
+	lowerc := strings.ToLower(authInfoPtr.Exec.Command)
+	return strings.Contains(lowerc, "kubelogin")
+}
+
 func Convert(o Options) error {
 	config, err := o.configFlags.ToRawKubeConfigLoader().RawConfig()
 	if err != nil {
@@ -54,19 +93,38 @@ func Convert(o Options) error {
 	isAzureCLI := o.TokenOptions.LoginMethod == token.AzureCLILogin
 	isWorkloadIdentity := o.TokenOptions.LoginMethod == token.WorkloadIdentityLogin
 	isAlternativeLogin := isMSI || isAzureCLI || isWorkloadIdentity
-
 	for _, authInfo := range config.AuthInfos {
-		if authInfo != nil {
-			if authInfo.AuthProvider == nil || authInfo.AuthProvider.Name != azureAuthProvider {
-				continue
+
+		//  is it legacy aad auth or is it exec using kubelogin?
+		if !isExecUsingkubelogin(authInfo) && !isLegacyAADAuth(authInfo) {
+			continue
+		}
+
+		exec := &api.ExecConfig{
+			Command: execName,
+			Args: []string{
+				getTokenCommand,
+			},
+			APIVersion: execAPIVersion,
+		}
+
+		if !o.TokenOptions.IsLegacy && isExecUsingkubelogin(authInfo) {
+
+			if isAzureCLI { //support azurecli login for now
+				exec.Args = append(exec.Args, argServerID)
+				serveridArg := getServerId(authInfo)
+				if serveridArg == "" {
+					return fmt.Errorf("Err: Invalid serveridArg")
+				}
+				exec.Args = append(exec.Args, serveridArg)
+				exec.Args = append(exec.Args, argLoginMethod)
+				exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
+			} else {
+				// others are not supported yet
+				return fmt.Errorf("%q is not supported yet", o.TokenOptions.LoginMethod)
 			}
-			exec := &api.ExecConfig{
-				Command: execName,
-				Args: []string{
-					getTokenCommand,
-				},
-				APIVersion: execAPIVersion,
-			}
+		} else {
+
 			if !isAlternativeLogin && o.isSet(flagEnvironment) {
 				exec.Args = append(exec.Args, argEnvironment)
 				exec.Args = append(exec.Args, o.TokenOptions.Environment)
@@ -121,9 +179,9 @@ func Convert(o Options) error {
 				exec.Args = append(exec.Args, argLoginMethod)
 				exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
 			}
-			authInfo.Exec = exec
-			authInfo.AuthProvider = nil
 		}
+		authInfo.Exec = exec
+		authInfo.AuthProvider = nil
 	}
 
 	clientcmd.ModifyConfig(clientcmd.NewDefaultPathOptions(), config, true)
