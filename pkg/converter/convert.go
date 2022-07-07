@@ -43,6 +43,30 @@ const (
 	execAPIVersion  = "client.authentication.k8s.io/v1beta1"
 )
 
+func getServerId(authInfoPtr *api.AuthInfo) (serverId string) {
+	if authInfoPtr == nil || authInfoPtr.Exec == nil || authInfoPtr.Exec.Args == nil {
+		return
+	}
+	if len(authInfoPtr.Exec.Args) < 1 {
+		return
+	}
+	for i := range authInfoPtr.Exec.Args {
+		if authInfoPtr.Exec.Args[i] == "--server-id" {
+			if len(authInfoPtr.Exec.Args) > i+1 {
+				return authInfoPtr.Exec.Args[i+1]
+			}
+		}
+	}
+	return
+}
+
+func isUsingKubelogin(execConfigPtr *api.ExecConfig) (ok bool) {
+	if execConfigPtr == nil {
+		return
+	}
+	return execConfigPtr.Command == "kubelogin"
+}
+
 func Convert(o Options) error {
 	config, err := o.configFlags.ToRawKubeConfigLoader().RawConfig()
 	if err != nil {
@@ -54,22 +78,22 @@ func Convert(o Options) error {
 	isAzureCLI := o.TokenOptions.LoginMethod == token.AzureCLILogin
 	isWorkloadIdentity := o.TokenOptions.LoginMethod == token.WorkloadIdentityLogin
 	isAlternativeLogin := isMSI || isAzureCLI || isWorkloadIdentity
-
 	for _, authInfo := range config.AuthInfos {
-		exec := &api.ExecConfig{
-			Command: execName,
-			Args: []string{
-				getTokenCommand,
-			},
-			APIVersion: execAPIVersion,
-		}
 
 		if authInfo != nil {
 
+			exec := &api.ExecConfig{
+				Command: execName,
+				Args: []string{
+					getTokenCommand,
+				},
+				APIVersion: execAPIVersion,
+			}
+
 			if authInfo.AuthProvider == nil || authInfo.AuthProvider.Name != azureAuthProvider {
-				if isAzureCLI && !o.TokenOptions.IsLegacy {
+				if isAzureCLI && !o.TokenOptions.IsLegacy && isUsingKubelogin(authInfo.Exec) {
 					exec.Args = append(exec.Args, argServerID)
-					serveridArg := o.TokenOptions.ServerID
+					serveridArg := getServerId(authInfo)
 					if len(serveridArg) < 1 {
 						serveridArg = "6dae42f8-4368-4678-94ff-3960e28e3630"
 					}
