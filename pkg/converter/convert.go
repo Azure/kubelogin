@@ -2,7 +2,6 @@ package converter
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/Azure/kubelogin/pkg/token"
@@ -105,8 +104,7 @@ func Convert(o Options) error {
 	for _, authInfo := range config.AuthInfos {
 
 		//  is it legacy aad auth or is it exec using kubelogin?
-		if isExecUsingkubelogin(authInfo) || isLegacyAADAuth(authInfo) {
-		} else {
+		if !isExecUsingkubelogin(authInfo) && !isLegacyAADAuth(authInfo) {
 			continue
 		}
 
@@ -123,17 +121,15 @@ func Convert(o Options) error {
 			if isAzureCLI { //support azurecli login for now
 				exec.Args = append(exec.Args, argServerID)
 				serveridArg := getServerId(authInfo)
-				if len(serveridArg) < 1 {
-					fmt.Fprintln(os.Stderr, "err: serverId")
-					os.Exit(1)
+				if serveridArg == "" {
+					return fmt.Errorf("Err: Invalid serveridArg")
 				}
 				exec.Args = append(exec.Args, serveridArg)
 				exec.Args = append(exec.Args, argLoginMethod)
 				exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
 			} else {
 				// others are not supported yet
-				fmt.Fprintln(os.Stderr, "err: not supported yet")
-				os.Exit(1)
+				return fmt.Errorf("%q is not supported yet", o.TokenOptions.LoginMethod)
 			}
 		} else {
 
