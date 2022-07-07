@@ -130,9 +130,6 @@ func Convert(o Options) error {
 				exec.Args = append(exec.Args, serveridArg)
 				exec.Args = append(exec.Args, argLoginMethod)
 				exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
-				authInfo.Exec = exec
-				authInfo.AuthProvider = nil
-				continue
 			} else {
 				// others are not supported yet
 				fmt.Fprintln(os.Stderr, "err: not supported yet")
@@ -194,9 +191,9 @@ func Convert(o Options) error {
 				exec.Args = append(exec.Args, argLoginMethod)
 				exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
 			}
-			authInfo.Exec = exec
-			authInfo.AuthProvider = nil
 		}
+		authInfo.Exec = exec
+		authInfo.AuthProvider = nil
 	}
 
 	clientcmd.ModifyConfig(clientcmd.NewDefaultPathOptions(), config, true)
