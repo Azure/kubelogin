@@ -61,14 +61,6 @@ func getServerId(authInfoPtr *api.AuthInfo) (serverId string) {
 	return
 }
 
-func isUsingKubelogin(execConfigPtr *api.ExecConfig) (ok bool) {
-	if execConfigPtr == nil {
-		return
-	}
-	lowerc := strings.ToLower(execConfigPtr.Command)
-	return strings.Contains(lowerc, "kubelogin")
-}
-
 func isLegacyAADAuth(authInfoPtr *api.AuthInfo) (ok bool) {
 	if authInfoPtr == nil {
 		return
