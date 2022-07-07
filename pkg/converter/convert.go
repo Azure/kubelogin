@@ -108,7 +108,7 @@ func Convert(o Options) error {
 			APIVersion: execAPIVersion,
 		}
 
-		if !o.TokenOptions.IsLegacy && isExecUsingkubelogin(authInfo) {
+		if !o.TokenOptions.IsLegacy {
 
 			if isAzureCLI { //support azurecli login for now
 				exec.Args = append(exec.Args, argServerID)
