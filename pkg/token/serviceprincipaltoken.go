@@ -18,10 +18,6 @@ const (
 	privateKey  = "PRIVATE KEY"
 )
 
-const (
-	defaultEnvironment = "AzurePublicCloud"
-)
-
 type servicePrincipalToken struct {
 	clientID     string
 	clientSecret string
