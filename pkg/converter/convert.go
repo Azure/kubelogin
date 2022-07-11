@@ -110,7 +110,8 @@ func Convert(o Options) error {
 
 		if !o.TokenOptions.IsLegacy && isExecUsingkubelogin(authInfo) {
 
-			if isAzureCLI { //support azurecli login for now
+			switch o.TokenOptions.LoginMethod {
+			case token.AzureCLILogin, token.ServicePrincipalLogin, token.DeviceCodeLogin, token.WorkloadIdentityLogin, token.ROPCLogin, token.MSILogin: //azurecli, spn, devicecode, workloadidentity, ropc, msi
 				exec.Args = append(exec.Args, argServerID)
 				serveridArg := getServerId(authInfo)
 				if serveridArg == "" {
@@ -119,10 +120,10 @@ func Convert(o Options) error {
 				exec.Args = append(exec.Args, serveridArg)
 				exec.Args = append(exec.Args, argLoginMethod)
 				exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
-			} else {
-				// others are not supported yet
+			default:
 				return fmt.Errorf("%q is not supported yet", o.TokenOptions.LoginMethod)
 			}
+
 		} else {
 
 			if !isAlternativeLogin && o.isSet(flagEnvironment) {
@@ -183,8 +184,6 @@ func Convert(o Options) error {
 		authInfo.Exec = exec
 		authInfo.AuthProvider = nil
 	}
-
-	clientcmd.ModifyConfig(clientcmd.NewDefaultPathOptions(), config, true)
-
-	return nil
+	err = clientcmd.ModifyConfig(clientcmd.NewDefaultPathOptions(), config, true)
+	return err
 }
