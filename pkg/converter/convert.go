@@ -111,7 +111,7 @@ func Convert(o Options) error {
 		if isExecUsingkubelogin(authInfo) {
 
 			switch o.TokenOptions.LoginMethod {
-			case token.AzureCLILogin, token.ServicePrincipalLogin, token.DeviceCodeLogin, token.WorkloadIdentityLogin, token.ROPCLogin, token.MSILogin: //azurecli, spn, devicecode, workloadidentity, ropc, msi
+			case token.AzureCLILogin:
 				exec.Args = append(exec.Args, argServerID)
 				serveridArg := getServerId(authInfo)
 				if serveridArg == "" {
@@ -120,6 +120,62 @@ func Convert(o Options) error {
 				exec.Args = append(exec.Args, serveridArg)
 				exec.Args = append(exec.Args, argLoginMethod)
 				exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
+
+			case token.ServicePrincipalLogin, token.ROPCLogin, token.DeviceCodeLogin, token.MSILogin, token.WorkloadIdentityLogin:
+				if !isAlternativeLogin && o.isSet(flagEnvironment) {
+					exec.Args = append(exec.Args, argEnvironment)
+					exec.Args = append(exec.Args, o.TokenOptions.Environment)
+				} else if !isAlternativeLogin && authInfo.AuthProvider.Config[cfgEnvironment] != "" {
+					exec.Args = append(exec.Args, argEnvironment)
+					exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgEnvironment])
+				}
+				if o.isSet(flagServerID) {
+					exec.Args = append(exec.Args, argServerID)
+					exec.Args = append(exec.Args, o.TokenOptions.ServerID)
+				} else if authInfo.AuthProvider.Config[cfgApiserverID] != "" {
+					exec.Args = append(exec.Args, argServerID)
+					exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgApiserverID])
+				}
+				if o.isSet(flagClientID) {
+					exec.Args = append(exec.Args, argClientID)
+					exec.Args = append(exec.Args, o.TokenOptions.ClientID)
+				} else if !isAlternativeLogin && authInfo.AuthProvider.Config[cfgClientID] != "" {
+					// when MSI is enabled, the clientID in azure authInfo will be disregarded
+					exec.Args = append(exec.Args, argClientID)
+					exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgClientID])
+				}
+				if !isAlternativeLogin && o.isSet(flagTenantID) {
+					exec.Args = append(exec.Args, argTenantID)
+					exec.Args = append(exec.Args, o.TokenOptions.TenantID)
+				} else if !isAlternativeLogin && authInfo.AuthProvider.Config[cfgTenantID] != "" {
+					exec.Args = append(exec.Args, argTenantID)
+					exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgTenantID])
+				}
+				if !isAlternativeLogin && o.isSet(flagIsLegacy) && o.TokenOptions.IsLegacy {
+					exec.Args = append(exec.Args, argIsLegacy)
+				} else if !isAlternativeLogin && (authInfo.AuthProvider.Config[cfgConfigMode] == "" || authInfo.AuthProvider.Config[cfgConfigMode] == "0") {
+					exec.Args = append(exec.Args, argIsLegacy)
+				}
+				if !isAlternativeLogin && o.isSet(flagClientSecret) {
+					exec.Args = append(exec.Args, argClientSecret)
+					exec.Args = append(exec.Args, o.TokenOptions.ClientSecret)
+				}
+				if !isAlternativeLogin && o.isSet(flagClientCert) {
+					exec.Args = append(exec.Args, argClientCert)
+					exec.Args = append(exec.Args, o.TokenOptions.ClientCert)
+				}
+				if !isAlternativeLogin && o.isSet(flagUsername) {
+					exec.Args = append(exec.Args, argUsername)
+					exec.Args = append(exec.Args, o.TokenOptions.Username)
+				}
+				if !isAlternativeLogin && o.isSet(flagPassword) {
+					exec.Args = append(exec.Args, argPassword)
+					exec.Args = append(exec.Args, o.TokenOptions.Password)
+				}
+				if o.isSet(flagLoginMethod) {
+					exec.Args = append(exec.Args, argLoginMethod)
+					exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
+				}
 			default:
 				return fmt.Errorf("%q is not supported yet", o.TokenOptions.LoginMethod)
 			}
