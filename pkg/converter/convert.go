@@ -27,6 +27,8 @@ const (
 	argUsername     = "--username"
 	argPassword     = "--password"
 	argLoginMethod  = "--login"
+	argConfigMode   = "--" + cfgConfigMode
+	argApiserverID  = "--" + cfgApiserverID
 
 	flagClientID     = "client-id"
 	flagServerID     = "server-id"
@@ -43,23 +45,6 @@ const (
 	getTokenCommand = "get-token"
 	execAPIVersion  = "client.authentication.k8s.io/v1beta1"
 )
-
-func getServerId(authInfoPtr *api.AuthInfo) (serverId string) {
-	if authInfoPtr == nil || authInfoPtr.Exec == nil || authInfoPtr.Exec.Args == nil {
-		return
-	}
-	if len(authInfoPtr.Exec.Args) < 1 {
-		return
-	}
-	for i := range authInfoPtr.Exec.Args {
-		if authInfoPtr.Exec.Args[i] == argServerID {
-			if len(authInfoPtr.Exec.Args) > i+1 {
-				return authInfoPtr.Exec.Args[i+1]
-			}
-		}
-	}
-	return
-}
 
 func isLegacyAADAuth(authInfoPtr *api.AuthInfo) (ok bool) {
 	if authInfoPtr == nil {
@@ -113,7 +98,7 @@ func Convert(o Options) error {
 			switch o.TokenOptions.LoginMethod {
 			case token.AzureCLILogin:
 				exec.Args = append(exec.Args, argServerID)
-				serveridArg := getServerId(authInfo)
+				serveridArg := getExecArg(authInfo, argServerID)
 				if serveridArg == "" {
 					return fmt.Errorf("Err: Invalid serveridArg")
 				}
@@ -125,21 +110,21 @@ func Convert(o Options) error {
 				if !isAlternativeLogin && o.isSet(flagEnvironment) {
 					exec.Args = append(exec.Args, argEnvironment)
 					exec.Args = append(exec.Args, o.TokenOptions.Environment)
-				} else if !isAlternativeLogin && authInfo.AuthProvider.Config[cfgEnvironment] != "" {
+				} else if !isAlternativeLogin && getExecArg(authInfo, argEnvironment) != "" {
 					exec.Args = append(exec.Args, argEnvironment)
 					exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgEnvironment])
 				}
 				if o.isSet(flagServerID) {
 					exec.Args = append(exec.Args, argServerID)
 					exec.Args = append(exec.Args, o.TokenOptions.ServerID)
-				} else if authInfo.AuthProvider.Config[cfgApiserverID] != "" {
+				} else if getExecArg(authInfo, argApiserverID) != "" {
 					exec.Args = append(exec.Args, argServerID)
 					exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgApiserverID])
 				}
 				if o.isSet(flagClientID) {
 					exec.Args = append(exec.Args, argClientID)
 					exec.Args = append(exec.Args, o.TokenOptions.ClientID)
-				} else if !isAlternativeLogin && authInfo.AuthProvider.Config[cfgClientID] != "" {
+				} else if !isAlternativeLogin && getExecArg(authInfo, argClientID) != "" {
 					// when MSI is enabled, the clientID in azure authInfo will be disregarded
 					exec.Args = append(exec.Args, argClientID)
 					exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgClientID])
@@ -153,7 +138,7 @@ func Convert(o Options) error {
 				}
 				if !isAlternativeLogin && o.isSet(flagIsLegacy) && o.TokenOptions.IsLegacy {
 					exec.Args = append(exec.Args, argIsLegacy)
-				} else if !isAlternativeLogin && (authInfo.AuthProvider.Config[cfgConfigMode] == "" || authInfo.AuthProvider.Config[cfgConfigMode] == "0") {
+				} else if !isAlternativeLogin && (getExecArg(authInfo, argConfigMode) == "" || getExecArg(authInfo, argConfigMode) == "0") {
 					exec.Args = append(exec.Args, argIsLegacy)
 				}
 				if !isAlternativeLogin && o.isSet(flagClientSecret) {
@@ -242,4 +227,25 @@ func Convert(o Options) error {
 	}
 	err = clientcmd.ModifyConfig(clientcmd.NewDefaultPathOptions(), config, true)
 	return err
+}
+
+// get the item in Exec.Args[] right after someArg
+func getExecArg(authInfoPtr *api.AuthInfo, someArg string) (resultStr string) {
+	if someArg == "" {
+		return
+	}
+	if authInfoPtr == nil || authInfoPtr.Exec == nil || authInfoPtr.Exec.Args == nil {
+		return
+	}
+	if len(authInfoPtr.Exec.Args) < 1 {
+		return
+	}
+	for i := range authInfoPtr.Exec.Args {
+		if authInfoPtr.Exec.Args[i] == someArg {
+			if len(authInfoPtr.Exec.Args) > i+1 {
+				return authInfoPtr.Exec.Args[i+1]
+			}
+		}
+	}
+	return
 }
