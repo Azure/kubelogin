@@ -27,8 +27,6 @@ const (
 	argUsername     = "--username"
 	argPassword     = "--password"
 	argLoginMethod  = "--login"
-	argConfigMode   = "--" + cfgConfigMode
-	argApiserverID  = "--" + cfgApiserverID
 
 	flagClientID     = "client-id"
 	flagServerID     = "server-id"
@@ -95,20 +93,40 @@ func Convert(o Options) error {
 
 		if isExecUsingkubelogin(authInfo) {
 
-			// exec format, we don't have authProvider.
-			// All goodies must be extracted from authInfo.Exec.Args using getExecArg()
-			argEnvironmentVal := getExecArg(authInfo, argEnvironment)
-			argApiserverIDVal := getExecArg(authInfo, argApiserverID)
-			argTenantIDVal := getExecArg(authInfo, argTenantID)
-			argConfigModeVal := getExecArg(authInfo, argConfigMode)
-			argClientIDVal := getExecArg(authInfo, argClientID)
-			argServerIDVal := getExecArg(authInfo, argServerID)
+			argEnvironmentVal := ""
+			if o.isSet(flagEnvironment) {
+				argEnvironmentVal = o.TokenOptions.Environment
+			} else {
+				argEnvironmentVal = getExecArg(authInfo, argEnvironment)
+			}
+
+			argTenantIDVal := ""
+			if o.isSet(flagTenantID) {
+				argTenantIDVal = o.TokenOptions.TenantID
+			} else {
+				argTenantIDVal = getExecArg(authInfo, argTenantID)
+			}
+
+			argClientIDVal := ""
+			if o.isSet(flagClientID) {
+				argClientIDVal = o.TokenOptions.ClientID
+			} else {
+				argClientIDVal = getExecArg(authInfo, argClientID)
+			}
+
+			argServerIDVal := ""
+			if o.isSet(flagServerID) {
+				argServerIDVal = o.TokenOptions.ServerID
+			} else {
+				argServerIDVal = getExecArg(authInfo, argServerID)
+			}
 
 			switch o.TokenOptions.LoginMethod {
 			case token.AzureCLILogin:
 				if argServerIDVal == "" {
-					return fmt.Errorf("Err: Invalid serveridArg")
+					return fmt.Errorf("Err: Invalid arg %v", argServerID)
 				}
+
 				exec.Args = append(exec.Args, argServerID)
 				exec.Args = append(exec.Args, argServerIDVal)
 				exec.Args = append(exec.Args, argLoginMethod)
@@ -126,10 +144,8 @@ func Convert(o Options) error {
 				if o.isSet(flagServerID) {
 					exec.Args = append(exec.Args, argServerID)
 					exec.Args = append(exec.Args, o.TokenOptions.ServerID)
-				} else if argApiserverIDVal != "" {
-					exec.Args = append(exec.Args, argServerID)
-					exec.Args = append(exec.Args, argApiserverIDVal)
 				}
+
 				if o.isSet(flagClientID) {
 					exec.Args = append(exec.Args, argClientID)
 					exec.Args = append(exec.Args, o.TokenOptions.ClientID)
@@ -147,9 +163,8 @@ func Convert(o Options) error {
 				}
 				if !isAlternativeLogin && o.isSet(flagIsLegacy) && o.TokenOptions.IsLegacy {
 					exec.Args = append(exec.Args, argIsLegacy)
-				} else if !isAlternativeLogin && (argConfigModeVal == "" || argConfigModeVal == "0") {
-					exec.Args = append(exec.Args, argIsLegacy)
 				}
+
 				if !isAlternativeLogin && o.isSet(flagClientSecret) {
 					exec.Args = append(exec.Args, argClientSecret)
 					exec.Args = append(exec.Args, o.TokenOptions.ClientSecret)
