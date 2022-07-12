@@ -108,7 +108,7 @@ func Convert(o Options) error {
 			APIVersion: execAPIVersion,
 		}
 
-		if !o.TokenOptions.IsLegacy && isExecUsingkubelogin(authInfo) {
+		if isExecUsingkubelogin(authInfo) {
 
 			switch o.TokenOptions.LoginMethod {
 			case token.AzureCLILogin, token.ServicePrincipalLogin, token.DeviceCodeLogin, token.WorkloadIdentityLogin, token.ROPCLogin, token.MSILogin: //azurecli, spn, devicecode, workloadidentity, ropc, msi
