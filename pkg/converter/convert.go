@@ -95,50 +95,59 @@ func Convert(o Options) error {
 
 		if isExecUsingkubelogin(authInfo) {
 
+			// exec format, we don't have authProvider.
+			// All goodies must be extracted from authInfo.Exec.Args using getExecArg()
+			argEnvironmentVal := getExecArg(authInfo, argEnvironment)
+			argApiserverIDVal := getExecArg(authInfo, argApiserverID)
+			argTenantIDVal := getExecArg(authInfo, argTenantID)
+			argConfigModeVal := getExecArg(authInfo, argConfigMode)
+			argClientIDVal := getExecArg(authInfo, argClientID)
+			argServerIDVal := getExecArg(authInfo, argServerID)
+
 			switch o.TokenOptions.LoginMethod {
 			case token.AzureCLILogin:
-				exec.Args = append(exec.Args, argServerID)
-				serveridArg := getExecArg(authInfo, argServerID)
-				if serveridArg == "" {
+				if argServerIDVal == "" {
 					return fmt.Errorf("Err: Invalid serveridArg")
 				}
-				exec.Args = append(exec.Args, serveridArg)
+				exec.Args = append(exec.Args, argServerID)
+				exec.Args = append(exec.Args, argServerIDVal)
 				exec.Args = append(exec.Args, argLoginMethod)
 				exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
 
 			case token.ServicePrincipalLogin, token.ROPCLogin, token.DeviceCodeLogin, token.MSILogin, token.WorkloadIdentityLogin:
+
 				if !isAlternativeLogin && o.isSet(flagEnvironment) {
 					exec.Args = append(exec.Args, argEnvironment)
 					exec.Args = append(exec.Args, o.TokenOptions.Environment)
-				} else if !isAlternativeLogin && getExecArg(authInfo, argEnvironment) != "" {
+				} else if !isAlternativeLogin && argEnvironmentVal != "" {
 					exec.Args = append(exec.Args, argEnvironment)
-					exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgEnvironment])
+					exec.Args = append(exec.Args, argEnvironmentVal)
 				}
 				if o.isSet(flagServerID) {
 					exec.Args = append(exec.Args, argServerID)
 					exec.Args = append(exec.Args, o.TokenOptions.ServerID)
-				} else if getExecArg(authInfo, argApiserverID) != "" {
+				} else if argApiserverIDVal != "" {
 					exec.Args = append(exec.Args, argServerID)
-					exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgApiserverID])
+					exec.Args = append(exec.Args, argApiserverIDVal)
 				}
 				if o.isSet(flagClientID) {
 					exec.Args = append(exec.Args, argClientID)
 					exec.Args = append(exec.Args, o.TokenOptions.ClientID)
-				} else if !isAlternativeLogin && getExecArg(authInfo, argClientID) != "" {
+				} else if !isAlternativeLogin && argClientIDVal != "" {
 					// when MSI is enabled, the clientID in azure authInfo will be disregarded
 					exec.Args = append(exec.Args, argClientID)
-					exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgClientID])
+					exec.Args = append(exec.Args, argClientIDVal)
 				}
 				if !isAlternativeLogin && o.isSet(flagTenantID) {
 					exec.Args = append(exec.Args, argTenantID)
 					exec.Args = append(exec.Args, o.TokenOptions.TenantID)
-				} else if !isAlternativeLogin && authInfo.AuthProvider.Config[cfgTenantID] != "" {
+				} else if !isAlternativeLogin && argTenantIDVal != "" {
 					exec.Args = append(exec.Args, argTenantID)
-					exec.Args = append(exec.Args, authInfo.AuthProvider.Config[cfgTenantID])
+					exec.Args = append(exec.Args, argTenantIDVal)
 				}
 				if !isAlternativeLogin && o.isSet(flagIsLegacy) && o.TokenOptions.IsLegacy {
 					exec.Args = append(exec.Args, argIsLegacy)
-				} else if !isAlternativeLogin && (getExecArg(authInfo, argConfigMode) == "" || getExecArg(authInfo, argConfigMode) == "0") {
+				} else if !isAlternativeLogin && (argConfigModeVal == "" || argConfigModeVal == "0") {
 					exec.Args = append(exec.Args, argIsLegacy)
 				}
 				if !isAlternativeLogin && o.isSet(flagClientSecret) {
