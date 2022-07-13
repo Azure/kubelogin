@@ -115,7 +115,9 @@ func getGoody(o Options, authInfo *api.AuthInfo) (goodyPtr *goody) {
 		goodyPtr.argServerIDVal = getExecArg(authInfo, argServerID)
 	}
 
-	if authProviderBool { // special case, available only in authInfo.AuthProvider.Config
+	// cfgConfigMode available only in authInfo.AuthProvider.Config,
+	// although the same precedence would work here as well.
+	if authProviderBool {
 		x, ok := authInfo.AuthProvider.Config[cfgConfigMode]
 		if ok {
 			goodyPtr.cfgConfigModeVal = x
@@ -176,10 +178,22 @@ func Convert(o Options) error {
 			if goody.argServerIDVal == "" {
 				return fmt.Errorf("Err: Invalid arg %v", argServerID)
 			}
-			exec.Args = append(exec.Args, argServerID)
-			exec.Args = append(exec.Args, goody.argServerIDVal)
-			exec.Args = append(exec.Args, argLoginMethod)
-			exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
+			switch o.TokenOptions.LoginMethod {
+			case token.AzureCLILogin:
+				exec.Args = append(exec.Args, argServerID)
+				exec.Args = append(exec.Args, goody.argServerIDVal)
+				exec.Args = append(exec.Args, argLoginMethod)
+				exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
+			case token.DeviceCodeLogin:
+				exec.Args = append(exec.Args, argServerID)
+				exec.Args = append(exec.Args, goody.argServerIDVal)
+				exec.Args = append(exec.Args, argClientID)
+				exec.Args = append(exec.Args, goody.argClientIDVal)
+				exec.Args = append(exec.Args, argTenantID)
+				exec.Args = append(exec.Args, goody.argTenantIDVal)
+				exec.Args = append(exec.Args, argLoginMethod)
+				exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
+			}
 		} else {
 			if !isAlternativeLogin && o.isSet(flagEnvironment) {
 				exec.Args = append(exec.Args, argEnvironment)
