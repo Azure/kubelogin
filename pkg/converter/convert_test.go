@@ -28,6 +28,8 @@ func TestConvert(t *testing.T) {
 		authProviderConfig map[string]string
 		overrideFlags      map[string]string
 		expectedArgs       []string
+		execArgItems       []string
+		command            string
 	}{
 		{
 			name: "non azure kubeconfig",
@@ -210,6 +212,15 @@ func TestConvert(t *testing.T) {
 				tenantID,
 			},
 		},
+		{
+			name:         "isExecUsingkubelogin",
+			execArgItems: []string{getTokenCommand, argEnvironment, envName, argServerID, serverID, argClientID, clientID, argTenantID, tenantID, argLoginMethod},
+			expectedArgs: []string{getTokenCommand, argServerID, serverID, argLoginMethod, token.AzureCLILogin},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.AzureCLILogin,
+			},
+			command: execName,
+		},
 	}
 
 	for _, data := range testData {
@@ -218,7 +229,14 @@ func TestConvert(t *testing.T) {
 			if data.expectedArgs != nil {
 				authProviderName = azureAuthProvider
 			}
-			config := createValidTestConfig(clusterName, authProviderName, data.authProviderConfig)
+			var config *clientcmdapi.Config
+
+			if data.authProviderConfig == nil && len(data.execArgItems) > 0 {
+				config = createValidTestConfigV1(clusterName, data.command, authProviderName, data.authProviderConfig, data.execArgItems)
+			} else {
+				config = createValidTestConfigV0(clusterName, authProviderName, data.authProviderConfig)
+			}
+
 			fs := &pflag.FlagSet{}
 			o := Options{
 				Flags: fs,
@@ -240,7 +258,40 @@ func TestConvert(t *testing.T) {
 	}
 }
 
-func createValidTestConfig(name, authProviderName string, authProviderConfig map[string]string) *clientcmdapi.Config {
+func createValidTestConfigV1(name, commandName, authProviderName string, authProviderConfig map[string]string, execArgItems []string) *clientcmdapi.Config {
+	const server = "https://anything.com:8080"
+
+	config := clientcmdapi.NewConfig()
+	config.Clusters[name] = &clientcmdapi.Cluster{
+		Server: server,
+	}
+
+	if authProviderConfig != nil || len(authProviderConfig) > 0 {
+		config.AuthInfos[name] = &clientcmdapi.AuthInfo{
+			AuthProvider: &clientcmdapi.AuthProviderConfig{
+				Name:   authProviderName,
+				Config: authProviderConfig,
+			},
+		}
+	} else {
+		config.AuthInfos[name] = &clientcmdapi.AuthInfo{
+			Exec: &clientcmdapi.ExecConfig{
+				Args:    execArgItems,
+				Command: commandName,
+			},
+		}
+	}
+
+	config.Contexts[name] = &clientcmdapi.Context{
+		Cluster:  name,
+		AuthInfo: name,
+	}
+	config.CurrentContext = name
+
+	return config
+}
+
+func createValidTestConfigV0(name, authProviderName string, authProviderConfig map[string]string) *clientcmdapi.Config {
 	const server = "https://anything.com:8080"
 
 	config := clientcmdapi.NewConfig()
