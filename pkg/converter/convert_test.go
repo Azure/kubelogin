@@ -231,11 +231,7 @@ func TestConvert(t *testing.T) {
 			}
 			var config *clientcmdapi.Config
 
-			if data.authProviderConfig == nil && len(data.execArgItems) > 0 {
-				config = createValidTestConfigV1(clusterName, data.command, authProviderName, data.authProviderConfig, data.execArgItems)
-			} else {
-				config = createValidTestConfigV0(clusterName, authProviderName, data.authProviderConfig)
-			}
+			config = createValidTestConfig(clusterName, data.command, authProviderName, data.authProviderConfig, data.execArgItems)
 
 			fs := &pflag.FlagSet{}
 			o := Options{
@@ -258,7 +254,7 @@ func TestConvert(t *testing.T) {
 	}
 }
 
-func createValidTestConfigV1(name, commandName, authProviderName string, authProviderConfig map[string]string, execArgItems []string) *clientcmdapi.Config {
+func createValidTestConfig(name, commandName, authProviderName string, authProviderConfig map[string]string, execArgItems []string) *clientcmdapi.Config {
 	const server = "https://anything.com:8080"
 
 	config := clientcmdapi.NewConfig()
@@ -266,44 +262,22 @@ func createValidTestConfigV1(name, commandName, authProviderName string, authPro
 		Server: server,
 	}
 
-	if authProviderConfig != nil || len(authProviderConfig) > 0 {
-		config.AuthInfos[name] = &clientcmdapi.AuthInfo{
-			AuthProvider: &clientcmdapi.AuthProviderConfig{
-				Name:   authProviderName,
-				Config: authProviderConfig,
-			},
-		}
-	} else {
+	if authProviderConfig == nil && execArgItems != nil {
 		config.AuthInfos[name] = &clientcmdapi.AuthInfo{
 			Exec: &clientcmdapi.ExecConfig{
 				Args:    execArgItems,
 				Command: commandName,
 			},
 		}
+	} else {
+		config.AuthInfos[name] = &clientcmdapi.AuthInfo{
+			AuthProvider: &clientcmdapi.AuthProviderConfig{
+				Name:   authProviderName,
+				Config: authProviderConfig,
+			},
+		}
 	}
 
-	config.Contexts[name] = &clientcmdapi.Context{
-		Cluster:  name,
-		AuthInfo: name,
-	}
-	config.CurrentContext = name
-
-	return config
-}
-
-func createValidTestConfigV0(name, authProviderName string, authProviderConfig map[string]string) *clientcmdapi.Config {
-	const server = "https://anything.com:8080"
-
-	config := clientcmdapi.NewConfig()
-	config.Clusters[name] = &clientcmdapi.Cluster{
-		Server: server,
-	}
-	config.AuthInfos[name] = &clientcmdapi.AuthInfo{
-		AuthProvider: &clientcmdapi.AuthProviderConfig{
-			Name:   authProviderName,
-			Config: authProviderConfig,
-		},
-	}
 	config.Contexts[name] = &clientcmdapi.Context{
 		Cluster:  name,
 		AuthInfo: name,
