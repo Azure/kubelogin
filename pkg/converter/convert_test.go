@@ -53,7 +53,7 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "convert token with msi login and override",
+			name: "convert token with msi login and override ",
 			authProviderConfig: map[string]string{
 				cfgEnvironment: envName,
 				cfgApiserverID: serverID,
@@ -192,7 +192,7 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "convert token",
+			name: "convert token legacy azure auth",
 			authProviderConfig: map[string]string{
 				cfgEnvironment: envName,
 				cfgApiserverID: serverID,
@@ -213,11 +213,24 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name:         "isExecUsingkubelogin",
-			execArgItems: []string{getTokenCommand, argEnvironment, envName, argServerID, serverID, argClientID, clientID, argTenantID, tenantID, argLoginMethod},
+			name:         "exec format kubeconfig azurecli - AKS 1.24.0 default return",
+			execArgItems: []string{getTokenCommand, argEnvironment, envName, argServerID, serverID, argClientID, clientID, argTenantID, tenantID, argLoginMethod, token.DeviceCodeLogin},
 			expectedArgs: []string{getTokenCommand, argServerID, serverID, argLoginMethod, token.AzureCLILogin},
 			overrideFlags: map[string]string{
 				flagLoginMethod: token.AzureCLILogin,
+			},
+			command: execName,
+		},
+		{
+			name:         "exec format kubeconfig azucli with overrides",
+			execArgItems: []string{getTokenCommand},
+			expectedArgs: []string{getTokenCommand, argServerID, serverID, argLoginMethod, token.AzureCLILogin},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.AzureCLILogin,
+				flagServerID:    serverID,
+				flagClientID:    clientID,
+				flagTenantID:    tenantID,
+				flagEnvironment: envName,
 			},
 			command: execName,
 		},
@@ -229,10 +242,7 @@ func TestConvert(t *testing.T) {
 			if data.expectedArgs != nil {
 				authProviderName = azureAuthProvider
 			}
-			var config *clientcmdapi.Config
-
-			config = createValidTestConfig(clusterName, data.command, authProviderName, data.authProviderConfig, data.execArgItems)
-
+			config := createValidTestConfig(clusterName, data.command, authProviderName, data.authProviderConfig, data.execArgItems)
 			fs := &pflag.FlagSet{}
 			o := Options{
 				Flags: fs,
