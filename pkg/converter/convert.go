@@ -145,7 +145,6 @@ func Convert(o Options) error {
 					exec.Args = append(exec.Args, argServerID)
 					exec.Args = append(exec.Args, o.TokenOptions.ServerID)
 				}
-
 				if o.isSet(flagClientID) {
 					exec.Args = append(exec.Args, argClientID)
 					exec.Args = append(exec.Args, o.TokenOptions.ClientID)
