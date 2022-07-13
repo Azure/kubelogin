@@ -213,8 +213,8 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name:         "exec format kubeconfig azurecli - AKS 1.24.0 default return",
-			execArgItems: []string{getTokenCommand, argEnvironment, envName, argServerID, serverID, argClientID, clientID, argTenantID, tenantID, argLoginMethod, token.DeviceCodeLogin},
+			name:         "exec format kubeconfig azurecli",
+			execArgItems: []string{getTokenCommand, argEnvironment, envName, argServerID, serverID, argClientID, clientID, argTenantID, tenantID, argLoginMethod, "azurecli"},
 			expectedArgs: []string{getTokenCommand, argServerID, serverID, argLoginMethod, token.AzureCLILogin},
 			overrideFlags: map[string]string{
 				flagLoginMethod: token.AzureCLILogin,
@@ -222,15 +222,18 @@ func TestConvert(t *testing.T) {
 			command: execName,
 		},
 		{
-			name:         "exec format kubeconfig azucli with overrides",
-			execArgItems: []string{getTokenCommand},
-			expectedArgs: []string{getTokenCommand, argServerID, serverID, argLoginMethod, token.AzureCLILogin},
+			name:          "exec format kubeconfig azurecli with args as overrides",
+			execArgItems:  []string{getTokenCommand},
+			expectedArgs:  []string{getTokenCommand, argServerID, serverID, argLoginMethod, token.AzureCLILogin},
+			overrideFlags: map[string]string{flagLoginMethod: token.AzureCLILogin, flagServerID: serverID, flagClientID: clientID, flagTenantID: tenantID, flagEnvironment: envName},
+			command:       execName,
+		},
+		{
+			name:         "exec format kubeconfig DeviceCodeLogin",
+			execArgItems: []string{getTokenCommand, argEnvironment, envName, argServerID, serverID, argClientID, clientID, argTenantID, tenantID, argLoginMethod, "azurecli"},
+			expectedArgs: []string{getTokenCommand, argServerID, serverID, argClientID, clientID, argTenantID, tenantID, argLoginMethod, token.DeviceCodeLogin},
 			overrideFlags: map[string]string{
-				flagLoginMethod: token.AzureCLILogin,
-				flagServerID:    serverID,
-				flagClientID:    clientID,
-				flagTenantID:    tenantID,
-				flagEnvironment: envName,
+				flagLoginMethod: token.DeviceCodeLogin,
 			},
 			command: execName,
 		},
