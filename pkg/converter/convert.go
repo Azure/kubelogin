@@ -64,7 +64,6 @@ func getArgValues(o Options, authInfo *api.AuthInfo) (argServerIDVal, argClientI
 	} else {
 		argEnvironmentVal = getExecArg(authInfo, argEnvironment)
 	}
-
 	if o.isSet(flagTenantID) {
 		argTenantIDVal = o.TokenOptions.TenantID
 	} else if authProviderBool {
@@ -75,7 +74,6 @@ func getArgValues(o Options, authInfo *api.AuthInfo) (argServerIDVal, argClientI
 	} else {
 		argTenantIDVal = getExecArg(authInfo, argTenantID)
 	}
-
 	if o.isSet(flagClientID) {
 		argClientIDVal = o.TokenOptions.ClientID
 	} else if authProviderBool {
@@ -86,7 +84,6 @@ func getArgValues(o Options, authInfo *api.AuthInfo) (argServerIDVal, argClientI
 	} else {
 		argClientIDVal = getExecArg(authInfo, argClientID)
 	}
-
 	if o.isSet(flagServerID) {
 		argServerIDVal = o.TokenOptions.ServerID
 	} else if authProviderBool {
@@ -98,7 +95,6 @@ func getArgValues(o Options, authInfo *api.AuthInfo) (argServerIDVal, argClientI
 	} else {
 		argServerIDVal = getExecArg(authInfo, argServerID)
 	}
-
 	// cfgConfigMode available only in authInfo.AuthProvider.Config,
 	// although the same precedence would work here as well.
 	if authProviderBool {
@@ -177,19 +173,8 @@ func Convert(o Options) error {
 				exec.Args = append(exec.Args, argTenantIDVal)
 				exec.Args = append(exec.Args, argLoginMethod)
 				exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
-			case token.ServicePrincipalLogin:
-				fmt.Println("SPN SPN")
-				exec.Args = append(exec.Args, argEnvironment)
-				exec.Args = append(exec.Args, argEnvironmentVal)
-				exec.Args = append(exec.Args, argServerID)
-				exec.Args = append(exec.Args, argServerIDVal)
-				exec.Args = append(exec.Args, argClientID)
-				exec.Args = append(exec.Args, argClientIDVal)
-				exec.Args = append(exec.Args, argTenantID)
-				exec.Args = append(exec.Args, argTenantIDVal)
-				exec.Args = append(exec.Args, argLoginMethod)
-				exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
-
+			default:
+				return fmt.Errorf("%q is not supported yet", o.TokenOptions.LoginMethod)
 			}
 		} else {
 			if !isAlternativeLogin && o.isSet(flagEnvironment) {
