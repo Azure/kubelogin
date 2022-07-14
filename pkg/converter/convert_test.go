@@ -35,7 +35,7 @@ func TestConvert(t *testing.T) {
 			name: "non azure kubeconfig",
 		},
 		{
-			name: "when convert token with msi login, client id should be empty",
+			name: "using legacy azure auth, when convert token with msi login, client id should be empty",
 			authProviderConfig: map[string]string{
 				cfgEnvironment: envName,
 				cfgApiserverID: serverID,
@@ -53,7 +53,7 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "convert token with msi login and override ",
+			name: "using legacy azure auth, convert token with msi login and override",
 			authProviderConfig: map[string]string{
 				cfgEnvironment: envName,
 				cfgApiserverID: serverID,
@@ -73,7 +73,7 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "convert token with workload identity",
+			name: "using legacy azure auth, convert token with workload identity",
 			authProviderConfig: map[string]string{
 				cfgEnvironment: envName,
 				cfgApiserverID: serverID,
@@ -91,7 +91,7 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "convert token with override flags in default legacy mode",
+			name: "using legacy azure auth, convert token with override flags in default legacy mode",
 			overrideFlags: map[string]string{
 				flagEnvironment:  envName,
 				flagServerID:     serverID,
@@ -118,7 +118,7 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "convert token with override flags overriding legacy mode",
+			name: "using legacy azure auth, convert token with override flags overriding legacy mode",
 			authProviderConfig: map[string]string{
 				cfgConfigMode: "1",
 			},
@@ -149,7 +149,7 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "convert token in legacy mode",
+			name: "using legacy azure auth, convert token in legacy mode",
 			authProviderConfig: map[string]string{
 				cfgEnvironment: envName,
 				cfgApiserverID: serverID,
@@ -170,7 +170,7 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "convert token in legacy mode 0",
+			name: "using legacy azure auth, convert token in legacy mode 0",
 			authProviderConfig: map[string]string{
 				cfgEnvironment: envName,
 				cfgApiserverID: serverID,
@@ -192,7 +192,7 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "convert token legacy azure auth",
+			name: "using legacy azure auth, convert token legacy azure auth",
 			authProviderConfig: map[string]string{
 				cfgEnvironment: envName,
 				cfgApiserverID: serverID,
@@ -213,7 +213,7 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name:         "exec format kubeconfig azurecli",
+			name:         "exec format kubeconfig, convert from azurecli to azurecli",
 			execArgItems: []string{getTokenCommand, argEnvironment, envName, argServerID, serverID, argClientID, clientID, argTenantID, tenantID, argLoginMethod, "azurecli"},
 			expectedArgs: []string{getTokenCommand, argServerID, serverID, argLoginMethod, token.AzureCLILogin},
 			overrideFlags: map[string]string{
@@ -222,14 +222,14 @@ func TestConvert(t *testing.T) {
 			command: execName,
 		},
 		{
-			name:          "exec format kubeconfig azurecli with args as overrides",
+			name:          "exec format kubeconfig, convert from azurecli to azurecli, with args as overrides",
 			execArgItems:  []string{getTokenCommand},
 			expectedArgs:  []string{getTokenCommand, argServerID, serverID, argLoginMethod, token.AzureCLILogin},
 			overrideFlags: map[string]string{flagLoginMethod: token.AzureCLILogin, flagServerID: serverID, flagClientID: clientID, flagTenantID: tenantID, flagEnvironment: envName},
 			command:       execName,
 		},
 		{
-			name:         "exec format kubeconfig DeviceCodeLogin",
+			name:         "exec format kubeconfig, convert from azurecli to DeviceCodeLogin",
 			execArgItems: []string{getTokenCommand, argEnvironment, envName, argServerID, serverID, argClientID, clientID, argTenantID, tenantID, argLoginMethod, "azurecli"},
 			expectedArgs: []string{getTokenCommand, argServerID, serverID, argClientID, clientID, argTenantID, tenantID, argLoginMethod, token.DeviceCodeLogin},
 			overrideFlags: map[string]string{
