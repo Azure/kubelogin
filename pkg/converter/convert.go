@@ -44,75 +44,59 @@ const (
 	execAPIVersion  = "client.authentication.k8s.io/v1beta1"
 )
 
-type goody struct {
-	// 1. cfgApiserverID - argServerIDVal
-	// 2. cfgClientID - argClientIDVal
-	// 3. cfgEnvironment - argEnvironmentVal
-	// 4. cfgTenantID - argTenantIDVal
-	// 5. cfgConfigMode - cfgConfigModeVal
-
-	// exec formatted kubeconfig doesn't use --config-mode (1) nor apiserver-id (5)
-
-	argEnvironmentVal, argClientIDVal, argServerIDVal, argTenantIDVal, cfgConfigModeVal string
-}
-
-func getGoody(o Options, authInfo *api.AuthInfo) (goodyPtr *goody) {
+// 1. cfgApiserverID - argServerIDVal
+// 2. cfgClientID - argClientIDVal
+// 3. cfgEnvironment - argEnvironmentVal
+// 4. cfgTenantID - argTenantIDVal
+// 5. cfgConfigMode - cfgConfigModeVal
+func getArgValues(o Options, authInfo *api.AuthInfo) (argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal, cfgConfigModeVal string) {
 	if authInfo == nil {
 		return
 	}
 	authProviderBool := authInfo.AuthProvider != nil
-	goodyPtr = &goody{}
-
-	/* precedence and modus operandi:
-	Looking for Bleh:
-	1. o.TokenOptions.Bleh
-	2. authInfo.AuthProvider.Config[Bleh]
-	3. getExecArg(authInfo, Bleh)
-	*/
-
 	if o.isSet(flagEnvironment) {
-		goodyPtr.argEnvironmentVal = o.TokenOptions.Environment
+		argEnvironmentVal = o.TokenOptions.Environment
 	} else if authProviderBool {
 		x, ok := authInfo.AuthProvider.Config[cfgEnvironment]
 		if ok {
-			goodyPtr.argEnvironmentVal = x
+			argEnvironmentVal = x
 		}
 	} else {
-		goodyPtr.argEnvironmentVal = getExecArg(authInfo, argEnvironment)
+		argEnvironmentVal = getExecArg(authInfo, argEnvironment)
 	}
 
 	if o.isSet(flagTenantID) {
-		goodyPtr.argTenantIDVal = o.TokenOptions.TenantID
+		argTenantIDVal = o.TokenOptions.TenantID
 	} else if authProviderBool {
 		x, ok := authInfo.AuthProvider.Config[cfgTenantID]
 		if ok {
-			goodyPtr.argTenantIDVal = x
+			argTenantIDVal = x
 		}
 	} else {
-		goodyPtr.argTenantIDVal = getExecArg(authInfo, argTenantID)
+		argTenantIDVal = getExecArg(authInfo, argTenantID)
 	}
 
 	if o.isSet(flagClientID) {
-		goodyPtr.argClientIDVal = o.TokenOptions.ClientID
+		argClientIDVal = o.TokenOptions.ClientID
 	} else if authProviderBool {
 		x, ok := authInfo.AuthProvider.Config[cfgClientID]
 		if ok {
-			goodyPtr.argClientIDVal = x
+			argClientIDVal = x
 		}
 	} else {
-		goodyPtr.argClientIDVal = getExecArg(authInfo, argClientID)
+		argClientIDVal = getExecArg(authInfo, argClientID)
 	}
 
 	if o.isSet(flagServerID) {
-		goodyPtr.argServerIDVal = o.TokenOptions.ServerID
+		argServerIDVal = o.TokenOptions.ServerID
 	} else if authProviderBool {
 		// .. is special, we look for cfgApiserverID
 		x, ok := authInfo.AuthProvider.Config[cfgApiserverID]
 		if ok {
-			goodyPtr.argServerIDVal = x
+			argServerIDVal = x
 		}
 	} else {
-		goodyPtr.argServerIDVal = getExecArg(authInfo, argServerID)
+		argServerIDVal = getExecArg(authInfo, argServerID)
 	}
 
 	// cfgConfigMode available only in authInfo.AuthProvider.Config,
@@ -120,7 +104,7 @@ func getGoody(o Options, authInfo *api.AuthInfo) (goodyPtr *goody) {
 	if authProviderBool {
 		x, ok := authInfo.AuthProvider.Config[cfgConfigMode]
 		if ok {
-			goodyPtr.cfgConfigModeVal = x
+			cfgConfigModeVal = x
 		}
 	}
 	return
@@ -164,8 +148,8 @@ func Convert(o Options) error {
 		if !isExecUsingkubelogin(authInfo) && !isLegacyAADAuth(authInfo) {
 			continue
 		}
-		goody := getGoody(o, authInfo)
-
+		// goody := getGoody(o, authInfo)
+		argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal, cfgConfigModeVal := getArgValues(o, authInfo)
 		exec := &api.ExecConfig{
 			Command: execName,
 			Args: []string{
@@ -175,58 +159,71 @@ func Convert(o Options) error {
 		}
 
 		if isExecUsingkubelogin(authInfo) {
-			if goody.argServerIDVal == "" {
+			if argServerIDVal == "" {
 				return fmt.Errorf("Err: Invalid arg %v", argServerID)
 			}
 			switch o.TokenOptions.LoginMethod {
 			case token.AzureCLILogin:
 				exec.Args = append(exec.Args, argServerID)
-				exec.Args = append(exec.Args, goody.argServerIDVal)
+				exec.Args = append(exec.Args, argServerIDVal)
 				exec.Args = append(exec.Args, argLoginMethod)
 				exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
 			case token.DeviceCodeLogin:
 				exec.Args = append(exec.Args, argServerID)
-				exec.Args = append(exec.Args, goody.argServerIDVal)
+				exec.Args = append(exec.Args, argServerIDVal)
 				exec.Args = append(exec.Args, argClientID)
-				exec.Args = append(exec.Args, goody.argClientIDVal)
+				exec.Args = append(exec.Args, argClientIDVal)
 				exec.Args = append(exec.Args, argTenantID)
-				exec.Args = append(exec.Args, goody.argTenantIDVal)
+				exec.Args = append(exec.Args, argTenantIDVal)
 				exec.Args = append(exec.Args, argLoginMethod)
 				exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
+			case token.ServicePrincipalLogin:
+				fmt.Println("SPN SPN")
+				exec.Args = append(exec.Args, argEnvironment)
+				exec.Args = append(exec.Args, argEnvironmentVal)
+				exec.Args = append(exec.Args, argServerID)
+				exec.Args = append(exec.Args, argServerIDVal)
+				exec.Args = append(exec.Args, argClientID)
+				exec.Args = append(exec.Args, argClientIDVal)
+				exec.Args = append(exec.Args, argTenantID)
+				exec.Args = append(exec.Args, argTenantIDVal)
+				exec.Args = append(exec.Args, argLoginMethod)
+				exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
+
 			}
 		} else {
 			if !isAlternativeLogin && o.isSet(flagEnvironment) {
 				exec.Args = append(exec.Args, argEnvironment)
 				exec.Args = append(exec.Args, o.TokenOptions.Environment)
-			} else if !isAlternativeLogin && goody.argEnvironmentVal != "" {
+			} else if !isAlternativeLogin && argEnvironmentVal != "" {
 				exec.Args = append(exec.Args, argEnvironment)
-				exec.Args = append(exec.Args, goody.argEnvironmentVal)
+				exec.Args = append(exec.Args, argEnvironmentVal)
 			}
 			if o.isSet(flagServerID) {
 				exec.Args = append(exec.Args, argServerID)
 				exec.Args = append(exec.Args, o.TokenOptions.ServerID)
-			} else if goody.argServerIDVal != "" {
+			} else if argServerIDVal != "" {
 				exec.Args = append(exec.Args, argServerID)
-				exec.Args = append(exec.Args, goody.argServerIDVal)
+				exec.Args = append(exec.Args, argServerIDVal)
 			}
 			if o.isSet(flagClientID) {
 				exec.Args = append(exec.Args, argClientID)
 				exec.Args = append(exec.Args, o.TokenOptions.ClientID)
-			} else if !isAlternativeLogin && goody.argClientIDVal != "" {
+			} else if !isAlternativeLogin && argClientIDVal != "" {
 				// when MSI is enabled, the clientID in azure authInfo will be disregarded
 				exec.Args = append(exec.Args, argClientID)
-				exec.Args = append(exec.Args, goody.argClientIDVal)
+				exec.Args = append(exec.Args, argClientIDVal)
 			}
 			if !isAlternativeLogin && o.isSet(flagTenantID) {
 				exec.Args = append(exec.Args, argTenantID)
 				exec.Args = append(exec.Args, o.TokenOptions.TenantID)
-			} else if !isAlternativeLogin && goody.argTenantIDVal != "" {
+			} else if !isAlternativeLogin && argTenantIDVal != "" {
 				exec.Args = append(exec.Args, argTenantID)
-				exec.Args = append(exec.Args, goody.argTenantIDVal)
+				exec.Args = append(exec.Args, argTenantIDVal)
 			}
 			if !isAlternativeLogin && o.isSet(flagIsLegacy) && o.TokenOptions.IsLegacy {
 				exec.Args = append(exec.Args, argIsLegacy)
-			} else if !isAlternativeLogin && (goody.cfgConfigModeVal == "" || goody.cfgConfigModeVal == "0") {
+			} else if !isAlternativeLogin && (cfgConfigModeVal == "" || cfgConfigModeVal == "0") {
 				exec.Args = append(exec.Args, argIsLegacy)
 			}
 			if !isAlternativeLogin && o.isSet(flagClientSecret) {
