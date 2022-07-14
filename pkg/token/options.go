@@ -55,7 +55,7 @@ func init() {
 }
 
 func GetSupportedLogins() string {
-	return strings.Join(supportedLogin, ",")
+	return strings.Join(supportedLogin, ", ")
 }
 
 func NewOptions() Options {
