@@ -214,10 +214,20 @@ func TestConvert(t *testing.T) {
 		},
 		{
 			name:         "exec format kubeconfig, convert from azurecli to azurecli",
-			execArgItems: []string{getTokenCommand, argEnvironment, envName, argServerID, serverID, argClientID, clientID, argTenantID, tenantID, argLoginMethod, "azurecli"},
+			execArgItems: []string{getTokenCommand, argEnvironment, envName, argServerID, serverID, argClientID, clientID, argTenantID, tenantID, argLoginMethod, token.AzureCLILogin},
 			expectedArgs: []string{getTokenCommand, argServerID, serverID, argLoginMethod, token.AzureCLILogin},
 			overrideFlags: map[string]string{
 				flagLoginMethod: token.AzureCLILogin,
+			},
+			command: execName,
+		},
+		{
+			name:         "exec format kubeconfig, convert from azurecli to azurecli, with envName as overrides",
+			execArgItems: []string{getTokenCommand, argServerID, serverID, argClientID, clientID, argTenantID, tenantID, argLoginMethod, token.AzureCLILogin},
+			expectedArgs: []string{getTokenCommand, argServerID, serverID, argLoginMethod, token.AzureCLILogin},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.AzureCLILogin,
+				flagEnvironment: envName,
 			},
 			command: execName,
 		},
@@ -230,10 +240,19 @@ func TestConvert(t *testing.T) {
 		},
 		{
 			name:         "exec format kubeconfig, convert from azurecli to DeviceCodeLogin",
-			execArgItems: []string{getTokenCommand, argEnvironment, envName, argServerID, serverID, argClientID, clientID, argTenantID, tenantID, argLoginMethod, "azurecli"},
+			execArgItems: []string{getTokenCommand, argEnvironment, envName, argServerID, serverID, argClientID, clientID, argTenantID, tenantID, argLoginMethod, token.AzureCLILogin},
 			expectedArgs: []string{getTokenCommand, argServerID, serverID, argClientID, clientID, argTenantID, tenantID, argLoginMethod, token.DeviceCodeLogin},
 			overrideFlags: map[string]string{
 				flagLoginMethod: token.DeviceCodeLogin,
+			},
+			command: execName,
+		},
+		{
+			name:         "exec format kubeconfig, convert from azurecli to DeviceCodeLogin, with args as overrides",
+			execArgItems: []string{getTokenCommand, argLoginMethod, token.AzureCLILogin},
+			expectedArgs: []string{getTokenCommand, argServerID, serverID, argClientID, clientID, argTenantID, tenantID, argLoginMethod, token.DeviceCodeLogin},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.DeviceCodeLogin, flagServerID: serverID, flagClientID: clientID, flagTenantID: tenantID, flagEnvironment: envName,
 			},
 			command: execName,
 		},
