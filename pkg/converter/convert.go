@@ -44,16 +44,12 @@ const (
 	execAPIVersion  = "client.authentication.k8s.io/v1beta1"
 )
 
-// 1. cfgApiserverID - argServerIDVal
-// 2. cfgClientID - argClientIDVal
-// 3. cfgEnvironment - argEnvironmentVal
-// 4. cfgTenantID - argTenantIDVal
-// 5. cfgConfigMode - cfgConfigModeVal
 func getArgValues(o Options, authInfo *api.AuthInfo) (argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal, cfgConfigModeVal string) {
 	if authInfo == nil {
 		return
 	}
 	authProviderBool := authInfo.AuthProvider != nil
+
 	if o.isSet(flagEnvironment) {
 		argEnvironmentVal = o.TokenOptions.Environment
 	} else if authProviderBool {
@@ -64,6 +60,7 @@ func getArgValues(o Options, authInfo *api.AuthInfo) (argServerIDVal, argClientI
 	} else {
 		argEnvironmentVal = getExecArg(authInfo, argEnvironment)
 	}
+
 	if o.isSet(flagTenantID) {
 		argTenantIDVal = o.TokenOptions.TenantID
 	} else if authProviderBool {
@@ -74,6 +71,7 @@ func getArgValues(o Options, authInfo *api.AuthInfo) (argServerIDVal, argClientI
 	} else {
 		argTenantIDVal = getExecArg(authInfo, argTenantID)
 	}
+
 	if o.isSet(flagClientID) {
 		argClientIDVal = o.TokenOptions.ClientID
 	} else if authProviderBool {
@@ -84,6 +82,7 @@ func getArgValues(o Options, authInfo *api.AuthInfo) (argServerIDVal, argClientI
 	} else {
 		argClientIDVal = getExecArg(authInfo, argClientID)
 	}
+
 	if o.isSet(flagServerID) {
 		argServerIDVal = o.TokenOptions.ServerID
 	} else if authProviderBool {
@@ -95,6 +94,7 @@ func getArgValues(o Options, authInfo *api.AuthInfo) (argServerIDVal, argClientI
 	} else {
 		argServerIDVal = getExecArg(authInfo, argServerID)
 	}
+
 	// cfgConfigMode available only in authInfo.AuthProvider.Config,
 	// although the same precedence would work here as well.
 	if authProviderBool {
@@ -103,6 +103,7 @@ func getArgValues(o Options, authInfo *api.AuthInfo) (argServerIDVal, argClientI
 			cfgConfigModeVal = x
 		}
 	}
+
 	return
 }
 
@@ -144,7 +145,6 @@ func Convert(o Options) error {
 		if !isExecUsingkubelogin(authInfo) && !isLegacyAADAuth(authInfo) {
 			continue
 		}
-		// goody := getGoody(o, authInfo)
 		argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal, cfgConfigModeVal := getArgValues(o, authInfo)
 		exec := &api.ExecConfig{
 			Command: execName,
