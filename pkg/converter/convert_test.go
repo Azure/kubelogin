@@ -944,6 +944,9 @@ func validate(
 	if len(exec.Env) > 0 {
 		t.Fatalf("expected 0 environment variable. actual: %d", len(exec.Env))
 	}
+	if exec.Args[0] != getTokenCommand {
+		t.Fatalf("expected %s as first argument. actual: %s", getTokenCommand, exec.Args[0])
+	}
 	if len(exec.Args) != len(expectedArgs) {
 		t.Fatalf("expected exec args: %v, actual: %v", expectedArgs, exec.Args)
 	}
