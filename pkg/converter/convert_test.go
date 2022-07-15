@@ -121,6 +121,26 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
+			name: "using legacy azure auth to convert to spn without setting environment",
+			authProviderConfig: map[string]string{
+				cfgApiserverID: serverID,
+				cfgClientID:    clientID,
+				cfgTenantID:    tenantID,
+				cfgConfigMode:  "1",
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.ServicePrincipalLogin,
+				flagClientID:    spClientID,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, spClientID,
+				argTenantID, tenantID,
+				argLoginMethod, token.ServicePrincipalLogin,
+			},
+		},
+		{
 			name: "using legacy azure auth to convert to spn with clientSecret",
 			authProviderConfig: map[string]string{
 				cfgEnvironment: envName,
@@ -548,6 +568,27 @@ func TestConvert(t *testing.T) {
 			expectedArgs: []string{
 				getTokenCommand,
 				argEnvironment, envName,
+				argServerID, serverID,
+				argTenantID, tenantID,
+				argClientID, clientID,
+				argLoginMethod, token.ServicePrincipalLogin,
+			},
+			command: execName,
+		},
+		{
+			name: "with exec format kubeconfig, convert from devicecode to spn without setting environment",
+			execArgItems: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argLoginMethod, token.DeviceCodeLogin,
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.ServicePrincipalLogin,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
 				argServerID, serverID,
 				argTenantID, tenantID,
 				argClientID, clientID,

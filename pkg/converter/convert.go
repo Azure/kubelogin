@@ -222,8 +222,12 @@ func Convert(o Options) error {
 			exec.Args = append(exec.Args, argTenantID)
 			exec.Args = append(exec.Args, argTenantIDVal)
 
-			exec.Args = append(exec.Args, argEnvironment)
-			exec.Args = append(exec.Args, argEnvironmentVal)
+			if argEnvironmentVal != "" {
+				// environment is optional
+				exec.Args = append(exec.Args, argEnvironment)
+				exec.Args = append(exec.Args, argEnvironmentVal)
+			}
+
 			exec.Args = append(exec.Args, argLoginMethod)
 			exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
 
