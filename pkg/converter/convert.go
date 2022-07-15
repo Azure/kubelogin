@@ -154,24 +154,20 @@ func Convert(o Options) error {
 			APIVersion: execAPIVersion,
 		}
 
+		exec.Args = append(exec.Args, argLoginMethod)
+		exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
+
+		// all login methods require --server-id specified
+		if argServerIDVal == "" {
+			return fmt.Errorf("%s is required", argServerID)
+		}
+		exec.Args = append(exec.Args, argServerID)
+		exec.Args = append(exec.Args, argServerIDVal)
+
 		switch o.TokenOptions.LoginMethod {
 		case token.AzureCLILogin:
-			if argServerIDVal == "" {
-				return fmt.Errorf("%s is required", argServerID)
-			}
-			exec.Args = append(exec.Args, argServerID)
-			exec.Args = append(exec.Args, argServerIDVal)
-
-			exec.Args = append(exec.Args, argLoginMethod)
-			exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
 
 		case token.DeviceCodeLogin:
-			if argServerIDVal == "" {
-				return fmt.Errorf("%s is required", argServerID)
-			}
-
-			exec.Args = append(exec.Args, argServerID)
-			exec.Args = append(exec.Args, argServerIDVal)
 
 			if argClientIDVal == "" {
 				return fmt.Errorf("%s is required", argClientID)
@@ -192,21 +188,12 @@ func Convert(o Options) error {
 				exec.Args = append(exec.Args, argEnvironment)
 				exec.Args = append(exec.Args, argEnvironmentVal)
 			}
-
-			exec.Args = append(exec.Args, argLoginMethod)
-			exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
 
 			if isLegacyConfigMode {
 				exec.Args = append(exec.Args, argIsLegacy)
 			}
 
 		case token.ServicePrincipalLogin:
-			if argServerIDVal == "" {
-				return fmt.Errorf("%s is required", argServerID)
-			}
-
-			exec.Args = append(exec.Args, argServerID)
-			exec.Args = append(exec.Args, argServerIDVal)
 
 			if argClientIDVal == "" {
 				return fmt.Errorf("%s is required", argClientID)
@@ -227,9 +214,6 @@ func Convert(o Options) error {
 				exec.Args = append(exec.Args, argEnvironment)
 				exec.Args = append(exec.Args, argEnvironmentVal)
 			}
-
-			exec.Args = append(exec.Args, argLoginMethod)
-			exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
 
 			if o.isSet(flagClientSecret) {
 				exec.Args = append(exec.Args, argClientSecret)
@@ -246,15 +230,6 @@ func Convert(o Options) error {
 			}
 
 		case token.MSILogin:
-			if argServerIDVal == "" {
-				return fmt.Errorf("%s is required", argServerID)
-			}
-
-			exec.Args = append(exec.Args, argServerID)
-			exec.Args = append(exec.Args, argServerIDVal)
-
-			exec.Args = append(exec.Args, argLoginMethod)
-			exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
 
 			if o.isSet(flagClientID) {
 				exec.Args = append(exec.Args, argClientID)
@@ -265,12 +240,6 @@ func Convert(o Options) error {
 			}
 
 		case token.ROPCLogin:
-			if argServerIDVal == "" {
-				return fmt.Errorf("%s is required", argServerID)
-			}
-
-			exec.Args = append(exec.Args, argServerID)
-			exec.Args = append(exec.Args, argServerIDVal)
 
 			if argClientIDVal == "" {
 				return fmt.Errorf("%s is required", argClientID)
@@ -292,9 +261,6 @@ func Convert(o Options) error {
 				exec.Args = append(exec.Args, argEnvironmentVal)
 			}
 
-			exec.Args = append(exec.Args, argLoginMethod)
-			exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
-
 			if o.isSet(flagUsername) {
 				exec.Args = append(exec.Args, argUsername)
 				exec.Args = append(exec.Args, o.TokenOptions.Username)
@@ -310,15 +276,6 @@ func Convert(o Options) error {
 			}
 
 		case token.WorkloadIdentityLogin:
-			if argServerIDVal == "" {
-				return fmt.Errorf("%s is required", argServerID)
-			}
-
-			exec.Args = append(exec.Args, argServerID)
-			exec.Args = append(exec.Args, argServerIDVal)
-
-			exec.Args = append(exec.Args, argLoginMethod)
-			exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
 
 			if o.isSet(flagClientID) {
 				exec.Args = append(exec.Args, argClientID)
@@ -339,10 +296,8 @@ func Convert(o Options) error {
 				exec.Args = append(exec.Args, argFederatedTokenFile)
 				exec.Args = append(exec.Args, o.TokenOptions.FederatedTokenFile)
 			}
-
-		default:
-			return fmt.Errorf("unsupported login mehod: %s", o.TokenOptions.LoginMethod)
 		}
+
 		authInfo.Exec = exec
 		authInfo.AuthProvider = nil
 	}
