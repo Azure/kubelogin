@@ -25,6 +25,7 @@ func TestConvert(t *testing.T) {
 		loginMethod        = "devicecode"
 		identityResourceID = "/msi/resource/id"
 		authorityHost      = "https://login.microsoftonline.com/"
+		federatedTokenFile = "/tmp/file"
 	)
 	testData := []struct {
 		name               string
@@ -90,6 +91,32 @@ func TestConvert(t *testing.T) {
 			expectedArgs: []string{
 				getTokenCommand,
 				argServerID, serverID,
+				argLoginMethod, token.WorkloadIdentityLogin,
+			},
+		},
+		{
+			name: "using legacy azure auth to convert to workload identity with overrides",
+			authProviderConfig: map[string]string{
+				cfgEnvironment: envName,
+				cfgApiserverID: serverID,
+				cfgClientID:    clientID,
+				cfgTenantID:    tenantID,
+				cfgConfigMode:  "0",
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod:        token.WorkloadIdentityLogin,
+				flagClientID:           spClientID,
+				flagTenantID:           tenantID,
+				flagAuthorityHost:      authorityHost,
+				flagFederatedTokenFile: federatedTokenFile,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, spClientID,
+				argTenantID, tenantID,
+				argAuthorityHost, authorityHost,
+				argFederatedTokenFile, federatedTokenFile,
 				argLoginMethod, token.WorkloadIdentityLogin,
 			},
 		},
@@ -748,10 +775,11 @@ func TestConvert(t *testing.T) {
 				argLoginMethod, token.DeviceCodeLogin,
 			},
 			overrideFlags: map[string]string{
-				flagLoginMethod:   token.WorkloadIdentityLogin,
-				flagClientID:      spClientID,
-				flagTenantID:      tenantID,
-				flagAuthorityHost: authorityHost,
+				flagLoginMethod:        token.WorkloadIdentityLogin,
+				flagClientID:           spClientID,
+				flagTenantID:           tenantID,
+				flagAuthorityHost:      authorityHost,
+				flagFederatedTokenFile: federatedTokenFile,
 			},
 			expectedArgs: []string{
 				getTokenCommand,
@@ -759,6 +787,7 @@ func TestConvert(t *testing.T) {
 				argClientID, spClientID,
 				argTenantID, tenantID,
 				argAuthorityHost, authorityHost,
+				argFederatedTokenFile, federatedTokenFile,
 				argLoginMethod, token.WorkloadIdentityLogin,
 			},
 			command: execName,

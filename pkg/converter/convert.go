@@ -29,6 +29,7 @@ const (
 	argLoginMethod        = "--login"
 	argIdentityResourceID = "--identity-resource-id"
 	argAuthorityHost      = "--authority-host"
+	argFederatedTokenFile = "--federated-token-file"
 
 	flagClientID           = "client-id"
 	flagServerID           = "server-id"
@@ -42,6 +43,7 @@ const (
 	flagLoginMethod        = "login"
 	flagIdentityResourceID = "identity-resource-id"
 	flagAuthorityHost      = "authority-host"
+	flagFederatedTokenFile = "federated-token-file"
 
 	execName        = "kubelogin"
 	getTokenCommand = "get-token"
@@ -327,6 +329,11 @@ func Convert(o Options) error {
 			if o.isSet(flagAuthorityHost) {
 				exec.Args = append(exec.Args, argAuthorityHost)
 				exec.Args = append(exec.Args, o.TokenOptions.AuthorityHost)
+			}
+
+			if o.isSet(flagFederatedTokenFile) {
+				exec.Args = append(exec.Args, argFederatedTokenFile)
+				exec.Args = append(exec.Args, o.TokenOptions.FederatedTokenFile)
 			}
 
 		default:
