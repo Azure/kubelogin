@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/spf13/pflag"
+	"k8s.io/client-go/util/homedir"
 )
 
 type Options struct {
@@ -19,7 +20,8 @@ type Options struct {
 	TenantID           string
 	Environment        string
 	IsLegacy           bool
-	TokenCacheFile     string
+	TokenCacheDir      string
+	tokenCacheFile     string
 	IdentityResourceId string
 	FederatedTokenFile string
 	AuthorityHost      string
@@ -48,7 +50,10 @@ const (
 	envLoginMethod                        = "AAD_LOGIN_METHOD"
 )
 
-var supportedLogin []string
+var (
+	supportedLogin       []string
+	DefaultTokenCacheDir = homedir.HomeDir() + "/.kube/cache/kubelogin"
+)
 
 func init() {
 	supportedLogin = []string{DeviceCodeLogin, ServicePrincipalLogin, ROPCLogin, MSILogin, AzureCLILogin, WorkloadIdentityLogin}
@@ -60,8 +65,9 @@ func GetSupportedLogins() string {
 
 func NewOptions() Options {
 	return Options{
-		LoginMethod: DeviceCodeLogin,
-		Environment: defaultEnvironmentName,
+		LoginMethod:   DeviceCodeLogin,
+		Environment:   defaultEnvironmentName,
+		TokenCacheDir: DefaultTokenCacheDir,
 	}
 }
 
@@ -76,6 +82,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&o.ServerID, "server-id", o.ServerID, "AAD server application ID")
 	fs.StringVar(&o.FederatedTokenFile, "federated-token-file", o.FederatedTokenFile, "Workload Identity federated token file")
 	fs.StringVar(&o.AuthorityHost, "authority-host", o.AuthorityHost, "Workload Identity authority host")
+	fs.StringVar(&o.TokenCacheDir, "token-cache-dir", o.TokenCacheDir, "directory to cache token")
 	fs.StringVarP(&o.TenantID, "tenant-id", "t", o.TenantID, "AAD tenant ID")
 	fs.StringVarP(&o.Environment, "environment", "e", o.Environment, "Azure environment name")
 	fs.BoolVar(&o.IsLegacy, "legacy", o.IsLegacy, "set to true to get token with 'spn:' prefix in audience claim")

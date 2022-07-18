@@ -15,6 +15,8 @@ type TokenProvider interface {
 }
 
 func newTokenProvider(o *Options) (TokenProvider, error) {
+	o.tokenCacheFile = getCacheFileName(o.Environment, o.ServerID, o.ClientID, o.TenantID, o.IsLegacy)
+
 	oAuthConfig, err := getOAuthConfig(o.Environment, o.TenantID, o.IsLegacy)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get oAuthConfig. isLegacy: %t, err: %s", o.IsLegacy, err)
@@ -35,6 +37,15 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 	}
 
 	return nil, errors.New("unsupported token provider")
+}
+
+func getCacheFileName(environment, serverID, clientID, tenantID string, legacy bool) string {
+	// format: ${environment}-${server-id}-${client-id}-${tenant-id}[_legacy].json
+	cacheFileNameFormat := "%s-%s-%s-%s.json"
+	if legacy {
+		cacheFileNameFormat = "%s-%s-%s-%s_legacy.json"
+	}
+	return fmt.Sprintf(cacheFileNameFormat, environment, serverID, clientID, tenantID)
 }
 
 func getOAuthConfig(envName, tenantID string, isLegacy bool) (*adal.OAuthConfig, error) {

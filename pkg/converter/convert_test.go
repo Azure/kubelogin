@@ -26,6 +26,7 @@ func TestConvert(t *testing.T) {
 		identityResourceID = "/msi/resource/id"
 		authorityHost      = "https://login.microsoftonline.com/"
 		federatedTokenFile = "/tmp/file"
+		tokenCacheDir      = "/tmp/token_dir"
 	)
 	testData := []struct {
 		name               string
@@ -250,6 +251,26 @@ func TestConvert(t *testing.T) {
 				getTokenCommand,
 				argServerID, serverID,
 				argLoginMethod, token.AzureCLILogin,
+			},
+		},
+		{
+			name: "using legacy azure auth to convert to azurecli with --token-cache-dir override",
+			authProviderConfig: map[string]string{
+				cfgEnvironment: envName,
+				cfgApiserverID: serverID,
+				cfgClientID:    clientID,
+				cfgTenantID:    tenantID,
+				cfgConfigMode:  "1",
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod:   token.AzureCLILogin,
+				flagTokenCacheDir: tokenCacheDir,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argLoginMethod, token.AzureCLILogin,
+				argTokenCacheDir, tokenCacheDir,
 			},
 		},
 		{
@@ -549,6 +570,50 @@ func TestConvert(t *testing.T) {
 				getTokenCommand,
 				argServerID, serverID,
 				argLoginMethod, token.AzureCLILogin,
+			},
+			command: execName,
+		},
+		{
+			name: "with exec format kubeconfig, convert from devicecode to azurecli with --token-cache-dir override",
+			execArgItems: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argEnvironment, envName,
+				argLoginMethod, token.DeviceCodeLogin,
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod:   token.AzureCLILogin,
+				flagTokenCacheDir: tokenCacheDir,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argLoginMethod, token.AzureCLILogin,
+				argTokenCacheDir, tokenCacheDir,
+			},
+			command: execName,
+		},
+		{
+			name: "with exec format kubeconfig already having --token-cache-dir, convert from devicecode to azurecli",
+			execArgItems: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+          argTokenCacheDir, tokenCacheDir,
+				argEnvironment, envName,
+				argLoginMethod, token.DeviceCodeLogin,
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod:   token.AzureCLILogin,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argLoginMethod, token.AzureCLILogin,
+				argTokenCacheDir, tokenCacheDir,
 			},
 			command: execName,
 		},
