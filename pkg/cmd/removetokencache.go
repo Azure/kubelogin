@@ -3,12 +3,15 @@ package cmd
 import (
 	"os"
 
+	"github.com/Azure/kubelogin/pkg/token"
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
 )
 
 // NewRemoveTokenCacheCmd provides a cobra command for removing token cache sub command
 func NewRemoveTokenCacheCmd() *cobra.Command {
+	var tokenCacheDir string
+
 	cmd := &cobra.Command{
 		Use:          "remove-tokens",
 		Short:        "Remove all cached tokens from filesystem",
@@ -21,6 +24,6 @@ func NewRemoveTokenCacheCmd() *cobra.Command {
 		},
 	}
 
-	addTokenCacheDirFlags(cmd.Flags())
+	cmd.Flags().StringVar(&tokenCacheDir, "token-cache-dir", token.DefaultTokenCacheDir, "directory to cache token")
 	return cmd
 }

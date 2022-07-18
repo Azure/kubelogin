@@ -30,6 +30,7 @@ const (
 	argIdentityResourceID = "--identity-resource-id"
 	argAuthorityHost      = "--authority-host"
 	argFederatedTokenFile = "--federated-token-file"
+	argTokenCacheDir      = "--token-cache-dir"
 
 	flagClientID           = "client-id"
 	flagServerID           = "server-id"
@@ -44,13 +45,14 @@ const (
 	flagIdentityResourceID = "identity-resource-id"
 	flagAuthorityHost      = "authority-host"
 	flagFederatedTokenFile = "federated-token-file"
+	flagTokenCacheDir      = "token-cache-dir"
 
 	execName        = "kubelogin"
 	getTokenCommand = "get-token"
 	execAPIVersion  = "client.authentication.k8s.io/v1beta1"
 )
 
-func getArgValues(o Options, authInfo *api.AuthInfo) (argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal string, argIsLegacyConfigModeVal bool) {
+func getArgValues(o Options, authInfo *api.AuthInfo) (argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal, argTokenCacheDirVal string, argIsLegacyConfigModeVal bool) {
 	if authInfo == nil {
 		return
 	}
@@ -109,6 +111,12 @@ func getArgValues(o Options, authInfo *api.AuthInfo) (argServerIDVal, argClientI
 		}
 	}
 
+	if o.isSet(flagTokenCacheDir) {
+		argTokenCacheDirVal = o.TokenOptions.TokenCacheDir
+	} else {
+		argTokenCacheDirVal = getExecArg(authInfo, argTokenCacheDir)
+	}
+
 	return
 }
 
@@ -145,7 +153,7 @@ func Convert(o Options) error {
 		if !isExecUsingkubelogin(authInfo) && !isLegacyAzureAuth(authInfo) {
 			continue
 		}
-		argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal, isLegacyConfigMode := getArgValues(o, authInfo)
+		argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal, argTokenCacheDirVal, isLegacyConfigMode := getArgValues(o, authInfo)
 		exec := &api.ExecConfig{
 			Command: execName,
 			Args: []string{
@@ -163,6 +171,11 @@ func Convert(o Options) error {
 		}
 		exec.Args = append(exec.Args, argServerID)
 		exec.Args = append(exec.Args, argServerIDVal)
+
+		if argTokenCacheDirVal != "" {
+			exec.Args = append(exec.Args, argTokenCacheDir)
+			exec.Args = append(exec.Args, argTokenCacheDirVal)
+		}
 
 		switch o.TokenOptions.LoginMethod {
 		case token.AzureCLILogin:
