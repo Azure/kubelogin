@@ -43,11 +43,11 @@ const (
 	envServicePrincipalClientSecret       = "AAD_SERVICE_PRINCIPAL_CLIENT_SECRET"
 	envServicePrincipalClientCert         = "AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE"
 	envWorkloadIdentityClientID           = "AZURE_CLIENT_ID"
-	envWorkloadIdentityTenantID           = "AZURE_TENANT_ID"
 	envWorkloadIdentityFederatedTokenFile = "AZURE_FEDERATED_TOKEN_FILE"
 	envWorkloadIdentityAuthorityHost      = "AZURE_AUTHORITY_HOST"
 	envROPCUsername                       = "AAD_USER_PRINCIPAL_NAME"
 	envROPCPassword                       = "AAD_USER_PRINCIPAL_PASSWORD"
+	envTenantID                           = "AZURE_TENANT_ID"
 	envLoginMethod                        = "AAD_LOGIN_METHOD"
 )
 
@@ -84,7 +84,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&o.FederatedTokenFile, "federated-token-file", o.FederatedTokenFile, "Workload Identity federated token file")
 	fs.StringVar(&o.AuthorityHost, "authority-host", o.AuthorityHost, "Workload Identity authority host")
 	fs.StringVar(&o.TokenCacheDir, "token-cache-dir", o.TokenCacheDir, "directory to cache token")
-	fs.StringVarP(&o.TenantID, "tenant-id", "t", o.TenantID, "AAD tenant ID")
+	fs.StringVarP(&o.TenantID, "tenant-id", "t", o.TenantID, fmt.Sprintf("AAD tenant ID. It may be specified in %s environment variable", envTenantID))
 	fs.StringVarP(&o.Environment, "environment", "e", o.Environment, "Azure environment name")
 	fs.BoolVar(&o.IsLegacy, "legacy", o.IsLegacy, "set to true to get token with 'spn:' prefix in audience claim")
 }
@@ -125,12 +125,13 @@ func (o *Options) UpdateFromEnv() {
 		o.LoginMethod = v
 	}
 
+	if v, ok := os.LookupEnv(envTenantID); ok {
+		o.TenantID = v
+	}
+
 	if o.LoginMethod == WorkloadIdentityLogin {
 		if v, ok := os.LookupEnv(envWorkloadIdentityClientID); ok {
 			o.ClientID = v
-		}
-		if v, ok := os.LookupEnv(envWorkloadIdentityTenantID); ok {
-			o.TenantID = v
 		}
 		if v, ok := os.LookupEnv(envWorkloadIdentityFederatedTokenFile); ok {
 			o.FederatedTokenFile = v
