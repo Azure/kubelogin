@@ -3,6 +3,7 @@ package token
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/pflag"
@@ -52,7 +53,7 @@ const (
 
 var (
 	supportedLogin       []string
-	DefaultTokenCacheDir = homedir.HomeDir() + "/.kube/cache/kubelogin"
+	DefaultTokenCacheDir = homedir.HomeDir() + "/.kube/cache/kubelogin/"
 )
 
 func init() {
@@ -103,6 +104,8 @@ func (o *Options) Validate() error {
 }
 
 func (o *Options) UpdateFromEnv() {
+	o.tokenCacheFile = getCacheFileName(o)
+
 	if v, ok := os.LookupEnv(envServicePrincipalClientID); ok {
 		o.ClientID = v
 	}
@@ -139,12 +142,23 @@ func (o *Options) UpdateFromEnv() {
 }
 
 func (o *Options) String() string {
-	return fmt.Sprintf("Login Method: %s, Environment: %s, TenantID: %s, ServerID: %s, ClientID: %s, IsLegacy: %t, msiResourceID: %s",
+	return fmt.Sprintf("Login Method: %s, Environment: %s, TenantID: %s, ServerID: %s, ClientID: %s, IsLegacy: %t, msiResourceID: %s, tokenCacheDir: %s, tokenCacheFile: %s",
 		o.LoginMethod,
 		o.Environment,
 		o.TenantID,
 		o.ServerID,
 		o.ClientID,
 		o.IsLegacy,
-		o.IdentityResourceId)
+		o.IdentityResourceId,
+		o.TokenCacheDir,
+		o.tokenCacheFile)
+}
+
+func getCacheFileName(o *Options) string {
+	// format: ${environment}-${server-id}-${client-id}-${tenant-id}[_legacy].json
+	cacheFileNameFormat := "%s-%s-%s-%s.json"
+	if o.IsLegacy {
+		cacheFileNameFormat = "%s-%s-%s-%s_legacy.json"
+	}
+	return filepath.Join(o.TokenCacheDir, fmt.Sprintf(cacheFileNameFormat, o.Environment, o.ServerID, o.ClientID, o.TenantID))
 }
