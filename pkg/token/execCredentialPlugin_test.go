@@ -142,9 +142,3 @@ func setupMocks(t *testing.T) (*gomock.Controller, *mock_token.MockTokenCache, *
 
 	return ctrl, tokenCache, tokenProvider, pluginWriter
 }
-
-func newOptions() *Options {
-	return &Options{
-		tokenCacheFile: "foo",
-	}
-}
