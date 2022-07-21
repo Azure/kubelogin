@@ -30,7 +30,7 @@ func TestExecCredentialPlugin(t *testing.T) {
 		{
 			name: "fail to read token cache",
 			options: &Options{
-				TokenCacheFile: cacheFile,
+				tokenCacheFile: cacheFile,
 			},
 			setupExpectations: func(tc testContext) {
 				tc.tokenCache.EXPECT().Read(cacheFile).Return(adal.Token{}, errors.New("fail"))
@@ -40,7 +40,7 @@ func TestExecCredentialPlugin(t *testing.T) {
 		{
 			name: "reading empty token from cache should invoke token flow",
 			options: &Options{
-				TokenCacheFile: cacheFile,
+				tokenCacheFile: cacheFile,
 			},
 			setupExpectations: func(tc testContext) {
 				tc.tokenCache.EXPECT().Read(cacheFile).Return(adal.Token{}, nil)
@@ -52,7 +52,7 @@ func TestExecCredentialPlugin(t *testing.T) {
 		{
 			name: "when cached token is still valid, token provider is not invoked",
 			options: &Options{
-				TokenCacheFile: cacheFile,
+				tokenCacheFile: cacheFile,
 				ServerID:       "apiServer",
 			},
 			setupExpectations: func(tc testContext) {
@@ -67,7 +67,7 @@ func TestExecCredentialPlugin(t *testing.T) {
 		{
 			name: "in legacy mode, when cached token is still valid, token provider is not invoked",
 			options: &Options{
-				TokenCacheFile: cacheFile,
+				tokenCacheFile: cacheFile,
 				ServerID:       "apiServer",
 				IsLegacy:       true,
 			},
@@ -83,7 +83,7 @@ func TestExecCredentialPlugin(t *testing.T) {
 		{
 			name: "when token expires and there is no refresh token, need to invoke token provider",
 			options: &Options{
-				TokenCacheFile: cacheFile,
+				tokenCacheFile: cacheFile,
 				ServerID:       "apiServer",
 			},
 			setupExpectations: func(tc testContext) {
@@ -141,10 +141,4 @@ func setupMocks(t *testing.T) (*gomock.Controller, *mock_token.MockTokenCache, *
 	pluginWriter := mock_token.NewMockExecCredentialWriter(ctrl)
 
 	return ctrl, tokenCache, tokenProvider, pluginWriter
-}
-
-func newOptions() *Options {
-	return &Options{
-		TokenCacheFile: "foo",
-	}
 }

@@ -3,9 +3,11 @@ package token
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/pflag"
+	"k8s.io/client-go/util/homedir"
 )
 
 type Options struct {
@@ -19,7 +21,8 @@ type Options struct {
 	TenantID           string
 	Environment        string
 	IsLegacy           bool
-	TokenCacheFile     string
+	TokenCacheDir      string
+	tokenCacheFile     string
 	IdentityResourceId string
 	FederatedTokenFile string
 	AuthorityHost      string
@@ -48,20 +51,24 @@ const (
 	envLoginMethod                        = "AAD_LOGIN_METHOD"
 )
 
-var supportedLogin []string
+var (
+	supportedLogin       []string
+	DefaultTokenCacheDir = homedir.HomeDir() + "/.kube/cache/kubelogin/"
+)
 
 func init() {
 	supportedLogin = []string{DeviceCodeLogin, ServicePrincipalLogin, ROPCLogin, MSILogin, AzureCLILogin, WorkloadIdentityLogin}
 }
 
 func GetSupportedLogins() string {
-	return strings.Join(supportedLogin, ",")
+	return strings.Join(supportedLogin, ", ")
 }
 
 func NewOptions() Options {
 	return Options{
-		LoginMethod: DeviceCodeLogin,
-		Environment: defaultEnvironmentName,
+		LoginMethod:   DeviceCodeLogin,
+		Environment:   defaultEnvironmentName,
+		TokenCacheDir: DefaultTokenCacheDir,
 	}
 }
 
@@ -76,6 +83,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&o.ServerID, "server-id", o.ServerID, "AAD server application ID")
 	fs.StringVar(&o.FederatedTokenFile, "federated-token-file", o.FederatedTokenFile, "Workload Identity federated token file")
 	fs.StringVar(&o.AuthorityHost, "authority-host", o.AuthorityHost, "Workload Identity authority host")
+	fs.StringVar(&o.TokenCacheDir, "token-cache-dir", o.TokenCacheDir, "directory to cache token")
 	fs.StringVarP(&o.TenantID, "tenant-id", "t", o.TenantID, "AAD tenant ID")
 	fs.StringVarP(&o.Environment, "environment", "e", o.Environment, "Azure environment name")
 	fs.BoolVar(&o.IsLegacy, "legacy", o.IsLegacy, "set to true to get token with 'spn:' prefix in audience claim")
@@ -96,6 +104,8 @@ func (o *Options) Validate() error {
 }
 
 func (o *Options) UpdateFromEnv() {
+	o.tokenCacheFile = getCacheFileName(o)
+
 	if v, ok := os.LookupEnv(envServicePrincipalClientID); ok {
 		o.ClientID = v
 	}
@@ -132,12 +142,23 @@ func (o *Options) UpdateFromEnv() {
 }
 
 func (o *Options) String() string {
-	return fmt.Sprintf("Login Method: %s, Environment: %s, TenantID: %s, ServerID: %s, ClientID: %s, IsLegacy: %t, msiResourceID: %s",
+	return fmt.Sprintf("Login Method: %s, Environment: %s, TenantID: %s, ServerID: %s, ClientID: %s, IsLegacy: %t, msiResourceID: %s, tokenCacheDir: %s, tokenCacheFile: %s",
 		o.LoginMethod,
 		o.Environment,
 		o.TenantID,
 		o.ServerID,
 		o.ClientID,
 		o.IsLegacy,
-		o.IdentityResourceId)
+		o.IdentityResourceId,
+		o.TokenCacheDir,
+		o.tokenCacheFile)
+}
+
+func getCacheFileName(o *Options) string {
+	// format: ${environment}-${server-id}-${client-id}-${tenant-id}[_legacy].json
+	cacheFileNameFormat := "%s-%s-%s-%s.json"
+	if o.IsLegacy {
+		cacheFileNameFormat = "%s-%s-%s-%s_legacy.json"
+	}
+	return filepath.Join(o.TokenCacheDir, fmt.Sprintf(cacheFileNameFormat, o.Environment, o.ServerID, o.ClientID, o.TenantID))
 }

@@ -54,9 +54,9 @@ func (p *execCredentialPlugin) Do() error {
 	)
 	if !p.disableTokenCache {
 		// get token from cache
-		token, err = p.tokenCache.Read(p.o.TokenCacheFile)
+		token, err = p.tokenCache.Read(p.o.tokenCacheFile)
 		if err != nil {
-			return fmt.Errorf("unable to read from token cache: %s, err: %s", p.o.TokenCacheFile, err)
+			return fmt.Errorf("unable to read from token cache: %s, err: %s", p.o.tokenCacheFile, err)
 		}
 	}
 
@@ -97,7 +97,7 @@ func (p *execCredentialPlugin) Do() error {
 				klog.V(10).Info("token refreshed")
 
 				// if refresh succeeds, save tooken, and return
-				if err := p.tokenCache.Write(p.o.TokenCacheFile, token); err != nil {
+				if err := p.tokenCache.Write(p.o.tokenCacheFile, token); err != nil {
 					return fmt.Errorf("failed to write to store: %s", err)
 				}
 
@@ -117,8 +117,8 @@ func (p *execCredentialPlugin) Do() error {
 
 	if !p.disableTokenCache {
 		// save token
-		if err := p.tokenCache.Write(p.o.TokenCacheFile, token); err != nil {
-			return fmt.Errorf("unable to write to token cache: %s, err: %s", p.o.TokenCacheFile, err)
+		if err := p.tokenCache.Write(p.o.tokenCacheFile, token); err != nil {
+			return fmt.Errorf("unable to write to token cache: %s, err: %s", p.o.tokenCacheFile, err)
 		}
 	}
 
