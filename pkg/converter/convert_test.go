@@ -1,8 +1,11 @@
 package converter
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/Azure/kubelogin/pkg/token"
 	"github.com/spf13/pflag"
@@ -12,7 +15,18 @@ import (
 )
 
 func TestConvert(t *testing.T) {
-	os.Setenv("KUBECONFIG", "/tmp/foo.conf")
+	const _kc = "KUBECONFIG"
+	curEnvVal := os.Getenv(_kc)
+	tempCfg := fmt.Sprintf("%s/GoTests-%d.%s", os.TempDir(), time.Now().UnixNano(), _kc)
+	tempCfg = filepath.FromSlash(tempCfg)
+	os.Setenv(_kc, tempCfg)
+
+	defer func() {
+		// put it back the way it was and cleanup.
+		os.Setenv(_kc, curEnvVal)
+		os.Remove(tempCfg)
+	}()
+
 	const (
 		clusterName        = "aks"
 		envName            = "foo"
