@@ -1,6 +1,7 @@
 package converter
 
 import (
+	"os"
 	"testing"
 
 	"github.com/Azure/kubelogin/pkg/token"
@@ -11,6 +12,7 @@ import (
 )
 
 func TestConvert(t *testing.T) {
+	os.Setenv("KUBECONFIG", "/tmp/foo.conf")
 	const (
 		clusterName        = "aks"
 		envName            = "foo"
@@ -602,12 +604,12 @@ func TestConvert(t *testing.T) {
 				argServerID, serverID,
 				argClientID, clientID,
 				argTenantID, tenantID,
-          argTokenCacheDir, tokenCacheDir,
+				argTokenCacheDir, tokenCacheDir,
 				argEnvironment, envName,
 				argLoginMethod, token.DeviceCodeLogin,
 			},
 			overrideFlags: map[string]string{
-				flagLoginMethod:   token.AzureCLILogin,
+				flagLoginMethod: token.AzureCLILogin,
 			},
 			expectedArgs: []string{
 				getTokenCommand,
