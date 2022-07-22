@@ -2,6 +2,7 @@ package converter
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"testing"
@@ -15,18 +16,6 @@ import (
 )
 
 func TestConvert(t *testing.T) {
-	const _kc = "KUBECONFIG"
-	curEnvVal := os.Getenv(_kc)
-	tempCfg := fmt.Sprintf("%s/GoTests-%d.%s", os.TempDir(), time.Now().UnixNano(), _kc)
-	tempCfg = filepath.FromSlash(tempCfg)
-	os.Setenv(_kc, tempCfg)
-
-	defer func() {
-		// put it back the way it was and cleanup.
-		os.Setenv(_kc, curEnvVal)
-		os.Remove(tempCfg)
-	}()
-
 	const (
 		clusterName        = "aks"
 		envName            = "foo"
@@ -43,6 +32,7 @@ func TestConvert(t *testing.T) {
 		authorityHost      = "https://login.microsoftonline.com/"
 		federatedTokenFile = "/tmp/file"
 		tokenCacheDir      = "/tmp/token_dir"
+		_kc                = "KUBECONFIG"
 	)
 	testData := []struct {
 		name               string
@@ -916,7 +906,22 @@ func TestConvert(t *testing.T) {
 		},
 	}
 
+	removeThese := make(map[string]bool)
+	rand.Seed(time.Now().UnixNano())
+
+	defer func(removeInner map[string]bool) {
+		for k, _ := range removeInner {
+			kcFile := k
+			go os.Remove(kcFile)
+		}
+	}(removeThese)
+
 	for _, data := range testData {
+		tempCfg := fmt.Sprintf("%s/GoTests-%d-%d.%s", os.TempDir(), time.Now().UnixNano(), rand.Int(), _kc)
+		tempCfg = filepath.FromSlash(tempCfg)
+		removeThese[tempCfg] = true
+		os.Setenv(_kc, tempCfg)
+
 		t.Run(data.name, func(t *testing.T) {
 			var authProviderName string
 			if data.expectedArgs != nil {
