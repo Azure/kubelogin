@@ -11,21 +11,22 @@ import (
 )
 
 type Options struct {
-	LoginMethod        string
-	ClientID           string
-	ClientSecret       string
-	ClientCert         string
-	Username           string
-	Password           string
-	ServerID           string
-	TenantID           string
-	Environment        string
-	IsLegacy           bool
-	TokenCacheDir      string
-	tokenCacheFile     string
-	IdentityResourceId string
-	FederatedTokenFile string
-	AuthorityHost      string
+	LoginMethod            string
+	ClientID               string
+	ClientSecret           string
+	ClientCert             string
+	Username               string
+	Password               string
+	ServerID               string
+	TenantID               string
+	Environment            string
+	IsLegacy               bool
+	TokenCacheDir          string
+	tokenCacheFile         string
+	IdentityResourceId     string
+	FederatedTokenFile     string
+	AuthorityHost          string
+	UseAzureRMTerraformEnv bool
 }
 
 const (
@@ -39,11 +40,7 @@ const (
 	WorkloadIdentityLogin = "workloadidentity"
 	manualTokenLogin      = "manual_token"
 
-	envServicePrincipalClientID           = "AAD_SERVICE_PRINCIPAL_CLIENT_ID"
-	envServicePrincipalClientSecret       = "AAD_SERVICE_PRINCIPAL_CLIENT_SECRET"
-	envServicePrincipalClientCert         = "AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE"
 	envWorkloadIdentityClientID           = "AZURE_CLIENT_ID"
-	envWorkloadIdentityTenantID           = "AZURE_TENANT_ID"
 	envWorkloadIdentityFederatedTokenFile = "AZURE_FEDERATED_TOKEN_FILE"
 	envWorkloadIdentityAuthorityHost      = "AZURE_AUTHORITY_HOST"
 	envROPCUsername                       = "AAD_USER_PRINCIPAL_NAME"
@@ -52,8 +49,12 @@ const (
 )
 
 var (
-	supportedLogin       []string
-	DefaultTokenCacheDir = homedir.HomeDir() + "/.kube/cache/kubelogin/"
+	supportedLogin                  []string
+	DefaultTokenCacheDir            = homedir.HomeDir() + "/.kube/cache/kubelogin/"
+	envServicePrincipalClientID     = "AAD_SERVICE_PRINCIPAL_CLIENT_ID"
+	envServicePrincipalClientSecret = "AAD_SERVICE_PRINCIPAL_CLIENT_SECRET"
+	envServicePrincipalClientCert   = "AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE"
+	envTenantID                     = "AZURE_TENANT_ID"
 )
 
 func init() {
@@ -84,9 +85,10 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&o.FederatedTokenFile, "federated-token-file", o.FederatedTokenFile, "Workload Identity federated token file")
 	fs.StringVar(&o.AuthorityHost, "authority-host", o.AuthorityHost, "Workload Identity authority host")
 	fs.StringVar(&o.TokenCacheDir, "token-cache-dir", o.TokenCacheDir, "directory to cache token")
-	fs.StringVarP(&o.TenantID, "tenant-id", "t", o.TenantID, "AAD tenant ID")
+	fs.StringVarP(&o.TenantID, "tenant-id", "t", o.TenantID, fmt.Sprintf("AAD tenant ID. It may be specified in %s environment variable", envTenantID))
 	fs.StringVarP(&o.Environment, "environment", "e", o.Environment, "Azure environment name")
 	fs.BoolVar(&o.IsLegacy, "legacy", o.IsLegacy, "set to true to get token with 'spn:' prefix in audience claim")
+	fs.BoolVar(&o.UseAzureRMTerraformEnv, "use-azurerm-env-vars", o.UseAzureRMTerraformEnv, "Use environment variable names of Terraform Azure Provider (ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_CLIENT_CERTIFICATE_PATH, ARM_TENANT_ID)")
 }
 
 func (o *Options) Validate() error {
@@ -105,6 +107,13 @@ func (o *Options) Validate() error {
 
 func (o *Options) UpdateFromEnv() {
 	o.tokenCacheFile = getCacheFileName(o)
+
+	if o.UseAzureRMTerraformEnv {
+		envServicePrincipalClientID = "ARM_CLIENT_ID"
+		envServicePrincipalClientSecret = "ARM_CLIENT_SECRET"
+		envServicePrincipalClientCert = "ARM_CLIENT_CERTIFICATE_PATH"
+		envTenantID = "ARM_TENANT_ID"
+	}
 
 	if v, ok := os.LookupEnv(envServicePrincipalClientID); ok {
 		o.ClientID = v
@@ -125,12 +134,13 @@ func (o *Options) UpdateFromEnv() {
 		o.LoginMethod = v
 	}
 
+	if v, ok := os.LookupEnv(envTenantID); ok {
+		o.TenantID = v
+	}
+
 	if o.LoginMethod == WorkloadIdentityLogin {
 		if v, ok := os.LookupEnv(envWorkloadIdentityClientID); ok {
 			o.ClientID = v
-		}
-		if v, ok := os.LookupEnv(envWorkloadIdentityTenantID); ok {
-			o.TenantID = v
 		}
 		if v, ok := os.LookupEnv(envWorkloadIdentityFederatedTokenFile); ok {
 			o.FederatedTokenFile = v
