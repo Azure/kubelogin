@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/go-autorest/autorest/adal"
 )
@@ -41,7 +41,7 @@ func (p *AzureCLIToken) Token() (adal.Token, error) {
 	}
 
 	// Use the token provider to get a new token
-	cliAccessToken, err := cred.GetToken(context.Background(), azcore.TokenRequestOptions{Scopes: []string{p.resourceID}})
+	cliAccessToken, err := cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: []string{p.resourceID}})
 	if err != nil {
 		return emptyToken, fmt.Errorf("expected an empty error but received: %v", err)
 	}
