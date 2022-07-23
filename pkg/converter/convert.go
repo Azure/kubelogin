@@ -141,7 +141,7 @@ func isExecUsingkubelogin(authInfoPtr *api.AuthInfo) (ok bool) {
 	return strings.Contains(lowerc, "kubelogin")
 }
 
-func Convert(o Options) error {
+func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 	config, err := o.configFlags.ToRawKubeConfigLoader().RawConfig()
 	if err != nil {
 		return fmt.Errorf("unable to load kubeconfig: %s", err)
@@ -314,7 +314,7 @@ func Convert(o Options) error {
 		authInfo.Exec = exec
 		authInfo.AuthProvider = nil
 	}
-	err = clientcmd.ModifyConfig(clientcmd.NewDefaultPathOptions(), config, true)
+	err = clientcmd.ModifyConfig(pathOptions, config, true)
 	return err
 }
 

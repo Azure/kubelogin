@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/Azure/kubelogin/pkg/converter"
 	"github.com/spf13/cobra"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 // NewConvertCmd provides a cobra command for convert sub command
@@ -21,7 +22,8 @@ func NewConvertCmd() *cobra.Command {
 				return err
 			}
 
-			if err := converter.Convert(o); err != nil {
+			pathOptions := clientcmd.NewDefaultPathOptions()
+			if err := converter.Convert(o, pathOptions); err != nil {
 				return err
 			}
 			return nil
