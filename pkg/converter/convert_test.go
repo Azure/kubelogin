@@ -1,6 +1,8 @@
 package converter
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/Azure/kubelogin/pkg/token"
@@ -602,12 +604,12 @@ func TestConvert(t *testing.T) {
 				argServerID, serverID,
 				argClientID, clientID,
 				argTenantID, tenantID,
-          argTokenCacheDir, tokenCacheDir,
+				argTokenCacheDir, tokenCacheDir,
 				argEnvironment, envName,
 				argLoginMethod, token.DeviceCodeLogin,
 			},
 			overrideFlags: map[string]string{
-				flagLoginMethod:   token.AzureCLILogin,
+				flagLoginMethod: token.AzureCLILogin,
 			},
 			expectedArgs: []string{
 				getTokenCommand,
@@ -899,13 +901,23 @@ func TestConvert(t *testing.T) {
 			command: execName,
 		},
 	}
-
+	rootTmpDir, err := os.MkdirTemp("", "kubelogin-test")
+	if err != nil {
+		t.Fatalf("unable to create temp dir: %s", err)
+	}
+	defer os.RemoveAll(rootTmpDir)
 	for _, data := range testData {
 		t.Run(data.name, func(t *testing.T) {
 			var authProviderName string
+			tmpDir, err := os.MkdirTemp(rootTmpDir, "config")
+			if err != nil {
+				t.Fatalf("%s", err)
+			}
 			if data.expectedArgs != nil {
 				authProviderName = azureAuthProvider
 			}
+			kubeconfigFile := filepath.Join(tmpDir, "config")
+
 			config := createValidTestConfig(
 				clusterName,
 				data.command,
@@ -927,7 +939,13 @@ func TestConvert(t *testing.T) {
 				}
 			}
 
-			err := Convert(o)
+			pathOptions := clientcmd.PathOptions{
+				ExplicitFileFlag: "kubeconfig",
+				LoadingRules: &clientcmd.ClientConfigLoadingRules{
+					ExplicitPath: kubeconfigFile,
+				},
+			}
+			err = Convert(o, &pathOptions)
 			if err != nil {
 				t.Fatalf("Unexpected error from Convert: %v", err)
 			}
