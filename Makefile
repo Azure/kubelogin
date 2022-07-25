@@ -10,6 +10,7 @@ GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 GIT_HASH   := $(shell git rev-parse --verify HEAD)
 GIT_TAG    := $(shell git describe --tags --exact-match --abbrev=0 2>/dev/null || echo "")
 BUILD_TIME ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
+PLATFORM   := $(shell uname -a)
 
 ifdef GIT_TAG
 	VERSION := $(GIT_TAG)/$(GIT_HASH)
@@ -19,7 +20,8 @@ endif
 
 LDFLAGS    := -X main.version=$(VERSION) \
     -X main.goVersion=$(shell go version | cut -d " " -f 3) \
-	-X main.buildTime=$(BUILD_TIME)
+	-X main.buildTime=$(BUILD_TIME) \
+	-X 'main.platform=$(PLATFORM)'
 
 all: $(TARGET)
 
