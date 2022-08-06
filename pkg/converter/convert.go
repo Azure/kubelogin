@@ -180,6 +180,11 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 		switch o.TokenOptions.LoginMethod {
 		case token.AzureCLILogin:
 
+			if argTenantIDVal != "" {
+				exec.Args = append(exec.Args, argTenantID)
+				exec.Args = append(exec.Args, argTenantIDVal)
+			}
+
 		case token.DeviceCodeLogin:
 
 			if argClientIDVal == "" {
