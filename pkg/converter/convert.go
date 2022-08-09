@@ -180,9 +180,13 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 		switch o.TokenOptions.LoginMethod {
 		case token.AzureCLILogin:
 
-			if argTenantIDVal != "" {
+			// when convert to azurecli login, tenantID from the input kubeconfig will be disregarded and
+			// will have to come from explicit flag `--tenant-id`.
+			// this is because azure cli logged in using MSI does not allow specifying tenant ID
+			// see https://github.com/Azure/kubelogin/issues/123#issuecomment-1209652342
+			if o.isSet(flagTenantID) {
 				exec.Args = append(exec.Args, argTenantID)
-				exec.Args = append(exec.Args, argTenantIDVal)
+				exec.Args = append(exec.Args, o.TokenOptions.TenantID)
 			}
 
 		case token.DeviceCodeLogin:
