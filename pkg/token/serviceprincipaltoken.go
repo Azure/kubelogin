@@ -19,15 +19,16 @@ const (
 )
 
 type servicePrincipalToken struct {
-	clientID     string
-	clientSecret string
-	clientCert   string
-	resourceID   string
-	tenantID     string
-	oAuthConfig  adal.OAuthConfig
+	clientID           string
+	clientSecret       string
+	clientCert         string
+	clientCertPassword string
+	resourceID         string
+	tenantID           string
+	oAuthConfig        adal.OAuthConfig
 }
 
-func newServicePrincipalToken(oAuthConfig adal.OAuthConfig, clientID, clientSecret, clientCert, resourceID, tenantID string) (TokenProvider, error) {
+func newServicePrincipalToken(oAuthConfig adal.OAuthConfig, clientID, clientSecret, clientCert, clientCertPassword, resourceID, tenantID string) (TokenProvider, error) {
 	if clientID == "" {
 		return nil, errors.New("clientID cannot be empty")
 	}
@@ -45,12 +46,13 @@ func newServicePrincipalToken(oAuthConfig adal.OAuthConfig, clientID, clientSecr
 	}
 
 	return &servicePrincipalToken{
-		clientID:     clientID,
-		clientSecret: clientSecret,
-		clientCert:   clientCert,
-		resourceID:   resourceID,
-		tenantID:     tenantID,
-		oAuthConfig:  oAuthConfig,
+		clientID:           clientID,
+		clientSecret:       clientSecret,
+		clientCert:         clientCert,
+		clientCertPassword: clientCertPassword,
+		resourceID:         resourceID,
+		tenantID:           tenantID,
+		oAuthConfig:        oAuthConfig,
 	}, nil
 }
 
@@ -82,7 +84,7 @@ func (p *servicePrincipalToken) Token() (adal.Token, error) {
 		}
 
 		// Get the certificate and private key from pfx file
-		cert, rsaPrivateKey, err := decodePkcs12(certData, "")
+		cert, rsaPrivateKey, err := decodePkcs12(certData, p.clientCertPassword)
 		if err != nil {
 			return emptyToken, fmt.Errorf("failed to decode pkcs12 certificate while creating spt: %w", err)
 		}
