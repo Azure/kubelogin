@@ -32,6 +32,22 @@ brew update
 brew upgrade Azure/kubelogin/kubelogin
 ```
 
+### Setup (Windows)
+From an elevated Powershell session:
+``` powershell
+az aks install-cli
+$targetDir="$env:USERPROFILE\.azure-kubelogin"
+$oldPath = (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH).path
+$oldPathArray=($env:Path) -split ';'
+if(-Not($oldPathArray -Contains "$targetDir")) {
+    write-host "Adding $targetDir to Windows paths"
+    $newPath = "$oldPath;$targetDir"
+    Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value "$newPath"
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
+}
+```
+
+
 ### Run
 
 #### Device code flow (interactive)
