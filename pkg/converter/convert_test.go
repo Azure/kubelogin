@@ -22,6 +22,7 @@ func TestConvert(t *testing.T) {
 		tenantID           = "tenantID"
 		clientSecret       = "foosecret"
 		clientCert         = "/tmp/clientcert"
+		clientCertPassword = "clientcertsecret"
 		username           = "foo123"
 		password           = "foobar"
 		loginMethod        = "devicecode"
@@ -192,6 +193,32 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
+			name: "using legacy azure auth to convert to spn with password-protected clientCert",
+			authProviderConfig: map[string]string{
+				cfgEnvironment: envName,
+				cfgApiserverID: serverID,
+				cfgClientID:    clientID,
+				cfgTenantID:    tenantID,
+				cfgConfigMode:  "1",
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod:        token.ServicePrincipalLogin,
+				flagClientID:           spClientID,
+				flagClientCert:         clientCert,
+				flagClientCertPassword: clientCertPassword,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, spClientID,
+				argClientCert, clientCert,
+				argClientCertPassword, clientCertPassword,
+				argTenantID, tenantID,
+				argEnvironment, envName,
+				argLoginMethod, token.ServicePrincipalLogin,
+			},
+		},
+		{
 			name: "using legacy azure auth to convert to ropc",
 			authProviderConfig: map[string]string{
 				cfgEnvironment: envName,
@@ -305,15 +332,16 @@ func TestConvert(t *testing.T) {
 				cfgConfigMode:  "0",
 			},
 			overrideFlags: map[string]string{
-				flagEnvironment:  envName,
-				flagServerID:     serverID,
-				flagClientID:     clientID,
-				flagTenantID:     tenantID,
-				flagClientSecret: clientSecret,
-				flagClientCert:   clientCert,
-				flagUsername:     username,
-				flagPassword:     password,
-				flagLoginMethod:  loginMethod,
+				flagEnvironment:        envName,
+				flagServerID:           serverID,
+				flagClientID:           clientID,
+				flagTenantID:           tenantID,
+				flagClientSecret:       clientSecret,
+				flagClientCert:         clientCert,
+				flagClientCertPassword: clientCertPassword,
+				flagUsername:           username,
+				flagPassword:           password,
+				flagLoginMethod:        loginMethod,
 			},
 			expectedArgs: []string{
 				getTokenCommand,
