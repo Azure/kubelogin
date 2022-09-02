@@ -23,6 +23,7 @@ const (
 	argEnvironment        = "--environment"
 	argClientSecret       = "--client-secret"
 	argClientCert         = "--client-certificate"
+	argClientCertPassword = "--client-certificate-password"
 	argIsLegacy           = "--legacy"
 	argUsername           = "--username"
 	argPassword           = "--password"
@@ -38,6 +39,7 @@ const (
 	flagEnvironment        = "environment"
 	flagClientSecret       = "client-secret"
 	flagClientCert         = "client-certificate"
+	flagClientCertPassword = "client-certificate-password"
 	flagIsLegacy           = "legacy"
 	flagUsername           = "username"
 	flagPassword           = "password"
@@ -245,6 +247,11 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 			if o.isSet(flagClientCert) {
 				exec.Args = append(exec.Args, argClientCert)
 				exec.Args = append(exec.Args, o.TokenOptions.ClientCert)
+			}
+
+			if o.isSet(flagClientCertPassword) {
+				exec.Args = append(exec.Args, argClientCertPassword)
+				exec.Args = append(exec.Args, o.TokenOptions.ClientCertPassword)
 			}
 
 			if isLegacyConfigMode {

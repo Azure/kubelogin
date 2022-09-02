@@ -15,6 +15,7 @@ type Options struct {
 	ClientID               string
 	ClientSecret           string
 	ClientCert             string
+	ClientCertPassword     string
 	Username               string
 	Password               string
 	ServerID               string
@@ -49,12 +50,13 @@ const (
 )
 
 var (
-	supportedLogin                  []string
-	DefaultTokenCacheDir            = homedir.HomeDir() + "/.kube/cache/kubelogin/"
-	envServicePrincipalClientID     = "AAD_SERVICE_PRINCIPAL_CLIENT_ID"
-	envServicePrincipalClientSecret = "AAD_SERVICE_PRINCIPAL_CLIENT_SECRET"
-	envServicePrincipalClientCert   = "AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE"
-	envTenantID                     = "AZURE_TENANT_ID"
+	supportedLogin                        []string
+	DefaultTokenCacheDir                  = homedir.HomeDir() + "/.kube/cache/kubelogin/"
+	envServicePrincipalClientID           = "AAD_SERVICE_PRINCIPAL_CLIENT_ID"
+	envServicePrincipalClientSecret       = "AAD_SERVICE_PRINCIPAL_CLIENT_SECRET"
+	envServicePrincipalClientCert         = "AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE"
+	envServicePrincipalClientCertPassword = "AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE_PASSWORD"
+	envTenantID                           = "AZURE_TENANT_ID"
 )
 
 func init() {
@@ -78,6 +80,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&o.ClientID, "client-id", o.ClientID, fmt.Sprintf("AAD client application ID. It may be specified in %s environment variable", envServicePrincipalClientID))
 	fs.StringVar(&o.ClientSecret, "client-secret", o.ClientSecret, fmt.Sprintf("AAD client application secret. Used in spn login. It may be specified in %s environment variable", envServicePrincipalClientSecret))
 	fs.StringVar(&o.ClientCert, "client-certificate", o.ClientCert, fmt.Sprintf("AAD client cert in pfx. Used in spn login. It may be specified in %s environment variable", envServicePrincipalClientCert))
+	fs.StringVar(&o.ClientCertPassword, "client-certificate-password", o.ClientCertPassword, fmt.Sprintf("Password for AAD client cert. Used in spn login. It may be specified in %s environment variable", envServicePrincipalClientCertPassword))
 	fs.StringVar(&o.Username, "username", o.Username, fmt.Sprintf("user name for ropc login flow. It may be specified in %s environment variable", envROPCUsername))
 	fs.StringVar(&o.Password, "password", o.Password, fmt.Sprintf("password for ropc login flow. It may be specified in %s environment variable", envROPCPassword))
 	fs.StringVar(&o.IdentityResourceId, "identity-resource-id", o.IdentityResourceId, "Managed Identity resource id.")
@@ -88,7 +91,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&o.TenantID, "tenant-id", "t", o.TenantID, fmt.Sprintf("AAD tenant ID. It may be specified in %s environment variable", envTenantID))
 	fs.StringVarP(&o.Environment, "environment", "e", o.Environment, "Azure environment name")
 	fs.BoolVar(&o.IsLegacy, "legacy", o.IsLegacy, "set to true to get token with 'spn:' prefix in audience claim")
-	fs.BoolVar(&o.UseAzureRMTerraformEnv, "use-azurerm-env-vars", o.UseAzureRMTerraformEnv, "Use environment variable names of Terraform Azure Provider (ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_CLIENT_CERTIFICATE_PATH, ARM_TENANT_ID)")
+	fs.BoolVar(&o.UseAzureRMTerraformEnv, "use-azurerm-env-vars", o.UseAzureRMTerraformEnv, "Use environment variable names of Terraform Azure Provider (ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_CLIENT_CERTIFICATE_PATH, ARM_CLIENT_CERTIFICATE_PASSWORD, ARM_TENANT_ID)")
 }
 
 func (o *Options) Validate() error {
@@ -112,6 +115,7 @@ func (o *Options) UpdateFromEnv() {
 		envServicePrincipalClientID = "ARM_CLIENT_ID"
 		envServicePrincipalClientSecret = "ARM_CLIENT_SECRET"
 		envServicePrincipalClientCert = "ARM_CLIENT_CERTIFICATE_PATH"
+		envServicePrincipalClientCertPassword = "ARM_CLIENT_CERTIFICATE_PASSWORD"
 		envTenantID = "ARM_TENANT_ID"
 	}
 
@@ -123,6 +127,9 @@ func (o *Options) UpdateFromEnv() {
 	}
 	if v, ok := os.LookupEnv(envServicePrincipalClientCert); ok {
 		o.ClientCert = v
+	}
+	if v, ok := os.LookupEnv(envServicePrincipalClientCertPassword); ok {
+		o.ClientCertPassword = v
 	}
 	if v, ok := os.LookupEnv(envROPCUsername); ok {
 		o.Username = v
