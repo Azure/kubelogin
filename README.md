@@ -122,6 +122,16 @@ export AAD_SERVICE_PRINCIPAL_CLIENT_SECRET=<spn secret>
 kubectl get no
 ```
 
+or write your spn secret permanently into the kubeconfig:
+
+```sh
+export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l spn --client-id <spn client id> --client-secret <spn secret>
+
+kubectl get nodes
+```
+
 #### User Principal login flow (non interactive)
 
 > Note: ROPC is not supported in hybrid identity federation scenarios (for example, Azure AD and ADFS used to authenticate on-premises accounts). If users are full-page redirected to an on-premises identity providers, Azure AD is not able to test the username and password against that identity provider. Pass-through authentication is supported with ROPC, however.
