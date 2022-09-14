@@ -87,7 +87,7 @@ The output is similar to the following example.
 Query your service principal AAD Object ID by using the command below.
 
 ```sh
-az ad sp show --id <spn client id> --query "objectId"
+az ad sp show --id <spn client id> --query "id"
 ```
 
 To configure the role binding on Azure Kubernetes Service, the user in rolebinding should be the AAD Object ID.
