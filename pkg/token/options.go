@@ -34,6 +34,7 @@ const (
 	defaultEnvironmentName = "AzurePublicCloud"
 
 	DeviceCodeLogin       = "devicecode"
+	InteractiveLogin      = "interactive"
 	ServicePrincipalLogin = "spn"
 	ROPCLogin             = "ropc"
 	MSILogin              = "msi"
@@ -60,7 +61,7 @@ var (
 )
 
 func init() {
-	supportedLogin = []string{DeviceCodeLogin, ServicePrincipalLogin, ROPCLogin, MSILogin, AzureCLILogin, WorkloadIdentityLogin}
+	supportedLogin = []string{DeviceCodeLogin, InteractiveLogin, ServicePrincipalLogin, ROPCLogin, MSILogin, AzureCLILogin, WorkloadIdentityLogin}
 }
 
 func GetSupportedLogins() string {
