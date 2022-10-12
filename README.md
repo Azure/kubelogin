@@ -449,7 +449,7 @@ Kubelogin can be used to authenticate to general kubernetes clusters using AAD a
 
 1. Create an AAD Enterprise Application and the corresponding App Registration. Check the `Allow public client flows` checkbox. Configure groups to be included in the response. Take a note of the directory (tenant) ID as `$AAD_TENANT_ID` and the application (client) ID as `$AAD_CLIENT_ID`
 2. Configure the API server with the following flags:
-* Issuer URL: `--oidc-issuer-url=https://sts.windows.net/$AAD_TENANT_ID`
+* Issuer URL: `--oidc-issuer-url=https://sts.windows.net/$AAD_TENANT_ID/`
 * Client ID: `--oidc-client-id=$AAD_CLIENT_ID`
 * Username claim: `--oidc-username-claim=upn`
 
