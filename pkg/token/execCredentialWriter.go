@@ -17,14 +17,19 @@ import (
 
 	//"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/pkg/apis/clientauthentication"
+	"k8s.io/client-go/pkg/apis/clientauthentication/install"
 	v1 "k8s.io/client-go/pkg/apis/clientauthentication/v1"
 	"k8s.io/client-go/pkg/apis/clientauthentication/v1beta1"
 )
 
+const execInfoEnv = "KUBERNETES_EXEC_INFO"
+
 var scheme = runtime.NewScheme()
 var codecs = serializer.NewCodecFactory(scheme)
 
-const execInfoEnv = "KUBERNETES_EXEC_INFO"
+func init() {
+	install.Install(scheme)
+}
 
 type ExecCredentialWriter interface {
 	Write(token adal.Token) error
