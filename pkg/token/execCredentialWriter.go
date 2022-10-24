@@ -4,32 +4,17 @@ package token
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 
 	"github.com/Azure/go-autorest/autorest/adal"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	//metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
-
-	//"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/pkg/apis/clientauthentication"
-	"k8s.io/client-go/pkg/apis/clientauthentication/install"
 	v1 "k8s.io/client-go/pkg/apis/clientauthentication/v1"
 	"k8s.io/client-go/pkg/apis/clientauthentication/v1beta1"
 )
 
 const execInfoEnv = "KUBERNETES_EXEC_INFO"
-
-var scheme = runtime.NewScheme()
-var codecs = serializer.NewCodecFactory(scheme)
-
-func init() {
-	install.Install(scheme)
-}
 
 type ExecCredentialWriter interface {
 	Write(token adal.Token) error
@@ -39,9 +24,6 @@ type execCredentialWriter struct{}
 
 // Write writes the ExecCredential to standard output for kubectl.
 func (*execCredentialWriter) Write(token adal.Token) error {
-	fmt.Fprintln(os.Stderr, os.Getenv(execInfoEnv))
-	//os.Setenv(execInfoEnv, "TEST")
-	//fmt.Println("KUBERNETES_EXEC_INFO:", os.Getenv(execInfoEnv))
 	apiVersionFromEnv, err := helperGetApiVersionFromEnv()
 	if err != nil {
 		return err
@@ -49,7 +31,8 @@ func (*execCredentialWriter) Write(token adal.Token) error {
 
 	var ec interface{}
 	t := metav1.NewTime(token.Expires())
-	if apiVersionFromEnv == "client.authentication.k8s.io/v1beta1" {
+	switch apiVersionFromEnv {
+	case "client.authentication.k8s.io/v1beta1":
 		ec = &v1beta1.ExecCredential{
 			TypeMeta: metav1.TypeMeta{
 				APIVersion: "client.authentication.k8s.io/v1beta1",
@@ -60,7 +43,7 @@ func (*execCredentialWriter) Write(token adal.Token) error {
 				ExpirationTimestamp: &t,
 			},
 		}
-	} else {
+	case "client.authentication.k8s.io/v1":
 		ec = &v1.ExecCredential{
 			TypeMeta: metav1.TypeMeta{
 				APIVersion: "client.authentication.k8s.io/v1",
@@ -84,22 +67,20 @@ func helperGetApiVersionFromEnv() (string, error) {
 	env := os.Getenv(execInfoEnv)
 	if env == "" {
 		return "client.authentication.k8s.io/v1beta1", nil
-	} else {
-		obj, _, err := codecs.UniversalDeserializer().Decode([]byte(env), nil, nil)
-		if err != nil {
-			return "", fmt.Errorf("decode: %w", err)
-		}
-		var execCredential clientauthentication.ExecCredential
-		if err := scheme.Convert(obj, &execCredential, nil); err != nil {
-			return "", fmt.Errorf("cannot convert to ExecCredential: %w", err)
-		}
-		if execCredential.TypeMeta.APIVersion == "" {
-			return "client.authentication.k8s.io/v1beta1", nil
-		}
-		if execCredential.TypeMeta.APIVersion == "client.authentication.k8s.io/v1beta1" || execCredential.TypeMeta.APIVersion == "client.authentication.k8s.io/v1" {
-			return execCredential.TypeMeta.APIVersion, nil
-		} else {
-			return "", errors.New("This api version is not supported")
-		}
+	}
+	var execCredential clientauthentication.ExecCredential
+	error := json.Unmarshal([]byte(env), &execCredential)
+	if error != nil {
+		return "", fmt.Errorf("cannot convert to ExecCredential: %w", error)
+	}
+	switch execCredential.TypeMeta.APIVersion {
+	case "":
+		return "client.authentication.k8s.io/v1beta1", nil
+	case "client.authentication.k8s.io/v1beta1":
+		return execCredential.TypeMeta.APIVersion, nil
+	case "client.authentication.k8s.io/v1":
+		return execCredential.TypeMeta.APIVersion, nil
+	default:
+		return "", fmt.Errorf("api version: %s is not supported", execCredential.TypeMeta.APIVersion)
 	}
 }
