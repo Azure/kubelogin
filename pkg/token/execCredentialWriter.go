@@ -12,6 +12,8 @@ import (
 	"k8s.io/client-go/pkg/apis/clientauthentication/v1beta1"
 )
 
+const execInfoEnv = "KUBERNETES_EXEC_INFO"
+
 type ExecCredentialWriter interface {
 	Write(token adal.Token) error
 }
