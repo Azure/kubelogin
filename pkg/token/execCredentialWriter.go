@@ -28,7 +28,7 @@ type execCredentialWriter struct{}
 
 // Write writes the ExecCredential to standard output for kubectl.
 func (*execCredentialWriter) Write(token adal.Token) error {
-	apiVersionFromEnv, err := helperGetApiVersionFromEnv()
+	apiVersionFromEnv, err := getAPIVersionFromExecInfoEnv()
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func (*execCredentialWriter) Write(token adal.Token) error {
 	return nil
 }
 
-func helperGetApiVersionFromEnv() (string, error) {
+func getAPIVersionFromExecInfoEnv() (string, error) {
 	env := os.Getenv(execInfoEnv)
 	if env == "" {
 		return apiV1beta1, nil
@@ -75,7 +75,7 @@ func helperGetApiVersionFromEnv() (string, error) {
 	var execCredential clientauthentication.ExecCredential
 	error := json.Unmarshal([]byte(env), &execCredential)
 	if error != nil {
-		return "", fmt.Errorf("cannot convert to ExecCredential: %w", error)
+		return "", fmt.Errorf("cannot unmarshall %q to ExecCredential: %w", env, error)
 	}
 	switch execCredential.TypeMeta.APIVersion {
 	case "":
