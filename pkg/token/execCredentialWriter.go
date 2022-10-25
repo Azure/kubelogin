@@ -14,7 +14,11 @@ import (
 	"k8s.io/client-go/pkg/apis/clientauthentication/v1beta1"
 )
 
-const execInfoEnv = "KUBERNETES_EXEC_INFO"
+const (
+	apiV1       string = "client.authentication.k8s.io/v1"
+	apiV1beta1  string = "client.authentication.k8s.io/v1beta1"
+	execInfoEnv string = "KUBERNETES_EXEC_INFO"
+)
 
 type ExecCredentialWriter interface {
 	Write(token adal.Token) error
@@ -32,10 +36,10 @@ func (*execCredentialWriter) Write(token adal.Token) error {
 	var ec interface{}
 	t := metav1.NewTime(token.Expires())
 	switch apiVersionFromEnv {
-	case "client.authentication.k8s.io/v1beta1":
+	case apiV1beta1:
 		ec = &v1beta1.ExecCredential{
 			TypeMeta: metav1.TypeMeta{
-				APIVersion: "client.authentication.k8s.io/v1beta1",
+				APIVersion: apiV1beta1,
 				Kind:       "ExecCredential",
 			},
 			Status: &v1beta1.ExecCredentialStatus{
@@ -43,10 +47,10 @@ func (*execCredentialWriter) Write(token adal.Token) error {
 				ExpirationTimestamp: &t,
 			},
 		}
-	case "client.authentication.k8s.io/v1":
+	case apiV1:
 		ec = &v1.ExecCredential{
 			TypeMeta: metav1.TypeMeta{
-				APIVersion: "client.authentication.k8s.io/v1",
+				APIVersion: apiV1,
 				Kind:       "ExecCredential",
 			},
 			Status: &v1.ExecCredentialStatus{
@@ -66,7 +70,7 @@ func (*execCredentialWriter) Write(token adal.Token) error {
 func helperGetApiVersionFromEnv() (string, error) {
 	env := os.Getenv(execInfoEnv)
 	if env == "" {
-		return "client.authentication.k8s.io/v1beta1", nil
+		return apiV1beta1, nil
 	}
 	var execCredential clientauthentication.ExecCredential
 	error := json.Unmarshal([]byte(env), &execCredential)
@@ -75,10 +79,10 @@ func helperGetApiVersionFromEnv() (string, error) {
 	}
 	switch execCredential.TypeMeta.APIVersion {
 	case "":
-		return "client.authentication.k8s.io/v1beta1", nil
-	case "client.authentication.k8s.io/v1beta1":
+		return apiV1beta1, nil
+	case apiV1:
 		return execCredential.TypeMeta.APIVersion, nil
-	case "client.authentication.k8s.io/v1":
+	case apiV1beta1:
 		return execCredential.TypeMeta.APIVersion, nil
 	default:
 		return "", fmt.Errorf("api version: %s is not supported", execCredential.TypeMeta.APIVersion)
