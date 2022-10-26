@@ -80,9 +80,7 @@ func getAPIVersionFromExecInfoEnv() (string, error) {
 	switch execCredential.TypeMeta.APIVersion {
 	case "":
 		return apiV1beta1, nil
-	case apiV1:
-		return execCredential.TypeMeta.APIVersion, nil
-	case apiV1beta1:
+	case apiV1, apiV1beta1:
 		return execCredential.TypeMeta.APIVersion, nil
 	default:
 		return "", fmt.Errorf("api version: %s is not supported", execCredential.TypeMeta.APIVersion)
