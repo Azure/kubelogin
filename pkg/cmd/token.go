@@ -3,7 +3,6 @@ package cmd
 import (
 	"github.com/Azure/kubelogin/pkg/token"
 	"github.com/spf13/cobra"
-	
 )
 
 // NewTokenCmd provides a cobra command for convert sub command

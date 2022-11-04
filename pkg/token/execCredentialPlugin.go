@@ -33,13 +33,12 @@ type execCredentialPlugin struct {
 
 func New(o *Options) (ExecCredentialPlugin, error) {
 	env := os.Getenv(execInfoEnv)
-	fmt.Fprintln(os.Stderr, os.Getenv(execInfoEnv))
+	//fmt.Fprintln(os.Stderr, os.Getenv(execInfoEnv))
 	var execCredential clientauthentication.ExecCredential
-	error := json.Unmarshal([]byte(env), &execCredential)
-	if error != nil {
+	if error := json.Unmarshal([]byte(env), &execCredential); error != nil {
 		return nil, fmt.Errorf("cannot convert to ExecCredential: %w", error)
 	}
-	if !execCredential.Spec.Interactive && o.LoginMethod == "DeviceCodeLogin" {
+	if !execCredential.Spec.Interactive && o.LoginMethod == DeviceCodeLogin {
 		return nil, fmt.Errorf("devicelogin is not supported if interactiveMode is 'never'")
 	}
 	klog.V(10).Info(o)
