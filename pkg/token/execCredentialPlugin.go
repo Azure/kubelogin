@@ -71,7 +71,7 @@ func (p *execCredentialPlugin) Do() error {
 		// if not expired, return
 		if !token.WillExpireIn(expirationDelta) {
 			klog.V(10).Info("access token is still valid. will return")
-			return p.execCredentialWriter.Write(token, new(bytes.Buffer))
+			return p.execCredentialWriter.Write(token, os.Stdout)
 		}
 
 		// if expired, try refresh when refresh token exists
