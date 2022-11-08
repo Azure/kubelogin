@@ -5,6 +5,7 @@ package token
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/Azure/go-autorest/autorest/adal"
@@ -102,7 +103,7 @@ func (p *execCredentialPlugin) Do() error {
 					return fmt.Errorf("failed to write to store: %s", err)
 				}
 
-				return p.execCredentialWriter.Write(token, new(bytes.Buffer))
+				return p.execCredentialWriter.Write(token, os.Stdout)
 			}
 		} else {
 			klog.V(5).Info("there is no refresh token")

@@ -1,10 +1,10 @@
 package token
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -47,7 +47,7 @@ func TestExecCredentialWriter(t *testing.T) {
 				tc.tokenCache.EXPECT().Read(cacheFile).Return(adal.Token{}, nil)
 				tc.tokenProvider.EXPECT().Token().Return(adal.Token{}, nil)
 				tc.tokenCache.EXPECT().Write(cacheFile, adal.Token{}).Return(nil)
-				tc.pluginWriter.EXPECT().Write(adal.Token{}, new(bytes.Buffer))
+				tc.pluginWriter.EXPECT().Write(adal.Token{}, os.Stdout)
 			},
 		},
 		{
@@ -62,7 +62,7 @@ func TestExecCredentialWriter(t *testing.T) {
 					ExpiresOn: json.Number(fmt.Sprintf("%d", time.Now().AddDate(1, 0, 0).Unix())),
 				}
 				tc.tokenCache.EXPECT().Read(cacheFile).Return(cachedToken, nil)
-				tc.pluginWriter.EXPECT().Write(cachedToken, new(bytes.Buffer))
+				tc.pluginWriter.EXPECT().Write(cachedToken, os.Stdout)
 			},
 		},
 		{
@@ -78,7 +78,7 @@ func TestExecCredentialWriter(t *testing.T) {
 					ExpiresOn: json.Number(fmt.Sprintf("%d", time.Now().AddDate(1, 0, 0).Unix())),
 				}
 				tc.tokenCache.EXPECT().Read(cacheFile).Return(cachedToken, nil)
-				tc.pluginWriter.EXPECT().Write(cachedToken, new(bytes.Buffer))
+				tc.pluginWriter.EXPECT().Write(cachedToken, os.Stdout)
 			},
 		},
 		{
@@ -99,7 +99,7 @@ func TestExecCredentialWriter(t *testing.T) {
 				tc.tokenCache.EXPECT().Read(cacheFile).Return(cachedToken, nil)
 				tc.tokenProvider.EXPECT().Token().Return(refreshedToken, nil)
 				tc.tokenCache.EXPECT().Write(cacheFile, refreshedToken).Return(nil)
-				tc.pluginWriter.EXPECT().Write(refreshedToken, new(bytes.Buffer))
+				tc.pluginWriter.EXPECT().Write(refreshedToken, os.Stdout)
 			},
 		},
 	}

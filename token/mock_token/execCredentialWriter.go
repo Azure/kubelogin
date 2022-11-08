@@ -5,7 +5,7 @@
 package mock_token
 
 import (
-	bytes "bytes"
+	io "io"
 	reflect "reflect"
 
 	adal "github.com/Azure/go-autorest/autorest/adal"
@@ -36,7 +36,7 @@ func (m *MockExecCredentialWriter) EXPECT() *MockExecCredentialWriterMockRecorde
 }
 
 // Write mocks base method.
-func (m *MockExecCredentialWriter) Write(arg0 adal.Token, arg1 *bytes.Buffer) error {
+func (m *MockExecCredentialWriter) Write(arg0 adal.Token, arg1 io.Writer) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Write", arg0, arg1)
 	ret0, _ := ret[0].(error)

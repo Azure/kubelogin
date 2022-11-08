@@ -3,11 +3,10 @@ package token
 //go:generate sh -c "mockgen -destination mock_$GOPACKAGE/execCredentialWriter.go github.com/Azure/kubelogin/pkg/token ExecCredentialWriter"
 
 import (
-	"bytes"
+	//"bytes"
 	"encoding/json"
 	"fmt"
-
-	//"io"
+	"io"
 	"os"
 
 	"github.com/Azure/go-autorest/autorest/adal"
@@ -24,13 +23,13 @@ const (
 )
 
 type ExecCredentialWriter interface {
-	Write(token adal.Token, buffer *bytes.Buffer) error
+	Write(token adal.Token, writer io.Writer) error
 }
 
 type execCredentialWriter struct{}
 
 // Write writes the ExecCredential to standard output for kubectl.
-func (*execCredentialWriter) Write(token adal.Token, buffer *bytes.Buffer) error {
+func (*execCredentialWriter) Write(token adal.Token, writer io.Writer) error {
 	apiVersionFromEnv, err := getAPIVersionFromExecInfoEnv()
 	if err != nil {
 		return err
@@ -62,12 +61,12 @@ func (*execCredentialWriter) Write(token adal.Token, buffer *bytes.Buffer) error
 			},
 		}
 	}
-	var ecCopy interface{} = ec
-	content, _ := json.Marshal(ecCopy)
+	//var ecCopy interface{} = ec
+	//content, _ := json.Marshal(ecCopy)
 	//fmt.Fprintln(os.Stderr, string(content))
-	buffer.WriteString(string(content))
+	//buffer.WriteString(string(content))
 	//fmt.Fprintln(os.Stderr, buffer.String())
-	e := json.NewEncoder(os.Stdout)
+	e := json.NewEncoder(writer)
 	if err := e.Encode(ec); err != nil {
 		return fmt.Errorf("could not write the ExecCredential: %s", err)
 	}
