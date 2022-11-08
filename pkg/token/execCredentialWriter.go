@@ -6,6 +6,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+
+	//"io"
 	"os"
 
 	"github.com/Azure/go-autorest/autorest/adal"
@@ -22,13 +24,13 @@ const (
 )
 
 type ExecCredentialWriter interface {
-	Write(token adal.Token, buffer bytes.Buffer) error
+	Write(token adal.Token, buffer *bytes.Buffer) error
 }
 
 type execCredentialWriter struct{}
 
 // Write writes the ExecCredential to standard output for kubectl.
-func (*execCredentialWriter) Write(token adal.Token, buffer bytes.Buffer) error {
+func (*execCredentialWriter) Write(token adal.Token, buffer *bytes.Buffer) error {
 	apiVersionFromEnv, err := getAPIVersionFromExecInfoEnv()
 	if err != nil {
 		return err

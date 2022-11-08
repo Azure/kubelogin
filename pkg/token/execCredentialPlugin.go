@@ -70,7 +70,7 @@ func (p *execCredentialPlugin) Do() error {
 		// if not expired, return
 		if !token.WillExpireIn(expirationDelta) {
 			klog.V(10).Info("access token is still valid. will return")
-			return p.execCredentialWriter.Write(token, *bytes.NewBuffer([]byte("")))
+			return p.execCredentialWriter.Write(token, new(bytes.Buffer))
 		}
 
 		// if expired, try refresh when refresh token exists
@@ -102,7 +102,7 @@ func (p *execCredentialPlugin) Do() error {
 					return fmt.Errorf("failed to write to store: %s", err)
 				}
 
-				return p.execCredentialWriter.Write(token, *bytes.NewBuffer([]byte("")))
+				return p.execCredentialWriter.Write(token, nil)
 			}
 		} else {
 			klog.V(5).Info("there is no refresh token")
@@ -123,5 +123,5 @@ func (p *execCredentialPlugin) Do() error {
 		}
 	}
 
-	return p.execCredentialWriter.Write(token, *bytes.NewBuffer([]byte("")))
+	return p.execCredentialWriter.Write(token, new(bytes.Buffer))
 }
