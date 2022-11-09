@@ -3,7 +3,6 @@ package token
 //go:generate sh -c "mockgen -destination mock_$GOPACKAGE/execCredentialWriter.go github.com/Azure/kubelogin/pkg/token ExecCredentialWriter"
 
 import (
-	//"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -34,7 +33,7 @@ func (*execCredentialWriter) Write(token adal.Token, writer io.Writer) error {
 	if err != nil {
 		return err
 	}
-
+	//Support both apiVersions of client.authentication.k8s.io/v1beta1 and client.authentication.k8s.io/v1
 	var ec interface{}
 	t := metav1.NewTime(token.Expires())
 	switch apiVersionFromEnv {
@@ -61,11 +60,7 @@ func (*execCredentialWriter) Write(token adal.Token, writer io.Writer) error {
 			},
 		}
 	}
-	//var ecCopy interface{} = ec
-	//content, _ := json.Marshal(ecCopy)
-	//fmt.Fprintln(os.Stderr, string(content))
-	//buffer.WriteString(string(content))
-	//fmt.Fprintln(os.Stderr, buffer.String())
+
 	e := json.NewEncoder(writer)
 	if err := e.Encode(ec); err != nil {
 		return fmt.Errorf("could not write the ExecCredential: %s", err)
@@ -81,7 +76,7 @@ func getAPIVersionFromExecInfoEnv() (string, error) {
 	var execCredential clientauthentication.ExecCredential
 	error := json.Unmarshal([]byte(env), &execCredential)
 	if error != nil {
-		return "", fmt.Errorf("cannot unmarshall %q to ExecCredential: %w", env, error)
+		return "", fmt.Errorf("cannot unmarshal %q to ExecCredential: %w", env, error)
 	}
 	switch execCredential.TypeMeta.APIVersion {
 	case "":

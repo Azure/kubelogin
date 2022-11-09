@@ -13,7 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
-func TestExecCredentialWriter(t *testing.T) {
+func TestExecCredentialPlugin(t *testing.T) {
 	const (
 		cacheFile = "cacheFile"
 	)

@@ -5,10 +5,9 @@
 package mock_token
 
 import (
-	reflect "reflect"
-
 	adal "github.com/Azure/go-autorest/autorest/adal"
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 )
 
 // MockTokenCache is a mock of TokenCache interface.

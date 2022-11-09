@@ -5,11 +5,10 @@
 package mock_token
 
 import (
-	io "io"
-	reflect "reflect"
-
 	adal "github.com/Azure/go-autorest/autorest/adal"
 	gomock "github.com/golang/mock/gomock"
+	io "io"
+	reflect "reflect"	
 )
 
 // MockExecCredentialWriter is a mock of ExecCredentialWriter interface.
