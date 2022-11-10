@@ -33,8 +33,8 @@ type execCredentialPlugin struct {
 func New(o *Options) (ExecCredentialPlugin, error) {
 	env := os.Getenv(execInfoEnv)
 	var execCredential clientauthentication.ExecCredential
-	if error := json.Unmarshal([]byte(env), &execCredential); error != nil {
-		return nil, fmt.Errorf("cannot convert to ExecCredential: %w", error)
+	if err := json.Unmarshal([]byte(env), &execCredential); err != nil {
+		return nil, fmt.Errorf("cannot convert to ExecCredential: %w", err)
 	}
 	if !execCredential.Spec.Interactive && o.LoginMethod == DeviceCodeLogin {
 		return nil, fmt.Errorf("devicelogin is not supported if interactiveMode is 'never'")
