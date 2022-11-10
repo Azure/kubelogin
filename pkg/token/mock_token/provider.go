@@ -10,30 +10,30 @@ import (
 	reflect "reflect"
 )
 
-// MockTokenProvider is a mock of TokenProvider interface
+// MockTokenProvider is a mock of TokenProvider interface.
 type MockTokenProvider struct {
 	ctrl     *gomock.Controller
 	recorder *MockTokenProviderMockRecorder
 }
 
-// MockTokenProviderMockRecorder is the mock recorder for MockTokenProvider
+// MockTokenProviderMockRecorder is the mock recorder for MockTokenProvider.
 type MockTokenProviderMockRecorder struct {
 	mock *MockTokenProvider
 }
 
-// NewMockTokenProvider creates a new mock instance
+// NewMockTokenProvider creates a new mock instance.
 func NewMockTokenProvider(ctrl *gomock.Controller) *MockTokenProvider {
 	mock := &MockTokenProvider{ctrl: ctrl}
 	mock.recorder = &MockTokenProviderMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockTokenProvider) EXPECT() *MockTokenProviderMockRecorder {
 	return m.recorder
 }
 
-// Token mocks base method
+// Token mocks base method.
 func (m *MockTokenProvider) Token() (adal.Token, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Token")
@@ -42,7 +42,7 @@ func (m *MockTokenProvider) Token() (adal.Token, error) {
 	return ret0, ret1
 }
 
-// Token indicates an expected call of Token
+// Token indicates an expected call of Token.
 func (mr *MockTokenProviderMockRecorder) Token() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Token", reflect.TypeOf((*MockTokenProvider)(nil).Token))

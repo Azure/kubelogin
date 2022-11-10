@@ -10,30 +10,30 @@ import (
 	reflect "reflect"
 )
 
-// MockTokenCache is a mock of TokenCache interface
+// MockTokenCache is a mock of TokenCache interface.
 type MockTokenCache struct {
 	ctrl     *gomock.Controller
 	recorder *MockTokenCacheMockRecorder
 }
 
-// MockTokenCacheMockRecorder is the mock recorder for MockTokenCache
+// MockTokenCacheMockRecorder is the mock recorder for MockTokenCache.
 type MockTokenCacheMockRecorder struct {
 	mock *MockTokenCache
 }
 
-// NewMockTokenCache creates a new mock instance
+// NewMockTokenCache creates a new mock instance.
 func NewMockTokenCache(ctrl *gomock.Controller) *MockTokenCache {
 	mock := &MockTokenCache{ctrl: ctrl}
 	mock.recorder = &MockTokenCacheMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockTokenCache) EXPECT() *MockTokenCacheMockRecorder {
 	return m.recorder
 }
 
-// Read mocks base method
+// Read mocks base method.
 func (m *MockTokenCache) Read(arg0 string) (adal.Token, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Read", arg0)
@@ -42,13 +42,13 @@ func (m *MockTokenCache) Read(arg0 string) (adal.Token, error) {
 	return ret0, ret1
 }
 
-// Read indicates an expected call of Read
+// Read indicates an expected call of Read.
 func (mr *MockTokenCacheMockRecorder) Read(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Read", reflect.TypeOf((*MockTokenCache)(nil).Read), arg0)
 }
 
-// Write mocks base method
+// Write mocks base method.
 func (m *MockTokenCache) Write(arg0 string, arg1 adal.Token) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Write", arg0, arg1)
@@ -56,7 +56,7 @@ func (m *MockTokenCache) Write(arg0 string, arg1 adal.Token) error {
 	return ret0
 }
 
-// Write indicates an expected call of Write
+// Write indicates an expected call of Write.
 func (mr *MockTokenCacheMockRecorder) Write(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Write", reflect.TypeOf((*MockTokenCache)(nil).Write), arg0, arg1)
