@@ -19,6 +19,7 @@ func NewTokenCmd() *cobra.Command {
 			if err := o.Validate(); err != nil {
 				return err
 			}
+
 			plugin, err := token.New(&o)
 			if err != nil {
 				return err

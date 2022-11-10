@@ -15,7 +15,6 @@ import (
 
 const (
 	expirationDelta time.Duration = 60 * time.Second
-	execInfoEnv     string        = "KUBERNETES_EXEC_INFO"
 )
 
 type ExecCredentialPlugin interface {
@@ -33,7 +32,6 @@ type execCredentialPlugin struct {
 
 func New(o *Options) (ExecCredentialPlugin, error) {
 	env := os.Getenv(execInfoEnv)
-	//fmt.Fprintln(os.Stderr, os.Getenv(execInfoEnv))
 	var execCredential clientauthentication.ExecCredential
 	if error := json.Unmarshal([]byte(env), &execCredential); error != nil {
 		return nil, fmt.Errorf("cannot convert to ExecCredential: %w", error)
