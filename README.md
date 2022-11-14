@@ -62,6 +62,16 @@ kubectl get no
 
 If you are using kubeconfig from AKS AADv1 clusters, `convert-kubeconfig` command will automatically add `--legacy` flag so that `audience` claim will have `spn:` prefix.
 
+#### Web browser flow (interactive)
+
+```sh
+export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l interactive
+
+kubectl get no
+```
+
 #### Service principal login flow (non interactive)
 
 > On AKS, it will only work with managed AAD. Service principal can be member of maximum 250 AAD groups.
@@ -306,6 +316,29 @@ users:
           - --tenant-id
           - <AAD tenant ID>
 ```
+### web browser Flow (default)
+
+```yaml
+kind: Config
+preferences: {}
+users:
+  - name: user-name
+    user:
+      exec:
+        apiVersion: client.authentication.k8s.io/v1beta1
+        args:
+        - get-token
+        - --login
+        - interactive
+        - --server-id
+        - <AAD server app ID>
+        - --client-id
+        - <AAD client app ID>
+        - --tenant-id
+        - <AAD tenant ID>
+        - --environment
+        - AzurePublicCloud
+        command: kubelogin
 
 ### Spn login with secret
 

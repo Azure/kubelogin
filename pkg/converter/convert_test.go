@@ -971,6 +971,77 @@ func TestConvert(t *testing.T) {
 			},
 			command: execName,
 		},
+		{
+			name: "with exec format kubeconfig, convert from devicecode to interactive",
+			execArgItems: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argEnvironment, envName,
+				argLoginMethod, token.DeviceCodeLogin,
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.InteractiveLogin,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argEnvironment, envName,
+				argLoginMethod, token.InteractiveLogin,
+			},
+			command: execName,
+		},
+		{
+			name: "with exec format kubeconfig, convert from devicecode to interactive without setting environment",
+			execArgItems: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argLoginMethod, token.DeviceCodeLogin,
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.InteractiveLogin,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argTenantID, tenantID,
+				argClientID, clientID,
+				argLoginMethod, token.InteractiveLogin,
+			},
+			command: execName,
+		},
+		{
+			name: "with exec format kubeconfig, convert from devicecode to interactive with override",
+			execArgItems: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argEnvironment, envName,
+				argLoginMethod, token.DeviceCodeLogin,
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.InteractiveLogin,
+				flagServerID:    serverID,
+				flagClientID:    clientID,
+				flagTenantID:    tenantID,
+				flagEnvironment: envName,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argEnvironment, envName,
+				argLoginMethod, token.InteractiveLogin,
+			},
+			command: execName,
+		},
 	}
 	rootTmpDir, err := os.MkdirTemp("", "kubelogin-test")
 	if err != nil {

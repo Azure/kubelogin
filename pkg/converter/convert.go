@@ -217,6 +217,28 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 				exec.Args = append(exec.Args, argIsLegacy)
 			}
 
+		case token.InteractiveLogin:
+
+			if argClientIDVal == "" {
+				return fmt.Errorf("%s is required", argClientID)
+			}
+
+			exec.Args = append(exec.Args, argClientID)
+			exec.Args = append(exec.Args, argClientIDVal)
+
+			if argTenantIDVal == "" {
+				return fmt.Errorf("%s is required", argTenantID)
+			}
+
+			exec.Args = append(exec.Args, argTenantID)
+			exec.Args = append(exec.Args, argTenantIDVal)
+
+			if argEnvironmentVal != "" {
+				// environment is optional
+				exec.Args = append(exec.Args, argEnvironment)
+				exec.Args = append(exec.Args, argEnvironmentVal)
+			}
+
 		case token.ServicePrincipalLogin:
 
 			if argClientIDVal == "" {
