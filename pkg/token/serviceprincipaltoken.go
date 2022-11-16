@@ -33,10 +33,10 @@ func newServicePrincipalToken(oAuthConfig adal.OAuthConfig, clientID, clientSecr
 		return nil, errors.New("clientID cannot be empty")
 	}
 	if clientSecret == "" && clientCert == "" {
-		return nil, errors.New("both clientSecret and clientcert cannot be empty")
+		return nil, errors.New("Both clientSecret and clientcert cannot be empty")
 	}
 	if clientSecret != "" && clientCert != "" {
-		return nil, errors.New("client secret and client certificate cannot be set at the same time. Only one has to be specified")
+		return nil, errors.New("Client secret and client certificate cannot be set at the same time. Only one has to be specified")
 	}
 	if resourceID == "" {
 		return nil, errors.New("resourceID cannot be empty")
@@ -135,7 +135,7 @@ func splitPEMBlock(pemBlock []byte) (certPEM []byte, keyPEM []byte) {
 func parseRsaPrivateKey(privateKeyPEM []byte) (*rsa.PrivateKey, error) {
 	block, _ := pem.Decode(privateKeyPEM)
 	if block == nil {
-		return nil, fmt.Errorf("failed to decode a pem block from private key")
+		return nil, fmt.Errorf("Failed to decode a pem block from private key")
 	}
 
 	privatePkcs1Key, errPkcs1 := x509.ParsePKCS1PrivateKey(block.Bytes)
@@ -188,7 +188,7 @@ func parseKeyPairFromPEMBlock(pemBlock []byte) (*x509.Certificate, *rsa.PrivateK
 	}
 
 	if !found {
-		return nil, nil, fmt.Errorf("unable to find a matching public certificate")
+		return nil, nil, fmt.Errorf("Unable to find a matching public certificate")
 	}
 
 	return cert, privateKey, nil
