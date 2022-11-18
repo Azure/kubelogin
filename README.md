@@ -339,6 +339,7 @@ users:
         - --environment
         - AzurePublicCloud
         command: kubelogin
+```
 
 ### Spn login with secret
 
