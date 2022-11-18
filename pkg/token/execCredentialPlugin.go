@@ -3,14 +3,11 @@ package token
 //go:generate sh -c "mockgen -destination mock_$GOPACKAGE/execCredentialPlugin.go github.com/Azure/kubelogin/pkg/token ExecCredentialPlugin"
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/Azure/go-autorest/autorest/adal"
-	"k8s.io/client-go/pkg/apis/clientauthentication"
 	"k8s.io/klog"
 )
 
@@ -32,19 +29,6 @@ type execCredentialPlugin struct {
 }
 
 func New(o *Options) (ExecCredentialPlugin, error) {
-	env := os.Getenv(execInfoEnv)
-	if env != "" {
-		var execCredential clientauthentication.ExecCredential
-		if err := json.Unmarshal([]byte(env), &execCredential); err != nil {
-			return nil, fmt.Errorf("cannot convert to ExecCredential: %w", err)
-		}
-		klog.V(10).Infof("KUBERNETES_EXEC_INFO is: %s", env)
-
-		if !strings.Contains(env, `"spec":{}`) && !execCredential.Spec.Interactive && o.LoginMethod == DeviceCodeLogin {
-			return nil, fmt.Errorf("devicelogin is not supported if interactiveMode is 'never'")
-		}
-	}
-
 	klog.V(10).Info(o)
 	provider, err := newTokenProvider(o)
 	if err != nil {
