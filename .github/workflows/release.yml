@@ -12,13 +12,13 @@ jobs:
       GO111MODULE: on
     steps:
     - name: Set up Go 1.18
-      uses: actions/setup-go@v1
+      uses: actions/setup-go@v3
       with:
         go-version: 1.18
       id: go
 
     - name: Check out code into the Go module directory
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Build (linux)
       env:
@@ -51,32 +51,32 @@ jobs:
       run: make
 
     - name: Zip
-      uses: montudor/action-zip@v0.1.0
+      uses: montudor/action-zip@v1
       with:
         args: zip -qq -r kubelogin.zip bin
 
     - name: Zip (win-amd64)
-      uses: montudor/action-zip@v0.1.0
+      uses: montudor/action-zip@v1
       with:
         args: zip -qq -r kubelogin-win-amd64.zip bin/windows_amd64
 
     - name: Zip (darwin-amd64)
-      uses: montudor/action-zip@v0.1.0
+      uses: montudor/action-zip@v1
       with:
         args: zip -qq -r kubelogin-darwin-amd64.zip bin/darwin_amd64
 
     - name: Zip (darwin-arm64)
-      uses: montudor/action-zip@v0.1.0
+      uses: montudor/action-zip@v1
       with:
         args: zip -qq -r kubelogin-darwin-arm64.zip bin/darwin_arm64
 
     - name: Zip (linux-amd64)
-      uses: montudor/action-zip@v0.1.0
+      uses: montudor/action-zip@v1
       with:
         args: zip -qq -r kubelogin-linux-amd64.zip bin/linux_amd64
 
     - name: Zip (linux-arm64)
-      uses: montudor/action-zip@v0.1.0
+      uses: montudor/action-zip@v1
       with:
         args: zip -qq -r kubelogin-linux-arm64.zip bin/linux_arm64
 
