@@ -173,7 +173,7 @@ func TestDeviceloginAndNonInteractive(t *testing.T) {
 	}
 }
 
-func TestKUBERNETES_EXEC_INFOIsEmpty(t *testing.T) {
+func TestKUBERNETES_EXEC_INFO(t *testing.T) {
 	testData := []struct {
 		name            string
 		execInfoEnvTest string
@@ -182,6 +182,26 @@ func TestKUBERNETES_EXEC_INFOIsEmpty(t *testing.T) {
 		{
 			name:            "KUBERNETES_EXEC_INFO is empty",
 			execInfoEnvTest: "",
+			options: Options{
+				LoginMethod: DeviceCodeLogin,
+				ClientID:    "clientID",
+				ServerID:    "serverID",
+				TenantID:    "tenantID",
+			},
+		},
+		{
+			name:            "KUBERNETES_EXEC_INFO.spec is empty for apiVersion of v1beta1",
+			execInfoEnvTest: `{"kind":"ExecCredential","apiVersion":"client.authentication.k8s.io/v1beta1","spec":{}}`,
+			options: Options{
+				LoginMethod: DeviceCodeLogin,
+				ClientID:    "clientID",
+				ServerID:    "serverID",
+				TenantID:    "tenantID",
+			},
+		},
+		{
+			name:            "KUBERNETES_EXEC_INFO.spec is empty for apiVersion of v1",
+			execInfoEnvTest: `{"kind":"ExecCredential","apiVersion":"client.authentication.k8s.io/v1","spec":{}}`,
 			options: Options{
 				LoginMethod: DeviceCodeLogin,
 				ClientID:    "clientID",

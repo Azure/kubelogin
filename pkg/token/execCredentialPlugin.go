@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/Azure/go-autorest/autorest/adal"
@@ -37,7 +38,9 @@ func New(o *Options) (ExecCredentialPlugin, error) {
 		if err := json.Unmarshal([]byte(env), &execCredential); err != nil {
 			return nil, fmt.Errorf("cannot convert to ExecCredential: %w", err)
 		}
-		if !execCredential.Spec.Interactive && o.LoginMethod == DeviceCodeLogin {
+		klog.V(10).Infof("KUBERNETES_EXEC_INFO is: %s", env)
+
+		if !strings.Contains(env, `"spec":{}`) && !execCredential.Spec.Interactive && o.LoginMethod == DeviceCodeLogin {
 			return nil, fmt.Errorf("devicelogin is not supported if interactiveMode is 'never'")
 		}
 	}
