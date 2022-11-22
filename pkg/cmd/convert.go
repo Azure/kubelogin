@@ -23,6 +23,8 @@ func NewConvertCmd() *cobra.Command {
 			}
 
 			pathOptions := clientcmd.NewDefaultPathOptions()
+			pathOptions.LoadingRules.ExplicitPath, _ = o.Flags.GetString("kubeconfig")
+
 			if err := converter.Convert(o, pathOptions); err != nil {
 				return err
 			}
