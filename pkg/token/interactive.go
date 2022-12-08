@@ -65,7 +65,7 @@ func (p *InteractiveToken) Token() (adal.Token, error) {
 	if err != nil {
 		return emptyToken, fmt.Errorf("expected an empty error but received: %w", err)
 	}
-	if len(interactiveToken.Token) == 0 {
+	if interactiveToken.Token == "" {
 		return emptyToken, errors.New("did not receive a token")
 	}
 

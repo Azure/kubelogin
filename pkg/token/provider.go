@@ -29,9 +29,9 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 	case ROPCLogin:
 		return newResourceOwnerToken(*oAuthConfig, o.ClientID, o.Username, o.Password, o.ServerID, o.TenantID)
 	case MSILogin:
-		return newManagedIdentityToken(o.ClientID, o.IdentityResourceId, o.ServerID)
+		return newManagedIdentityToken(o.ClientID, o.IdentityResourceID, o.ServerID)
 	case AzureCLILogin:
-		return newAzureCLIToken(*oAuthConfig, o.ServerID, o.TenantID)
+		return newAzureCLIToken(o.ServerID, o.TenantID)
 	case WorkloadIdentityLogin:
 		return newWorkloadIdentityToken(o.ClientID, o.FederatedTokenFile, o.AuthorityHost, o.ServerID, o.TenantID)
 	}

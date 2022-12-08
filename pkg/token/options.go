@@ -24,7 +24,7 @@ type Options struct {
 	IsLegacy               bool
 	TokenCacheDir          string
 	tokenCacheFile         string
-	IdentityResourceId     string
+	IdentityResourceID     string
 	FederatedTokenFile     string
 	AuthorityHost          string
 	UseAzureRMTerraformEnv bool
@@ -84,7 +84,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&o.ClientCertPassword, "client-certificate-password", o.ClientCertPassword, fmt.Sprintf("Password for AAD client cert. Used in spn login. It may be specified in %s environment variable", envServicePrincipalClientCertPassword))
 	fs.StringVar(&o.Username, "username", o.Username, fmt.Sprintf("user name for ropc login flow. It may be specified in %s environment variable", envROPCUsername))
 	fs.StringVar(&o.Password, "password", o.Password, fmt.Sprintf("password for ropc login flow. It may be specified in %s environment variable", envROPCPassword))
-	fs.StringVar(&o.IdentityResourceId, "identity-resource-id", o.IdentityResourceId, "Managed Identity resource id.")
+	fs.StringVar(&o.IdentityResourceID, "identity-resource-id", o.IdentityResourceID, "Managed Identity resource id.")
 	fs.StringVar(&o.ServerID, "server-id", o.ServerID, "AAD server application ID")
 	fs.StringVar(&o.FederatedTokenFile, "federated-token-file", o.FederatedTokenFile, "Workload Identity federated token file")
 	fs.StringVar(&o.AuthorityHost, "authority-host", o.AuthorityHost, "Workload Identity authority host")
@@ -167,7 +167,7 @@ func (o *Options) String() string {
 		o.ServerID,
 		o.ClientID,
 		o.IsLegacy,
-		o.IdentityResourceId,
+		o.IdentityResourceID,
 		o.TokenCacheDir,
 		o.tokenCacheFile)
 }

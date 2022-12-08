@@ -164,19 +164,16 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 			APIVersion: execAPIVersion,
 		}
 
-		exec.Args = append(exec.Args, argLoginMethod)
-		exec.Args = append(exec.Args, o.TokenOptions.LoginMethod)
+		exec.Args = append(exec.Args, argLoginMethod, o.TokenOptions.LoginMethod)
 
 		// all login methods require --server-id specified
 		if argServerIDVal == "" {
 			return fmt.Errorf("%s is required", argServerID)
 		}
-		exec.Args = append(exec.Args, argServerID)
-		exec.Args = append(exec.Args, argServerIDVal)
+		exec.Args = append(exec.Args, argServerID, argServerIDVal)
 
 		if argTokenCacheDirVal != "" {
-			exec.Args = append(exec.Args, argTokenCacheDir)
-			exec.Args = append(exec.Args, argTokenCacheDirVal)
+			exec.Args = append(exec.Args, argTokenCacheDir, argTokenCacheDirVal)
 		}
 
 		switch o.TokenOptions.LoginMethod {
@@ -187,8 +184,7 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 			// this is because azure cli logged in using MSI does not allow specifying tenant ID
 			// see https://github.com/Azure/kubelogin/issues/123#issuecomment-1209652342
 			if o.isSet(flagTenantID) {
-				exec.Args = append(exec.Args, argTenantID)
-				exec.Args = append(exec.Args, o.TokenOptions.TenantID)
+				exec.Args = append(exec.Args, argTenantID, o.TokenOptions.TenantID)
 			}
 
 		case token.DeviceCodeLogin:
@@ -197,20 +193,17 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 				return fmt.Errorf("%s is required", argClientID)
 			}
 
-			exec.Args = append(exec.Args, argClientID)
-			exec.Args = append(exec.Args, argClientIDVal)
+			exec.Args = append(exec.Args, argClientID, argClientIDVal)
 
 			if argTenantIDVal == "" {
 				return fmt.Errorf("%s is required", argTenantID)
 			}
 
-			exec.Args = append(exec.Args, argTenantID)
-			exec.Args = append(exec.Args, argTenantIDVal)
+			exec.Args = append(exec.Args, argTenantID, argTenantIDVal)
 
 			if argEnvironmentVal != "" {
 				// environment is optional
-				exec.Args = append(exec.Args, argEnvironment)
-				exec.Args = append(exec.Args, argEnvironmentVal)
+				exec.Args = append(exec.Args, argEnvironment, argEnvironmentVal)
 			}
 
 			if isLegacyConfigMode {
@@ -223,20 +216,17 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 				return fmt.Errorf("%s is required", argClientID)
 			}
 
-			exec.Args = append(exec.Args, argClientID)
-			exec.Args = append(exec.Args, argClientIDVal)
+			exec.Args = append(exec.Args, argClientID, argClientIDVal)
 
 			if argTenantIDVal == "" {
 				return fmt.Errorf("%s is required", argTenantID)
 			}
 
-			exec.Args = append(exec.Args, argTenantID)
-			exec.Args = append(exec.Args, argTenantIDVal)
+			exec.Args = append(exec.Args, argTenantID, argTenantIDVal)
 
 			if argEnvironmentVal != "" {
 				// environment is optional
-				exec.Args = append(exec.Args, argEnvironment)
-				exec.Args = append(exec.Args, argEnvironmentVal)
+				exec.Args = append(exec.Args, argEnvironment, argEnvironmentVal)
 			}
 
 		case token.ServicePrincipalLogin:
@@ -245,35 +235,29 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 				return fmt.Errorf("%s is required", argClientID)
 			}
 
-			exec.Args = append(exec.Args, argClientID)
-			exec.Args = append(exec.Args, argClientIDVal)
+			exec.Args = append(exec.Args, argClientID, argClientIDVal)
 
 			if argTenantIDVal == "" {
 				return fmt.Errorf("%s is required", argTenantID)
 			}
 
-			exec.Args = append(exec.Args, argTenantID)
-			exec.Args = append(exec.Args, argTenantIDVal)
+			exec.Args = append(exec.Args, argTenantID, argTenantIDVal)
 
 			if argEnvironmentVal != "" {
 				// environment is optional
-				exec.Args = append(exec.Args, argEnvironment)
-				exec.Args = append(exec.Args, argEnvironmentVal)
+				exec.Args = append(exec.Args, argEnvironment, argEnvironmentVal)
 			}
 
 			if o.isSet(flagClientSecret) {
-				exec.Args = append(exec.Args, argClientSecret)
-				exec.Args = append(exec.Args, o.TokenOptions.ClientSecret)
+				exec.Args = append(exec.Args, argClientSecret, o.TokenOptions.ClientSecret)
 			}
 
 			if o.isSet(flagClientCert) {
-				exec.Args = append(exec.Args, argClientCert)
-				exec.Args = append(exec.Args, o.TokenOptions.ClientCert)
+				exec.Args = append(exec.Args, argClientCert, o.TokenOptions.ClientCert)
 			}
 
 			if o.isSet(flagClientCertPassword) {
-				exec.Args = append(exec.Args, argClientCertPassword)
-				exec.Args = append(exec.Args, o.TokenOptions.ClientCertPassword)
+				exec.Args = append(exec.Args, argClientCertPassword, o.TokenOptions.ClientCertPassword)
 			}
 
 			if isLegacyConfigMode {
@@ -283,11 +267,9 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 		case token.MSILogin:
 
 			if o.isSet(flagClientID) {
-				exec.Args = append(exec.Args, argClientID)
-				exec.Args = append(exec.Args, o.TokenOptions.ClientID)
+				exec.Args = append(exec.Args, argClientID, o.TokenOptions.ClientID)
 			} else if o.isSet(flagIdentityResourceID) {
-				exec.Args = append(exec.Args, argIdentityResourceID)
-				exec.Args = append(exec.Args, o.TokenOptions.IdentityResourceId)
+				exec.Args = append(exec.Args, argIdentityResourceID, o.TokenOptions.IdentityResourceID)
 			}
 
 		case token.ROPCLogin:
@@ -296,30 +278,25 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 				return fmt.Errorf("%s is required", argClientID)
 			}
 
-			exec.Args = append(exec.Args, argClientID)
-			exec.Args = append(exec.Args, argClientIDVal)
+			exec.Args = append(exec.Args, argClientID, argClientIDVal)
 
 			if argTenantIDVal == "" {
 				return fmt.Errorf("%s is required", argTenantID)
 			}
 
-			exec.Args = append(exec.Args, argTenantID)
-			exec.Args = append(exec.Args, argTenantIDVal)
+			exec.Args = append(exec.Args, argTenantID, argTenantIDVal)
 
 			if argEnvironmentVal != "" {
 				// environment is optional
-				exec.Args = append(exec.Args, argEnvironment)
-				exec.Args = append(exec.Args, argEnvironmentVal)
+				exec.Args = append(exec.Args, argEnvironment, argEnvironmentVal)
 			}
 
 			if o.isSet(flagUsername) {
-				exec.Args = append(exec.Args, argUsername)
-				exec.Args = append(exec.Args, o.TokenOptions.Username)
+				exec.Args = append(exec.Args, argUsername, o.TokenOptions.Username)
 			}
 
 			if o.isSet(flagPassword) {
-				exec.Args = append(exec.Args, argPassword)
-				exec.Args = append(exec.Args, o.TokenOptions.Password)
+				exec.Args = append(exec.Args, argPassword, o.TokenOptions.Password)
 			}
 
 			if isLegacyConfigMode {
@@ -329,23 +306,19 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 		case token.WorkloadIdentityLogin:
 
 			if o.isSet(flagClientID) {
-				exec.Args = append(exec.Args, argClientID)
-				exec.Args = append(exec.Args, o.TokenOptions.ClientID)
+				exec.Args = append(exec.Args, argClientID, o.TokenOptions.ClientID)
 			}
 
 			if o.isSet(flagTenantID) {
-				exec.Args = append(exec.Args, argTenantID)
-				exec.Args = append(exec.Args, o.TokenOptions.TenantID)
+				exec.Args = append(exec.Args, argTenantID, o.TokenOptions.TenantID)
 			}
 
 			if o.isSet(flagAuthorityHost) {
-				exec.Args = append(exec.Args, argAuthorityHost)
-				exec.Args = append(exec.Args, o.TokenOptions.AuthorityHost)
+				exec.Args = append(exec.Args, argAuthorityHost, o.TokenOptions.AuthorityHost)
 			}
 
 			if o.isSet(flagFederatedTokenFile) {
-				exec.Args = append(exec.Args, argFederatedTokenFile)
-				exec.Args = append(exec.Args, o.TokenOptions.FederatedTokenFile)
+				exec.Args = append(exec.Args, argFederatedTokenFile, o.TokenOptions.FederatedTokenFile)
 			}
 		}
 

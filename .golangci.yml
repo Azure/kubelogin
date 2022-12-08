@@ -1,0 +1,33 @@
+run:
+  # default concurrency is a available CPU number
+  concurrency: 4
+  deadline: 10m
+  tests: false
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - goconst
+    - gocritic
+    - goimports
+    - gosec
+    - govet
+    - ineffassign
+    - misspell
+    - paralleltest
+    - staticcheck
+    - stylecheck
+    - unused
+
+linters-settings:
+  gocritic:
+    disabled-checks:
+    - ifElseChain
+  misspell:
+    locale: US
+  gosec:
+    excludes:
+    - G101
+  goimports:
+    local-prefixes: github.com/org/project

@@ -25,7 +25,10 @@ LDFLAGS    := -X main.version=$(VERSION) \
 
 all: $(TARGET)
 
-test:
+lint:
+	hack/verify-golangci-lint.sh
+
+test: lint
 	go test -race -coverprofile=coverage.txt -covermode=atomic ./...
 
 version:

@@ -33,7 +33,7 @@ func (*execCredentialWriter) Write(token adal.Token, writer io.Writer) error {
 	if err != nil {
 		return err
 	}
-	//Support both apiVersions of client.authentication.k8s.io/v1beta1 and client.authentication.k8s.io/v1
+	// Support both apiVersions of client.authentication.k8s.io/v1beta1 and client.authentication.k8s.io/v1
 	var ec interface{}
 	t := metav1.NewTime(token.Expires())
 	switch apiVersionFromEnv {
@@ -74,9 +74,8 @@ func getAPIVersionFromExecInfoEnv() (string, error) {
 		return apiV1beta1, nil
 	}
 	var execCredential clientauthentication.ExecCredential
-	error := json.Unmarshal([]byte(env), &execCredential)
-	if error != nil {
-		return "", fmt.Errorf("cannot unmarshal %q to ExecCredential: %w", env, error)
+	if err := json.Unmarshal([]byte(env), &execCredential); err != nil {
+		return "", fmt.Errorf("cannot unmarshal %q to ExecCredential: %w", env, err)
 	}
 	switch execCredential.TypeMeta.APIVersion {
 	case "":
