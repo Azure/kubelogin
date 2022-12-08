@@ -13,22 +13,20 @@ import (
 )
 
 type AzureCLIToken struct {
-	resourceID  string
-	tenantID    string
-	oAuthConfig adal.OAuthConfig
+	resourceID string
+	tenantID   string
 }
 
 // newAzureCLIToken returns a TokenProvider that will fetch a token for the user currently logged into the Azure CLI.
 // Required arguments include an oAuthConfiguration object and the resourceID (which is used as the scope)
-func newAzureCLIToken(oAuthConfig adal.OAuthConfig, resourceID string, tenantID string) (TokenProvider, error) {
+func newAzureCLIToken(resourceID string, tenantID string) (TokenProvider, error) {
 	if resourceID == "" {
 		return nil, errors.New("resourceID cannot be empty")
 	}
 
 	return &AzureCLIToken{
-		resourceID:  resourceID,
-		oAuthConfig: oAuthConfig,
-		tenantID:    tenantID,
+		resourceID: resourceID,
+		tenantID:   tenantID,
 	}, nil
 }
 
@@ -49,7 +47,7 @@ func (p *AzureCLIToken) Token() (adal.Token, error) {
 	if err != nil {
 		return emptyToken, fmt.Errorf("expected an empty error but received: %v", err)
 	}
-	if len(cliAccessToken.Token) == 0 {
+	if cliAccessToken.Token == "" {
 		return emptyToken, errors.New("did not receive a token")
 	}
 
