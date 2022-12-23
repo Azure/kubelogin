@@ -13,7 +13,7 @@ func NewRootCmd(version string) *cobra.Command {
 		SilenceUsage: true,
 		Version:      version,
 		RunE: func(c *cobra.Command, args []string) error {
-			return nil
+			return c.Help()
 		},
 	}
 
