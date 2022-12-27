@@ -5,7 +5,8 @@ This is a [client-go credential (exec) plugin](https://kubernetes.io/docs/refere
 ## Features
 
 - `convert-kubeconfig` command to converts kubeconfig with existing azure auth provider format to exec credential plugin format
-- [device code login](<#device-code-flow-interactive>)
+- [interactive device code login](<#device-code-flow-interactive>)
+- [interactive web browser login](<#web-browser-flow-interactive>)
 - [non-interactive service principal login](<#service-principal-login-flow-non-interactive>)
 - [non-interactive user principal login](<#user-principal-login-flow-non-interactive>) using [Resource owner login flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc)
 - [non-interactive managed service identity login](<#managed-service-identity-non-interactive>)
