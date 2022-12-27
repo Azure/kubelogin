@@ -58,27 +58,27 @@ jobs:
     - name: Zip (win-amd64)
       uses: montudor/action-zip@v1
       with:
-        args: zip -qq -r kubelogin-win-amd64.zip bin/windows_amd64
+        args: zip -qq kubelogin-win-amd64.zip bin/windows_amd64/kubelogin.exe
 
     - name: Zip (darwin-amd64)
       uses: montudor/action-zip@v1
       with:
-        args: zip -qq -r kubelogin-darwin-amd64.zip bin/darwin_amd64
+        args: zip -qq kubelogin-darwin-amd64.zip bin/darwin_amd64/kubelogin
 
     - name: Zip (darwin-arm64)
       uses: montudor/action-zip@v1
       with:
-        args: zip -qq -r kubelogin-darwin-arm64.zip bin/darwin_arm64
+        args: zip -qq kubelogin-darwin-arm64.zip bin/darwin_arm64/kubelogin
 
     - name: Zip (linux-amd64)
       uses: montudor/action-zip@v1
       with:
-        args: zip -qq -r kubelogin-linux-amd64.zip bin/linux_amd64
+        args: zip -qq kubelogin-linux-amd64.zip bin/linux_amd64/kubelogin
 
     - name: Zip (linux-arm64)
       uses: montudor/action-zip@v1
       with:
-        args: zip -qq -r kubelogin-linux-arm64.zip bin/linux_arm64
+        args: zip -qq kubelogin-linux-arm64.zip bin/linux_arm64/kubelogin
 
     - name: Create sha256 Checksums
       run: |
