@@ -3,6 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/Azure/kubelogin)](https://goreportcard.com/report/github.com/Azure/kubelogin)
 [![golangci-lint](https://github.com/Azure/kubelogin/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/Azure/kubelogin/actions/workflows/golangci-lint.yml)
 [![Build on Push](https://github.com/Azure/kubelogin/actions/workflows/build.yml/badge.svg)](https://github.com/Azure/kubelogin/actions/workflows/build.yml)
+[![Go Reference](https://pkg.go.dev/badge/github.com/Azure/kubelogin.svg)](https://pkg.go.dev/github.com/Azure/kubelogin)
 
 This is a [client-go credential (exec) plugin](https://kubernetes.io/docs/reference/access-authn-authz/authentication/#client-go-credential-plugins) implementing azure authentication. This plugin provides features that are not available in kubectl. It is supported on kubectl v1.11+
 
