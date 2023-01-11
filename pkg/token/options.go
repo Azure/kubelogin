@@ -10,6 +10,23 @@ import (
 	"k8s.io/client-go/util/homedir"
 )
 
+type KlogsLoggingPurposeOptions struct {
+	LoginMethod            string
+	ClientID               string
+	ClientCert             string
+	Username               string
+	ServerID               string
+	TenantID               string
+	Environment            string
+	IsLegacy               bool
+	TokenCacheDir          string
+	tokenCacheFile         string
+	IdentityResourceID     string
+	FederatedTokenFile     string
+	AuthorityHost          string
+	UseAzureRMTerraformEnv bool
+}
+
 type Options struct {
 	LoginMethod            string
 	ClientID               string
