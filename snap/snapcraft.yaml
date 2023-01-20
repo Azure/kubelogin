@@ -1,0 +1,25 @@
+name: kubelogin # you probably want to 'snapcraft register <name>'
+base: core22 # the base snap is the execution environment for this snap
+adopt-info: kubelogin
+summary: Azure kubelogin # 79 char long summary
+description: |
+  A Kubernetes credential (exec) plugin implementing azure authentication.
+
+grade: stable # must be 'stable' to release into candidate/stable channels
+confinement: strict # use 'strict' once you have the right plugs and slots
+apps:
+  kubelogin:
+    command: kubelogin
+parts:
+  kubelogin:
+    # See 'snapcraft plugins'
+    build-snaps:
+      - go
+    plugin: make
+    override-build: |
+      make
+      snapcraftctl set-version $(git describe --tags)
+      find . -iname 'kubelogin' -exec cp -r {} $SNAPCRAFT_PART_INSTALL/ \;
+
+    source-type: git
+    source: https://github.com/Azure/kubelogin
