@@ -64,4 +64,5 @@ jobs:
         snap: ${{ steps.snapbuild.outputs.snap }}
         release: edge
       if: |
-        github.repository == 'Azure/kubelogin'
+        github.repository == 'Azure/kubelogin' &&
+        github.event_name == 'push'
