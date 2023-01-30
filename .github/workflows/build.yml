@@ -52,3 +52,17 @@ jobs:
         GOARCH: amd64
       run: make
 
+    - name: Snap Build
+      uses: snapcore/action-build@v1
+      id: snapbuild
+
+    - name: Publish to Snap Store
+      uses: snapcore/action-publish@v1
+      env:
+        SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPSTORE_LOGIN }}
+      with:
+        snap: ${{ steps.snapbuild.outputs.snap }}
+        release: edge
+      if: |
+        github.repository == 'Azure/kubelogin' &&
+        github.event_name == 'push'
