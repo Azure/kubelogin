@@ -20,3 +20,7 @@ For first release using new release and publish using changelog here is a sample
 Thanks to whoever was involved, pm.
 
 ```
+
+### In Event of Special Case Failures Post Build and Release.
+
+In an event where build and release were successful but publish failed for something else, in that case please make sure we delete the unsucessful release note and release tag, before re-running the release again, this will get release fresh release notes and tag.
