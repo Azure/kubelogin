@@ -7,9 +7,23 @@ description: |
 
 grade: stable # must be 'stable' to release into candidate/stable channels
 confinement: strict # use 'strict' once you have the right plugs and slots
+
+plugs:
+  dot-kubeconfig-access:
+    interface: personal-files
+    read:
+    - $HOME/.kube/config
+    write:
+    - $HOME/.kube/cache/kubelogin/
+
 apps:
   kubelogin:
     command: kubelogin
+    plugs:
+    - home
+    - network
+    - dot-kubeconfig-access
+
 parts:
   kubelogin:
     # See 'snapcraft plugins'
