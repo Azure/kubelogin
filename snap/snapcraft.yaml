@@ -14,7 +14,7 @@ plugs:
     read:
     - $HOME/.kube/config
     write:
-    - $HOME/.kube/cache/kubelogin/
+    - $HOME/.kube/cache/kubelogin
 
 apps:
   kubelogin:
