@@ -1,13 +1,26 @@
 # Change Log
 
-## [x.x.xx] --> next will be [0.0.26]
+## [0.0.26]
 
 ### Whats Changed
 
-- // Todo - > Add some feature et. al. description here.
-- // Todo - > Add some fixes et. al. description here.
-- // Todo - > Add other changes description here.
+- Add support of env var convention used by azure sdk by @weinong in https://github.com/Azure/kubelogin/pull/174
+- update release archives to omit unnecessary file by @weinong in https://github.com/Azure/kubelogin/pull/176
+
+
+### Doc Update
+- update doc with interactive login index by @weinong in https://github.com/Azure/kubelogin/pull/175
+- Go-report and cli flare addition. by @Tatsinnit in https://github.com/Azure/kubelogin/pull/178
+- Add go reference for this repo. by @Tatsinnit in https://github.com/Azure/kubelogin/pull/181
+- Enable CodeQL Analysis. by @Tatsinnit in https://github.com/Azure/kubelogin/pull/179
+- Possible enhancement - Add changelog for this repo for automating release tags. ❤️☕️💡 by @Tatsinnit in https://github.com/Azure/kubelogin/pull/177
+
+### Experimental Features
+
+- build: add support for Ubuntu snap package by @Exodus in https://github.com/Azure/kubelogin/pull/182
+- update workflow to build and publish snap package by @weinong in https://github.com/Azure/kubelogin/pull/183
 
 ### New Contributors
 
-- // Todo - > New contrinutors, thanks et. al. here.
+- @Tatsinnit made their first contribution in https://github.com/Azure/kubelogin/pull/178
+- @Exodus made their first contribution in https://github.com/Azure/kubelogin/pull/182
