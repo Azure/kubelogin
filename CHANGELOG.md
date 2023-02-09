@@ -7,8 +7,12 @@
 - Add support of env var convention used by azure sdk by @weinong in https://github.com/Azure/kubelogin/pull/174
 - update release archives to omit unnecessary file by @weinong in https://github.com/Azure/kubelogin/pull/176
 
+### Bug fixes
+
+- fix/release tagging by Tatsinnit in https://github.com/Azure/kubelogin/pull/189
 
 ### Doc Update
+
 - update doc with interactive login index by @weinong in https://github.com/Azure/kubelogin/pull/175
 - Go-report and cli flare addition. by @Tatsinnit in https://github.com/Azure/kubelogin/pull/178
 - Add go reference for this repo. by @Tatsinnit in https://github.com/Azure/kubelogin/pull/181
