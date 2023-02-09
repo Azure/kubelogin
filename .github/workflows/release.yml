@@ -15,6 +15,9 @@ jobs:
         go-version: 1.19
       id: go
 
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v3
+
     # Read changelog and read versions etc.
     - name: Check version is mentioned in Changelog.md
       id: changelog_reader
@@ -42,8 +45,9 @@ jobs:
         name: "v${{ steps.changelog_reader.outputs.version }} release" # following the pattern of vx.x.xx release used in this repo
         body: ${{ steps.changelog_reader.outputs.changes }}
 
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v3
+    # We need the latest tag in the git local workspace before it start building. 
+    - name: Get tags
+      run: git fetch --tags
 
     - name: Build (linux)
       env:
