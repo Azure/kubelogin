@@ -79,6 +79,12 @@ jobs:
         GOARCH: amd64
       run: make
 
+    - name: Build (windows/arm)
+      env:
+        GOOS: windows
+        GOARCH: arm64
+      run: make
+
     - name: Snap Build
       uses: snapcore/action-build@v1
       id: snapbuild
@@ -92,6 +98,11 @@ jobs:
       uses: montudor/action-zip@v1
       with:
         args: zip -qq kubelogin-win-amd64.zip bin/windows_amd64/kubelogin.exe
+
+    - name: Zip (win-arm64)
+      uses: montudor/action-zip@v1
+      with:
+        args: zip -qq kubelogin-win-arm64.zip bin/windows_arm64/kubelogin.exe
 
     - name: Zip (darwin-amd64)
       uses: montudor/action-zip@v1
@@ -117,6 +128,7 @@ jobs:
       run: |
         sha256sum kubelogin.zip > kubelogin.zip.sha256
         sha256sum kubelogin-win-amd64.zip > kubelogin-win-amd64.zip.sha256
+        sha256sum kubelogin-win-arm64.zip > kubelogin-win-arm64.zip.sha256
         sha256sum kubelogin-darwin-amd64.zip > kubelogin-darwin-amd64.zip.sha256
         sha256sum kubelogin-darwin-arm64.zip > kubelogin-darwin-arm64.zip.sha256
         sha256sum kubelogin-linux-amd64.zip > kubelogin-linux-amd64.zip.sha256
@@ -127,7 +139,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        args: kubelogin.zip kubelogin-win-amd64.zip kubelogin-darwin-amd64.zip kubelogin-darwin-arm64.zip kubelogin-linux-amd64.zip kubelogin-linux-arm64.zip kubelogin.zip.sha256 kubelogin-win-amd64.zip.sha256 kubelogin-darwin-amd64.zip.sha256 kubelogin-darwin-arm64.zip.sha256 kubelogin-linux-amd64.zip.sha256 kubelogin-linux-arm64.zip.sha256
+        args: kubelogin.zip kubelogin-win-amd64.zip kubelogin-win-arm64.zip kubelogin-darwin-amd64.zip kubelogin-darwin-arm64.zip kubelogin-linux-amd64.zip kubelogin-linux-arm64.zip kubelogin.zip.sha256 kubelogin-win-amd64.zip.sha256 kubelogin-win-arm64.zip.sha256 kubelogin-darwin-amd64.zip.sha256 kubelogin-darwin-arm64.zip.sha256 kubelogin-linux-amd64.zip.sha256 kubelogin-linux-arm64.zip.sha256
         releaseId: ${{ steps.create_release.outputs.id }}
 
     - name: Publish to Snap Store
