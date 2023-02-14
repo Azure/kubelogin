@@ -52,6 +52,12 @@ jobs:
         GOARCH: amd64
       run: make
 
+    - name: Build (windows/arm)
+      env:
+        GOOS: windows
+        GOARCH: arm64
+      run: make
+
     - name: Snap Build
       uses: snapcore/action-build@v1
       id: snapbuild
