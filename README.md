@@ -53,6 +53,11 @@ if(-Not($oldPathArray -Contains "$targetDir")) {
 }
 ```
 
+From Powershell (using winget):
+``` powershell
+winget install --id=Kubernetes.kubectl  -e
+winget install --id=Microsoft.Azure.Kubelogin  -e
+```
 
 ### Run
 
