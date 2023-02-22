@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.0.27]
+
+### Whats Changed
+- Added Binaries for windows/arm64 by @ssrahul96 in https://github.com/Azure/kubelogin/pull/195
+- update go-restful mod. by @Tatsinnit in https://github.com/Azure/kubelogin/pull/198
+
 ## [0.0.26]
 
 ### Whats Changed
