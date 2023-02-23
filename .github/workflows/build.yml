@@ -5,7 +5,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     env:
-      GO111MODULE: on 
+      GO111MODULE: on
     steps:
     - name: Set up Go 1.19
       uses: actions/setup-go@v3
@@ -61,14 +61,3 @@ jobs:
     - name: Snap Build
       uses: snapcore/action-build@v1
       id: snapbuild
-
-    - name: Publish to Snap Store
-      uses: snapcore/action-publish@v1
-      env:
-        SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPSTORE_LOGIN }}
-      with:
-        snap: ${{ steps.snapbuild.outputs.snap }}
-        release: edge
-      if: |
-        github.repository == 'Azure/kubelogin' &&
-        github.event_name == 'push'
