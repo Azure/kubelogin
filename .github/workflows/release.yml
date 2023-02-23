@@ -136,3 +136,4 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         args: kubelogin.zip kubelogin-win-amd64.zip kubelogin-win-arm64.zip kubelogin-darwin-amd64.zip kubelogin-darwin-arm64.zip kubelogin-linux-amd64.zip kubelogin-linux-arm64.zip kubelogin.zip.sha256 kubelogin-win-amd64.zip.sha256 kubelogin-win-arm64.zip.sha256 kubelogin-darwin-amd64.zip.sha256 kubelogin-darwin-arm64.zip.sha256 kubelogin-linux-amd64.zip.sha256 kubelogin-linux-arm64.zip.sha256
+        releaseId: ${{ steps.create_release.outputs.id }}
