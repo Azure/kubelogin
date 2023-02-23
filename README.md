@@ -71,7 +71,9 @@ kubelogin convert-kubeconfig
 kubectl get no
 ```
 
-If you are using kubeconfig from AKS AADv1 clusters, `convert-kubeconfig` command will automatically add `--legacy` flag so that `audience` claim will have `spn:` prefix.
+> Note: although device code flow is the default login mode, it doesn't work when Conditional Access policy is configured on AAD tenant. Use web browser flow instead.
+
+> Note: if you are using kubeconfig from AKS AADv1 clusters, `convert-kubeconfig` command will automatically add `--legacy` flag so that `audience` claim will have `spn:` prefix.
 
 #### Web browser flow (interactive)
 
