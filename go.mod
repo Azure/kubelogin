@@ -9,7 +9,7 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.9.22
 	github.com/AzureAD/microsoft-authentication-library-for-go v0.5.2
 	github.com/golang/mock v1.6.0
-	github.com/spf13/cobra v1.6.0
+	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
 	gopkg.in/retry.v1 v1.0.3
