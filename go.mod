@@ -11,7 +11,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
-	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
+	golang.org/x/crypto v0.6.0
 	gopkg.in/retry.v1 v1.0.3
 	k8s.io/apimachinery v0.26.1
 	k8s.io/cli-runtime v0.26.1
