@@ -61,3 +61,6 @@ jobs:
     - name: Snap Build
       uses: snapcore/action-build@v1
       id: snapbuild
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
