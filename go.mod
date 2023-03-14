@@ -13,7 +13,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/crypto v0.6.0
 	gopkg.in/retry.v1 v1.0.3
-	k8s.io/apimachinery v0.26.1
+	k8s.io/apimachinery v0.26.2
 	k8s.io/cli-runtime v0.26.1
 	k8s.io/client-go v0.26.1
 	k8s.io/klog v1.0.0
