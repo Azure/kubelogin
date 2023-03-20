@@ -39,6 +39,17 @@ brew upgrade Azure/kubelogin/kubelogin
 ```
 
 ### Setup (Windows)
+
+#### Using winget
+
+From Powershell:
+``` powershell
+winget install --id=Kubernetes.kubectl  -e
+winget install --id=Microsoft.Azure.Kubelogin  -e
+```
+
+#### Using azure cli
+
 From Powershell:
 ``` powershell
 az aks install-cli
@@ -51,12 +62,6 @@ if(-Not($oldPathArray -Contains "$targetDir")) {
     [System.Environment]::SetEnvironmentVariable("Path",$newPath,"User")
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path","User"),[System.Environment]::GetEnvironmentVariable("Path","Machine") -join ";"
 }
-```
-
-From Powershell (using winget):
-``` powershell
-winget install --id=Kubernetes.kubectl  -e
-winget install --id=Microsoft.Azure.Kubelogin  -e
 ```
 
 ### Run
