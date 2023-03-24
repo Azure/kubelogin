@@ -50,3 +50,12 @@ func TestNewDeviceCodeTokenProviderEmpty(t *testing.T) {
 		})
 	}
 }
+
+func TestNewDeviceCodeToken(t *testing.T) {
+	deviceCode := deviceCodeTokenProvider{}
+	_, err := deviceCode.Token()
+
+	if !ErrorContains(err, "initialing the device code authentication:") {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
