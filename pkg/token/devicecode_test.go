@@ -10,20 +10,16 @@ import (
 
 func TestNewDeviceCodeTokenProviderEmpty(t *testing.T) {
 	testData := []struct {
-		name          string
-		inputEmptyVar string
+		name string
 	}{
 		{
-			name:          "clientID cannot be empty",
-			inputEmptyVar: "",
+			name: "clientID cannot be empty",
 		},
 		{
-			name:          "resourceID cannot be empty",
-			inputEmptyVar: "",
+			name: "resourceID cannot be empty",
 		},
 		{
-			name:          "tenantID cannot be empty",
-			inputEmptyVar: "",
+			name: "tenantID cannot be empty",
 		},
 	}
 

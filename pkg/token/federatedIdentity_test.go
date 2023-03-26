@@ -8,28 +8,22 @@ import (
 
 func TestNewWorkloadIdentityTokenProvderEmpty(t *testing.T) {
 	testData := []struct {
-		name          string
-		inputEmptyVar string
+		name string
 	}{
 		{
-			name:          "clientID cannot be empty",
-			inputEmptyVar: "",
+			name: "clientID cannot be empty",
 		},
 		{
-			name:          "tenantID cannot be empty",
-			inputEmptyVar: "",
+			name: "tenantID cannot be empty",
 		},
 		{
-			name:          "federatedTokenFile cannot be empty",
-			inputEmptyVar: "",
+			name: "federatedTokenFile cannot be empty",
 		},
 		{
-			name:          "authorityHost cannot be empty",
-			inputEmptyVar: "",
+			name: "authorityHost cannot be empty",
 		},
 		{
-			name:          "serverID cannot be empty",
-			inputEmptyVar: "",
+			name: "serverID cannot be empty",
 		},
 	}
 
