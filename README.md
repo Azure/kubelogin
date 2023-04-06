@@ -48,6 +48,13 @@ winget install --id=Kubernetes.kubectl  -e
 winget install --id=Microsoft.Azure.Kubelogin  -e
 ```
 
+#### Using scoop
+
+From Powershell:
+``` powershell
+scoop install kubectl azure-kubelogin
+```
+
 #### Using azure cli
 
 From Powershell:
