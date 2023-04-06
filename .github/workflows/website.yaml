@@ -1,0 +1,37 @@
+name: generate github pages
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/website.yaml"
+      - "docs/**"
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Set TOOLS_BIN_DIR and add to PATH
+        run: |
+          TOOLS_BIN_DIR="${HOME}/.cargo/bin"
+          echo "TOOLS_BIN_DIR=${TOOLS_BIN_DIR}" >> ${GITHUB_ENV}
+          echo "${TOOLS_BIN_DIR}" >> ${GITHUB_PATH}
+
+      - name: Build
+        run: make -C docs/book build
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.ref == 'refs/heads/master' }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/book/book
