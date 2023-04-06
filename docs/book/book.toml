@@ -6,6 +6,9 @@ src = "src"
 title = "Azure Kubelogin"
 description = "A Kubernetes credential (exec) plugin implementing azure authentication"
 
+[preprocessor.toc]
+command = "mdbook-toc"
+
 [output.html]
 curly-quotes = true
 git-repository-url = "https://github.com/Azure/kubelogin"
