@@ -77,5 +77,5 @@ kubectl get nodes
 ## Restrictions
 
 - on AKS, it will only work with managed AAD
-- the service principal can be member of maximum 250 AAD groups
+- the service principal can be member of maximum 200 AAD groups
 
