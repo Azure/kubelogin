@@ -82,7 +82,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="development.html"><strong aria-hidden="true">2.</strong> Development</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="development/releasing.html"><strong aria-hidden="true">2.1.</strong> Releasing</a></li></ol></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">3.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="code-of-conduct.html"><strong aria-hidden="true">4.</strong> Code of Conduct</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li class="chapter-item expanded "><a href="quick-start.html"><strong aria-hidden="true">3.</strong> Quick Start</a></li><li class="chapter-item expanded "><a href="concepts.html"><strong aria-hidden="true">4.</strong> Concepts</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="concepts/exec-plugin.html"><strong aria-hidden="true">4.1.</strong> Exec Plugin</a></li><li class="chapter-item expanded "><a href="concepts/login-modes.html"><strong aria-hidden="true">4.2.</strong> Login Modes</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="concepts/login-modes/devicecode.html"><strong aria-hidden="true">4.2.1.</strong> Device Code</a></li><li class="chapter-item expanded "><a href="concepts/login-modes/azurecli.html"><strong aria-hidden="true">4.2.2.</strong> Azure CLI</a></li><li class="chapter-item expanded "><a href="concepts/login-modes/interactive.html"><strong aria-hidden="true">4.2.3.</strong> Web Browser Interactive</a></li><li class="chapter-item expanded "><a href="concepts/login-modes/sp.html"><strong aria-hidden="true">4.2.4.</strong> Service Principal</a></li><li class="chapter-item expanded "><a href="concepts/login-modes/msi.html"><strong aria-hidden="true">4.2.5.</strong> Managed Service Identity</a></li><li class="chapter-item expanded "><a href="concepts/login-modes/workloadidentity.html"><strong aria-hidden="true">4.2.6.</strong> Workload Identity</a></li><li class="chapter-item expanded "><a href="concepts/login-modes/ropc.html"><strong aria-hidden="true">4.2.7.</strong> Resource Owner Password Credential</a></li></ol></li><li class="chapter-item expanded "><a href="concepts/aks.html"><strong aria-hidden="true">4.3.</strong> Using kubelogin with AKS</a></li></ol></li><li class="chapter-item expanded "><a href="cli-reference.html"><strong aria-hidden="true">5.</strong> Command-Line Tool</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="cli/convert-kubeconfig.html"><strong aria-hidden="true">5.1.</strong> convert-kubeconfig</a></li><li class="chapter-item expanded "><a href="cli/get-token.html"><strong aria-hidden="true">5.2.</strong> get-token</a></li><li class="chapter-item expanded "><a href="cli/remove-tokens.html"><strong aria-hidden="true">5.3.</strong> remove-tokens</a></li></ol></li><li class="chapter-item expanded "><a href="topics.html"><strong aria-hidden="true">6.</strong> Topics</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="topics/environments.html"><strong aria-hidden="true">6.1.</strong> Using in different environments</a></li><li class="chapter-item expanded "><a href="topics/sp.html"><strong aria-hidden="true">6.2.</strong> Using Service Principal</a></li><li class="chapter-item expanded "><a href="topics/k8s-oidc-aad.html"><strong aria-hidden="true">6.3.</strong> Setup k8s OIDC Provider using Azure AD</a></li><li class="chapter-item expanded "><a href="topics/jenkins.html"><strong aria-hidden="true">6.4.</strong> Using kubelogin in Jenkins</a></li></ol></li><li class="chapter-item expanded "><a href="known-issues.html"><strong aria-hidden="true">7.</strong> Known Issues</a></li><li class="chapter-item expanded "><a href="development.html"><strong aria-hidden="true">8.</strong> Development</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="development/releasing.html"><strong aria-hidden="true">8.1.</strong> Releasing</a></li></ol></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">9.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="code-of-conduct.html"><strong aria-hidden="true">10.</strong> Code of Conduct</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -146,30 +146,22 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="kubelogin"><a class="header" href="#kubelogin">kubelogin</a></h1>
-<p><a href="https://goreportcard.com/report/github.com/Azure/kubelogin"><img src="https://goreportcard.com/badge/github.com/Azure/kubelogin" alt="Go Report Card" /></a>
-<a href="https://github.com/Azure/kubelogin/actions/workflows/golangci-lint.yml"><img src="https://github.com/Azure/kubelogin/actions/workflows/golangci-lint.yml/badge.svg" alt="golangci-lint" /></a>
-<a href="https://github.com/Azure/kubelogin/actions/workflows/build.yml"><img src="https://github.com/Azure/kubelogin/actions/workflows/build.yml/badge.svg" alt="Build on Push" /></a>
-<a href="https://pkg.go.dev/github.com/Azure/kubelogin"><img src="https://pkg.go.dev/badge/github.com/Azure/kubelogin.svg" alt="Go Reference" /></a></p>
-<p>This is a <a href="https://kubernetes.io/docs/reference/access-authn-authz/authentication/#client-go-credential-plugins">client-go credential (exec) plugin</a> implementing azure authentication. This plugin provides features that are not available in kubectl. It is supported on kubectl v1.11+</p>
+                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
+<p><code>kubelogin</code> is a <a href="https://kubernetes.io/docs/reference/access-authn-authz/authentication/#client-go-credential-plugins">client-go credential (exec) plugin</a> implementing azure authentication. This plugin provides features that are not available in kubectl. It is supported on kubectl v1.11+</p>
 <h2 id="features"><a class="header" href="#features">Features</a></h2>
 <ul>
-<li><code>convert-kubeconfig</code> command to converts kubeconfig with existing azure auth provider format to exec credential plugin format</li>
-<li><a href="index.html#device-code-flow-interactive">interactive device code login</a></li>
-<li><a href="index.html#web-browser-flow-interactive">interactive web browser login</a></li>
-<li><a href="index.html#service-principal-login-flow-non-interactive">non-interactive service principal login</a></li>
-<li><a href="index.html#user-principal-login-flow-non-interactive">non-interactive user principal login</a> using <a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc">Resource owner login flow</a></li>
-<li><a href="index.html#managed-service-identity-non-interactive">non-interactive managed service identity login</a></li>
-<li><a href="index.html#azure-cli-token-login-non-interactive">non-interactive Azure CLI token login (AKS only)</a></li>
-<li><a href="index.html#azure-workload-federated-identity-non-interactive">non-interactive workload identity login</a></li>
-<li>AAD token will be cached locally for renewal in device code login and user principal login (ropc) flow. By default, it is saved in <code>~/.kube/cache/kubelogin/</code></li>
-<li>addresses <a href="https://github.com/kubernetes/kubernetes/issues/86410">https://github.com/kubernetes/kubernetes/issues/86410</a> to remove <code>spn:</code> prefix in <code>audience</code> claim, if necessary. (based on kubeconfig or commandline argument <code>--legacy</code>)</li>
-<li><a href="index.html#setup-for-kubernetes-oidc-provider-using-azure-ad">Setup for Kubernetes OIDC Provider using Azure AD</a></li>
+<li><a href="./concepts/login-modes/devicecode.html">interactive device code login</a></li>
+<li><a href="./concepts/login-modes/interactive.html">interactive web browser login</a></li>
+<li><a href="./concepts/login-modes/sp.html">non-interactive service principal login</a></li>
+<li><a href="./concepts/login-modes/ropc.html">non-interactive user principal login</a> using <a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc">Resource owner login flow</a></li>
+<li><a href="./concepts/login-modes/msi.html">non-interactive managed service identity login</a></li>
+<li><a href="./concepts/login-modes/azurecli.html">non-interactive Azure CLI token login (AKS only)</a></li>
+<li><a href="./concepts/login-modes/workloadidentity.html">non-interactive workload identity login</a></li>
 </ul>
-<h2 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h2>
-<h3 id="setup"><a class="header" href="#setup">Setup</a></h3>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
+<h2 id="download-from-release"><a class="header" href="#download-from-release">Download from Release</a></h2>
 <p>Copy the latest <a href="https://github.com/Azure/kubelogin/releases">Releases</a> to shell’s search path.</p>
-<h3 id="setup-homebrew"><a class="header" href="#setup-homebrew">Setup (homebrew)</a></h3>
+<h2 id="homebrew"><a class="header" href="#homebrew">Homebrew</a></h2>
 <pre><code class="language-sh"># install
 brew install Azure/kubelogin/kubelogin
 
@@ -177,13 +169,17 @@ brew install Azure/kubelogin/kubelogin
 brew update
 brew upgrade Azure/kubelogin/kubelogin
 </code></pre>
-<h3 id="setup-windows"><a class="header" href="#setup-windows">Setup (Windows)</a></h3>
-<h4 id="using-winget"><a class="header" href="#using-winget">Using winget</a></h4>
+<h2 id="windows"><a class="header" href="#windows">Windows</a></h2>
+<h3 id="using-winget"><a class="header" href="#using-winget">Using winget</a></h3>
 <p>From Powershell:</p>
 <pre><code class="language-powershell">winget install --id=Kubernetes.kubectl  -e
 winget install --id=Microsoft.Azure.Kubelogin  -e
 </code></pre>
-<h4 id="using-azure-cli"><a class="header" href="#using-azure-cli">Using azure cli</a></h4>
+<h3 id="using-scoop"><a class="header" href="#using-scoop">Using scoop</a></h3>
+<p>From Powershell:</p>
+<pre><code class="language-powershell">scoop install kubectl azure-kubelogin
+</code></pre>
+<h3 id="using-azure-cli"><a class="header" href="#using-azure-cli">Using azure cli</a></h3>
 <p>From Powershell:</p>
 <pre><code class="language-powershell">az aks install-cli
 $targetDir=&quot;$env:USERPROFILE\.azure-kubelogin&quot;
@@ -196,62 +192,124 @@ if(-Not($oldPathArray -Contains &quot;$targetDir&quot;)) {
     $env:Path = [System.Environment]::GetEnvironmentVariable(&quot;Path&quot;,&quot;User&quot;),[System.Environment]::GetEnvironmentVariable(&quot;Path&quot;,&quot;Machine&quot;) -join &quot;;&quot;
 }
 </code></pre>
-<h3 id="run"><a class="header" href="#run">Run</a></h3>
-<h4 id="device-code-flow-interactive"><a class="header" href="#device-code-flow-interactive">Device code flow (interactive)</a></h4>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="quick-start"><a class="header" href="#quick-start">Quick Start</a></h1>
+<p>After <code>kubelogin</code> is installed, do the following on Azure AD enabled AKS clusters</p>
+<h2 id="using-azure-cli-login-mode"><a class="header" href="#using-azure-cli-login-mode">Using Azure CLI login mode</a></h2>
+<pre><code class="language-sh">az login
+
+# by default, this command merges the kubeconfig into ${HOME}/.kube/config
+az aks get-credentials -g ${RESOURCE_GROUP_NAME} -n ${AKS_NAME}
+
+
+# kubelogin by default will use the kubeconfig from ${KUBECONFIG}. Specify --kubeconfig to override
+# this converts to use azurecli login mode
+kubelogin convert-kubeconfig -l azurecli
+
+# voila!
+kubectl get nodes
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="concepts"><a class="header" href="#concepts">Concepts</a></h1>
+<p>This section documents the key concepts that will be used throughout the <code>kubelogin</code> command-line.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="exec-plugin"><a class="header" href="#exec-plugin">Exec Plugin</a></h1>
+<p><a href="https://kubernetes.io/docs/reference/access-authn-authz/authentication/#client-go-credential-plugins">Exec plugin</a> 
+is one of Kubernetes authentication strategies which allows <code>kubectl</code> to execute an external command to receive user credentials to send to api-server.
+Since Kubernetes 1.26, <a href="https://github.com/kubernetes/kubernetes/blob/ad18954259eae3db51bac2274ed4ca7304b923c4/CHANGELOG/CHANGELOG-1.26.md">the default azure auth plugin is removed from <code>client-go</code> and <code>kubectl</code></a>.</p>
+<p>To interact with an Azure AD enabled Kubernetes cluster, Exec plugin using <code>kubelogin</code> will be required.</p>
+<p>A kubeconfig using exec plugin will look somewhat like:</p>
+<pre><code class="language-yaml">kind: Config
+preferences: {}
+users:
+  - name: user-name
+    user:
+      exec:
+        apiVersion: client.authentication.k8s.io/v1beta1
+        command: kubelogin
+        args:
+          - get-token
+          - --environment
+          - AzurePublicCloud
+          - --server-id
+          - &lt;AAD server app ID&gt;
+          - --client-id
+          - &lt;AAD client app ID&gt;
+          - --tenant-id
+          - &lt;AAD tenant ID&gt;
+</code></pre>
+<p>When using <code>kubelogin</code> in Exec plugin, the kubeconfig tells <code>kubectl</code> to execute <code>kubelogin get-token</code> subcommand to perform various Azure AD <a href="concepts/./login-modes.html">login modes</a> to get the access token.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="login-modes"><a class="header" href="#login-modes">Login Modes</a></h1>
+<p>Most of the interaction with <code>kubelogin</code> is around <code>convert-kubeconfig</code> subcommand which uses the input kubeconfig specified in <code>--kubeconfig</code> or <code>KUBECONFIG</code> environment variable to convert to the final kubeconfig in <a href="concepts/./concepts/exec-plugin.html">exec format</a> based on specified login mode.
+In this section, the login modes will be explained in details.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="device-code"><a class="header" href="#device-code">Device Code</a></h1>
+<p>This is the default login mode in <code>convert-kubeconfig</code> subcommand. So <code>-l devicecode</code> is optional. This login will prompt the device code for user to login on a browser. </p>
+<p>Before <code>kubelogin</code> and <a href="concepts/login-modes/./concepts/exec-plugin.html">Exec plugin</a> were introduced, the azure authentication mode in <code>kubectl</code> supports device code flow only. 
+It uses an old library that produces the token with <code>audience</code> claim that has <code>spn:</code> prefix 
+which is not compatible with AKS Managed AAD using On-Behalf-Of mode (<a href="https://github.com/kubernetes/kubernetes/issues/86410">Issue86410</a>).
+So when running <code>convert-kubeconfig</code> subcommand, <code>kubelogin</code> will remove the <code>spn:</code> prefix in <code>audience</code> claim.
+If it’s desired to keep the old behavior, add <code>--legacy</code>. </p>
+<p>If you are using kubeconfig from AKS Legacy AAD (AADv1) clusters, <code>kubelogin</code> will automatically add <code>--legacy</code> flag.</p>
+<p>In this login mode, the access token and refresh token will be cached at <code>${HOME}/.kube/cache/kubelogin</code> directory. This path can be overriden by <code>--token-cache-dir</code>.</p>
+<h2 id="usage-examples"><a class="header" href="#usage-examples">Usage Examples</a></h2>
 <pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
 
 kubelogin convert-kubeconfig
 
-kubectl get no
+kubectl get nodes
+
+# clean up cached token
+kubectl remove-tokens
 </code></pre>
+<h2 id="restrictions"><a class="header" href="#restrictions">Restrictions</a></h2>
+<ul>
+<li>Device code login mode doesn’t work when Conditional Access policy is configured on AAD tenant. Use <a href="concepts/login-modes/./interactive.html">web browser interactive mode</a> instead.</li>
+</ul>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ul>
+<li>https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-device-code</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="azure-cli"><a class="header" href="#azure-cli">Azure CLI</a></h1>
+<p>This login mode uses the already logged-in context performed by Azure CLI to get the <a href="https://docs.microsoft.com/en-us/cli/azure/account?view=azure-cli-latest#az_account_get_access_token">access token</a>. 
+The token will be issued in the same Azure AD tenant as in <code>az login</code>. </p>
+<p><code>kubelogin</code> will not cache any token since it’s already managed by Azure CLI.</p>
 <blockquote>
-<p>Note: although device code flow is the default login mode, it doesn’t work when Conditional Access policy is configured on AAD tenant. Use web browser flow instead.</p>
+<h3 id="note"><a class="header" href="#note">NOTE</a></h3>
+<p>This login mode only works with managed AAD in AKS.</p>
 </blockquote>
-<blockquote>
-<p>Note: if you are using kubeconfig from AKS AADv1 clusters, <code>convert-kubeconfig</code> command will automatically add <code>--legacy</code> flag so that <code>audience</code> claim will have <code>spn:</code> prefix.</p>
-</blockquote>
-<h4 id="web-browser-flow-interactive"><a class="header" href="#web-browser-flow-interactive">Web browser flow (interactive)</a></h4>
+<h2 id="usage-examples-1"><a class="header" href="#usage-examples-1">Usage Examples</a></h2>
+<pre><code class="language-sh">az login
+
+export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l azurecli
+
+kubectl get nodes
+</code></pre>
+<h2 id="references-1"><a class="header" href="#references-1">References</a></h2>
+<ul>
+<li>https://learn.microsoft.com/en-us/cli/azure/</li>
+<li>https://github.com/Azure/azure-cli</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="web-browser-interactive"><a class="header" href="#web-browser-interactive">Web Browser Interactive</a></h1>
+<p>This login mode will automatically open a browser to login the user. 
+Once authenticated, the browser will redirect back to a local web server with the credentials. 
+This login mode complies with Conditional Access policy.</p>
+<p>In this login mode, the access token will be cached at <code>${HOME}/.kube/cache/kubelogin</code> directory. This path can be overriden by <code>--token-cache-dir</code>.</p>
+<h2 id="usage-examples-2"><a class="header" href="#usage-examples-2">Usage Examples</a></h2>
 <pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
 
 kubelogin convert-kubeconfig -l interactive
 
-kubectl get no
+kubectl get nodes
 </code></pre>
-<h4 id="service-principal-login-flow-non-interactive"><a class="header" href="#service-principal-login-flow-non-interactive">Service principal login flow (non interactive)</a></h4>
-<blockquote>
-<p>On AKS, it will only work with managed AAD. Service principal can be member of maximum 250 AAD groups.</p>
-</blockquote>
-<p>Create a service principal or use an existing one.</p>
-<pre><code class="language-sh">az ad sp create-for-rbac --skip-assignment --name myAKSAutomationServicePrincipal
-</code></pre>
-<p>The output is similar to the following example.</p>
-<pre><code class="language-json">{
-  &quot;appId&quot;: &quot;&lt;spn client id&gt;&quot;,
-  &quot;displayName&quot;: &quot;myAKSAutomationServicePrincipal&quot;,
-  &quot;name&quot;: &quot;http://myAKSAutomationServicePrincipal&quot;,
-  &quot;password&quot;: &quot;&lt;spn secret&gt;&quot;,
-  &quot;tenant&quot;: &quot;&lt;aad tenant id&gt;&quot;
-}
-</code></pre>
-<p>Query your service principal AAD Object ID by using the command below.</p>
-<pre><code class="language-sh">az ad sp show --id &lt;spn client id&gt; --query &quot;id&quot;
-</code></pre>
-<p>To configure the role binding on Azure Kubernetes Service, the user in rolebinding should be the AAD Object ID.</p>
-<p>For example,</p>
-<pre><code class="language-yaml">apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: sp-role-binding
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-admin
-subjects:
-  - apiGroup: rbac.authorization.k8s.io
-    kind: User
-    name: &lt;service-principal-object-id&gt;
-</code></pre>
-<p>Use Kubelogin to convert your kubeconfig</p>
+<h2 id="references-2"><a class="header" href="#references-2">References</a></h2>
+<ul>
+<li>https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.interactivebrowsercredential?view=azure-python</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="service-principal"><a class="header" href="#service-principal">Service Principal</a></h1>
+<p>This login mode uses the service principal to login. The credential may be provided via environment variables or flag.
+The supported credentials are password and pfx client certificate.</p>
+<p>The token will not be cached on the filesystem.</p>
+<h2 id="usage-examples-3"><a class="header" href="#usage-examples-3">Usage Examples</a></h2>
+<h3 id="client-secret-in-environment-variable"><a class="header" href="#client-secret-in-environment-variable">Client secret in environment variable</a></h3>
 <pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
 
 kubelogin convert-kubeconfig -l spn
@@ -259,75 +317,78 @@ kubelogin convert-kubeconfig -l spn
 export AAD_SERVICE_PRINCIPAL_CLIENT_ID=&lt;spn client id&gt;
 export AAD_SERVICE_PRINCIPAL_CLIENT_SECRET=&lt;spn secret&gt;
 
-kubectl get no
+kubectl get nodes
 </code></pre>
-<p>or write your spn secret permanently into the kubeconfig:</p>
+<h3 id="client-secret-in-environment-variable-1"><a class="header" href="#client-secret-in-environment-variable-1">Client secret in environment variable</a></h3>
 <pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
 
-kubelogin convert-kubeconfig -l spn --client-id &lt;spn client id&gt; --client-secret &lt;spn secret&gt;
+kubelogin convert-kubeconfig -l spn
+
+export AZURE_CLIENT_ID=&lt;spn client id&gt;
+export AZURE_CLIENT_SECRET=&lt;spn secret&gt;
 
 kubectl get nodes
 </code></pre>
-<h4 id="user-principal-login-flow-non-interactive"><a class="header" href="#user-principal-login-flow-non-interactive">User Principal login flow (non interactive)</a></h4>
-<blockquote>
-<p>Note: ROPC is not supported in hybrid identity federation scenarios (for example, Azure AD and ADFS used to authenticate on-premises accounts). If users are full-page redirected to an on-premises identity providers, Azure AD is not able to test the username and password against that identity provider. Pass-through authentication is supported with ROPC, however.
-It also does not work when MFA policy is enabled
-Personal accounts that are invited to an Azure AD tenant can’t use ROPC</p>
-</blockquote>
+<h3 id="client-secret-in-command-line-flag"><a class="header" href="#client-secret-in-command-line-flag">Client secret in command-line flag</a></h3>
 <pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
 
-kubelogin convert-kubeconfig -l ropc
+kubelogin convert-kubeconfig -l spn --client-id &lt;spn client id&gt; --client-secret &lt;spn client secret&gt;
 
-export AAD_USER_PRINCIPAL_NAME=foo@bar.com
-export AAD_USER_PRINCIPAL_PASSWORD=&lt;password&gt;
-
-kubectl get no
+kubectl get nodes
 </code></pre>
-<h4 id="managed-service-identity-non-interactive"><a class="header" href="#managed-service-identity-non-interactive">Managed Service Identity (non interactive)</a></h4>
+<blockquote>
+<h3 id="warning"><a class="header" href="#warning">Warning</a></h3>
+<p>this will leave the secret in the kubeconfig</p>
+</blockquote>
+<h3 id="client-certificate"><a class="header" href="#client-certificate">Client certificate</a></h3>
+<pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l spn
+
+export AAD_SERVICE_PRINCIPAL_CLIENT_ID=&lt;spn client id&gt;
+export AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE=/path/to/cert.pfx
+export AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE_PASSWORD=&lt;pfx password&gt;
+
+kubectl get nodes
+</code></pre>
+<h3 id="client-certificate-1"><a class="header" href="#client-certificate-1">Client certificate</a></h3>
+<pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l spn
+
+export AZURE_CLIENT_ID=&lt;spn client id&gt;
+export AZURE_CLIENT_CERTIFICATE_PATH=/path/to/cert.pfx
+export AZURE_CLIENT_CERTIFICATE_PASSWORD=&lt;pfx password&gt;
+
+kubectl get nodes
+</code></pre>
+<h2 id="restrictions-1"><a class="header" href="#restrictions-1">Restrictions</a></h2>
+<ul>
+<li>on AKS, it will only work with managed AAD</li>
+<li>the service principal can be member of maximum 250 AAD groups</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="managed-service-identity"><a class="header" href="#managed-service-identity">Managed Service Identity</a></h1>
+<p>This login mode should be used in an environment where 
+<a href="https://learn.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview">Managed Service Identity</a> 
+is available such as Azure Virtual Machine, Azure Virtual Machine ScaleSet, Cloud Shell, Azure Container Instance, and Azure App Service.</p>
+<p>The token will not be cached on the filesystem.</p>
+<h2 id="usage-examples-4"><a class="header" href="#usage-examples-4">Usage Examples</a></h2>
+<h3 id="using-default-managed-service-identity"><a class="header" href="#using-default-managed-service-identity">Using default Managed Service Identity</a></h3>
 <pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
 
 kubelogin convert-kubeconfig -l msi
 
-kubectl get no
+kubectl get nodes
 </code></pre>
-<p>To configure the role binding on Azure Kubernetes Service, the user in rolebinding should be the MSI’s AAD Object ID.</p>
-<p>For example,</p>
-<pre><code class="language-yaml">apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: msi-role-binding
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-admin
-subjects:
-  - apiGroup: rbac.authorization.k8s.io
-    kind: User
-    name: &lt;service-principal-object-id&gt;
-</code></pre>
-<h4 id="managed-service-identity-with-specific-identity-non-interactive"><a class="header" href="#managed-service-identity-with-specific-identity-non-interactive">Managed Service Identity with specific identity (non interactive)</a></h4>
+<h3 id="using-managed-service-identity-with-specific-identity"><a class="header" href="#using-managed-service-identity-with-specific-identity">Using Managed Service Identity with specific identity</a></h3>
 <pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
 
-kubelogin convert-kubeconfig -l msi --client-id msi-client-id
+kubelogin convert-kubeconfig -l msi --client-id &lt;msi-client-id&gt;
 
-kubectl get no
+kubectl get nodes
 </code></pre>
-<h4 id="azure-cli-token-login-non-interactive"><a class="header" href="#azure-cli-token-login-non-interactive">Azure CLI token login (non interactive)</a></h4>
-<pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
-
-kubelogin convert-kubeconfig -l azurecli
-
-kubectl get no
-</code></pre>
-<p>Uses an <a href="https://docs.microsoft.com/en-us/cli/azure/account?view=azure-cli-latest#az_account_get_access_token">access token</a> from <a href="https://github.com/Azure/azure-cli">Azure CLI</a> to log in. The token will be issued against whatever tenant was logged in at the time <code>kubelogin convert-kubeconfig -l azurecli</code> was run. This login option only works with managed AAD in AKS.</p>
-<h4 id="azure-workload-federated-identity-non-interactive"><a class="header" href="#azure-workload-federated-identity-non-interactive">Azure Workload Federated Identity (non interactive)</a></h4>
-<pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
-
-kubelogin convert-kubeconfig -l workloadidentity
-
-kubectl get no
-</code></pre>
-<p>Workload identity uses <a href="https://docs.microsoft.com/en-us/graph/api/resources/federatedidentitycredentials-overview?view=graph-rest-beta">Azure AD federated identity credentials</a> to authenticate to Kubernetes clusters with AAD integration. This works by setting the environment variables:</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="workload-identity"><a class="header" href="#workload-identity">Workload Identity</a></h1>
+<p>This login mode uses <a href="https://docs.microsoft.com/en-us/graph/api/resources/federatedidentitycredentials-overview?view=graph-rest-beta">Azure AD federated identity credentials</a> to authenticate to Kubernetes clusters with Azure AD integration. This works by setting the environment variables:</p>
 <ul>
 <li><code>AZURE_CLIENT_ID</code> is Azure Active Directory application ID that is federated with workload identity</li>
 <li><code>AZURE_TENANT_ID</code> is Azure Active Directory tenant ID</li>
@@ -335,56 +396,155 @@ kubectl get no
 <li><code>AZURE_AUTHORITY_HOST</code> is the base URL of an Azure Active Directory authority. E.g. <code>https://login.microsoftonline.com/</code></li>
 </ul>
 <p>With workload identity, it’s possible to access Kubernetes clusters from CI/CD system such as Github, ArgoCD, etc. without storing Service Principal credentials in those external systems. To learn more, <a href="https://github.com/weinong/azure-federated-identity-samples">here</a> is a sample to setup OIDC federation from Github.</p>
-<h3 id="clean-up"><a class="header" href="#clean-up">Clean up</a></h3>
-<p>Whenever you want to remove cached tokens</p>
-<pre><code class="language-sh">kubelogin remove-tokens
+<p>In this login mode, token will not be cached on the filesystem.</p>
+<h2 id="usage-examples-5"><a class="header" href="#usage-examples-5">Usage Examples</a></h2>
+<pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l workloadidentity
+
+kubectl get nodes
 </code></pre>
-<h2 id="azure-environment"><a class="header" href="#azure-environment">Azure Environment</a></h2>
-<p><code>kubelogin</code> supports Azure Environments:</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="resource-owner-password-credential-ropc"><a class="header" href="#resource-owner-password-credential-ropc">Resource Owner Password Credential (ropc)</a></h1>
+<blockquote>
+<h3 id="warning-1"><a class="header" href="#warning-1">Warning:</a></h3>
+<p><a href="https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc">Microsoft recommends you do not use the ROPC flow</a></p>
+</blockquote>
+<blockquote>
+<h3 id="note-1"><a class="header" href="#note-1">Note:</a></h3>
+<p>ROPC is not supported in hybrid identity federation scenarios (for example, Azure AD and ADFS used to authenticate on-premises accounts). If users are redirected to an on-premises identity providers, Azure AD is not able to test the username and password against that identity provider. Pass-through authentication is supported with ROPC, however.
+It also does not work when MFA policy is enabled
+Personal accounts that are invited to an Azure AD tenant can’t use ROPC</p>
+</blockquote>
+<p>In this login mode, the access token and refresh token will be cached at <code>${HOME}/.kube/cache/kubelogin</code> directory. This path can be overriden by <code>--token-cache-dir</code>.</p>
+<h2 id="usage-examples-6"><a class="header" href="#usage-examples-6">Usage Examples</a></h2>
+<pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l ropc
+
+export AAD_USER_PRINCIPAL_NAME=foo@bar.com
+export AAD_USER_PRINCIPAL_PASSWORD=&lt;password&gt;
+
+kubectl get nodes
+</code></pre>
+<h2 id="reference"><a class="header" href="#reference">Reference</a></h2>
+<p>https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="using-kubelogin-with-aks"><a class="header" href="#using-kubelogin-with-aks">Using kubelogin with AKS</a></h1>
+<p>AKS uses a pair of first party Azure AD applications. These application IDs are the same in all environments.</p>
+<h2 id="azure-kubernetes-service-aad-server"><a class="header" href="#azure-kubernetes-service-aad-server">Azure Kubernetes Service AAD Server</a></h2>
+<p>applicationID: 6dae42f8-4368-4678-94ff-3960e28e3630</p>
+<p>This is the application used by the server side. The access token accessing AKS clusters need to be issued for this app.
+In most of <code>kubelogin</code> <a href="concepts/./login-modes.html">login modes</a>, <code>--server-id</code> is required parameter in <code>kubelogin get-token</code>.</p>
+<h2 id="azure-kubernetes-service-aad-client"><a class="header" href="#azure-kubernetes-service-aad-client">Azure Kubernetes Service AAD Client</a></h2>
+<p>applicationID: 80faf920-1908-4b52-b5ef-a8e7bedfc67a</p>
+<p>This is a public client application used by <code>kubelogin</code> to perform login on behalf of the user. 
+It’s used in <a href="concepts/./login-modes/devicecode.html">device code</a>, <a href="concepts/./login-modes/interactive.html">web browser interactive</a>, and <a href="concepts/./login-modes/ropc.html">ropc</a> login modes.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="command-line-tool"><a class="header" href="#command-line-tool">Command Line Tool</a></h1>
+<p><code>kubelogin</code> command-line tool has following subcommands:</p>
+<pre><code class="language-sh">kubelogin -h
+login to azure active directory and populate kubeconfig with AAD tokens
+
+Usage:
+  kubelogin [flags]
+  kubelogin [command]
+
+Available Commands:
+  completion         Generate the autocompletion script for the specified shell
+  convert-kubeconfig convert kubeconfig to use exec auth module
+  get-token          get AAD token
+  help               Help about any command
+  remove-tokens      Remove all cached tokens from filesystem
+
+Flags:
+  -h, --help          help for kubelogin
+      --logtostderr   log to standard error instead of files (default true)
+  -v, --v Level       number for the log level verbosity
+      --version       version for kubelogin
+
+Use &quot;kubelogin [command] --help&quot; for more information about a command.
+
+</code></pre>
+<p>Following sections provide in-depth information on these subcommands:</p>
 <ul>
-<li>AzurePublicCloud (default value)</li>
-<li>AzureChinaCloud</li>
-<li>AzureUSGovernmentCloud</li>
-<li>AzureStackCloud</li>
+<li><a href="./cli/convert-kubeconfig.html"><code>kubelogin convert-kubeconfig</code></a> - converts the kubeconfig to different login mode</li>
+<li><a href="./cli/get-token.html"><code>kubelogin get-token</code></a> - gets the Azure AD token based on configured login mode. This subcommand is typically used in kubeconfig via <a href="./concepts/exec-plugin.html">exec plugin</a> and is invoked by kubectl or any command-line tool, such as helm, implementing exec plugin.</li>
+<li><a href="./cli/remove-tokens.html"><code>kubelogin remove-tokens</code></a> - removes the cached token on the filesystem</li>
 </ul>
-<p>You can specify <code>--environment</code> for <code>kubelogin convert-kubeconfig</code>.</p>
-<p>When using <code>AzureStackCloud</code> you will need to specify the actual endpoints in a config file, and set the environment variable <code>AZURE_ENVIRONMENT_FILEPATH</code> to that file.</p>
-<p>The configuration parameters of this file:</p>
-<pre><code>{
-  &quot;name&quot;: &quot;AzureStackCloud&quot;,
-  &quot;managementPortalURL&quot;: &quot;...&quot;,
-  &quot;publishSettingsURL&quot;: &quot;...&quot;,
-  &quot;serviceManagementEndpoint&quot;: &quot;...&quot;,
-  &quot;resourceManagerEndpoint&quot;: &quot;...&quot;,
-  &quot;activeDirectoryEndpoint&quot;: &quot;...&quot;,
-  &quot;galleryEndpoint&quot;: &quot;...&quot;,
-  &quot;keyVaultEndpoint&quot;: &quot;...&quot;,
-  &quot;graphEndpoint&quot;: &quot;...&quot;,
-  &quot;serviceBusEndpoint&quot;: &quot;...&quot;,
-  &quot;batchManagementEndpoint&quot;: &quot;...&quot;,
-  &quot;storageEndpointSuffix&quot;: &quot;...&quot;,
-  &quot;sqlDatabaseDNSSuffix&quot;: &quot;...&quot;,
-  &quot;trafficManagerDNSSuffix&quot;: &quot;...&quot;,
-  &quot;keyVaultDNSSuffix&quot;: &quot;...&quot;,
-  &quot;serviceBusEndpointSuffix&quot;: &quot;...&quot;,
-  &quot;serviceManagementVMDNSSuffix&quot;: &quot;...&quot;,
-  &quot;resourceManagerVMDNSSuffix&quot;: &quot;...&quot;,
-  &quot;containerRegistryDNSSuffix&quot;: &quot;...&quot;,
-  &quot;cosmosDBDNSSuffix&quot;: &quot;...&quot;,
-  &quot;tokenAudience&quot;: &quot;...&quot;,
-  &quot;resourceIdentifiers&quot;: {
-    &quot;graph&quot;: &quot;...&quot;,
-    &quot;keyVault&quot;: &quot;...&quot;,
-    &quot;datalake&quot;: &quot;...&quot;,
-    &quot;batch&quot;: &quot;...&quot;,
-    &quot;operationalInsights&quot;: &quot;...&quot;
-  }
-}
+<div style="break-before: page; page-break-before: always;"></div><h1 id="covert-kubeconfig"><a class="header" href="#covert-kubeconfig">covert-kubeconfig</a></h1>
+<p>This subcommand converts kubeconfig to <a href="cli/../concepts/exec-plugin.html">Exec plugin</a> using <code>kubelogin get-token</code> with specified <a href="cli/../concepts/login-modes.html">login mode</a>.</p>
+<h2 id="usage"><a class="header" href="#usage">Usage</a></h2>
+<pre><code class="language-sh">kubelogin convert-kubeconfig -h
+convert kubeconfig to use exec auth module
+
+Usage:
+  kubelogin convert-kubeconfig [flags]
+
+Flags:
+      --authority-host string                Workload Identity authority host. It may be specified in AZURE_AUTHORITY_HOST environment variable
+      --client-certificate string            AAD client cert in pfx. Used in spn login. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE or AZURE_CLIENT_CER
+TIFICATE_PATH environment variable
+      --client-certificate-password string   Password for AAD client cert. Used in spn login. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE_PASSWORD or A
+ZURE_CLIENT_CERTIFICATE_PASSWORD environment variable
+      --client-id string                     AAD client application ID. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_ID or AZURE_CLIENT_ID environment variable
+      --client-secret string                 AAD client application secret. Used in spn login. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_SECRET or AZURE_CLIENT_S
+ECRET environment variable
+  -e, --environment string                   Azure environment name (default &quot;AzurePublicCloud&quot;)
+      --federated-token-file string          Workload Identity federated token file. It may be specified in AZURE_FEDERATED_TOKEN_FILE environment variable
+  -h, --help                                 help for convert-kubeconfig
+      --identity-resource-id string          Managed Identity resource id.
+      --kubeconfig string                    Path to the kubeconfig file to use for CLI requests.
+      --legacy                               set to true to get token with 'spn:' prefix in audience claim
+  -l, --login string                         Login method. Supported methods: devicecode, interactive, spn, ropc, msi, azurecli, workloadidentity. It may be specified in A
+AD_LOGIN_METHOD environment variable (default &quot;devicecode&quot;)
+      --password string                      password for ropc login flow. It may be specified in AAD_USER_PRINCIPAL_PASSWORD or AZURE_PASSWORD environment variable
+      --server-id string                     AAD server application ID
+  -t, --tenant-id string                     AAD tenant ID. It may be specified in AZURE_TENANT_ID environment variable
+      --token-cache-dir string               directory to cache token (default &quot;${HOME}/.kube/cache/kubelogin/&quot;)
+      --use-azurerm-env-vars                 Use environment variable names of Terraform Azure Provider (ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_CLIENT_CERTIFICATE_PATH, ARM
+_CLIENT_CERTIFICATE_PASSWORD, ARM_TENANT_ID)
+      --username string                      user name for ropc login flow. It may be specified in AAD_USER_PRINCIPAL_NAME or AZURE_USERNAME environment variable
+
+Global Flags:
+      --logtostderr   log to standard error instead of files (default true)
+  -v, --v Level       number for the log level verbosity
 </code></pre>
-<p>The full configuration is available in the source code at <a href="https://github.com/Azure/go-autorest/blob/master/autorest/azure/environments.go">https://github.com/Azure/go-autorest/blob/master/autorest/azure/environments.go</a>.</p>
-<h2 id="exec-plugin-format"><a class="header" href="#exec-plugin-format">Exec Plugin Format</a></h2>
-<p>Below is what a kubeconfig with exec plugin would look like. By default, the <code>audience</code> claim will not have <code>spn:</code> prefix. If it’s desired to keep the prefix, add <code>--legacy</code> to the args.</p>
-<p>Note: The AAD server app ID of AKS Managed AAD is always <code>6dae42f8-4368-4678-94ff-3960e28e3630</code> in any environments.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="get-token"><a class="header" href="#get-token">get-token</a></h1>
+<p>This subcommand uses specified <a href="cli/../concepts/login-modes.html">login mode</a> to authenticate with Azure AD and return the access token to standard out.</p>
+<h2 id="usage-1"><a class="header" href="#usage-1">Usage</a></h2>
+<pre><code class="language-sh">kubelogin get-token -h
+get AAD token
+
+Usage:
+  kubelogin get-token [flags]
+
+Flags:
+      --authority-host string                Workload Identity authority host. It may be specified in AZURE_AUTHORITY_HOST environment variable
+      --client-certificate string            AAD client cert in pfx. Used in spn login. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE or AZURE_CLIENT_CER
+TIFICATE_PATH environment variable
+      --client-certificate-password string   Password for AAD client cert. Used in spn login. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE_PASSWORD or A
+ZURE_CLIENT_CERTIFICATE_PASSWORD environment variable
+      --client-id string                     AAD client application ID. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_ID or AZURE_CLIENT_ID environment variable
+      --client-secret string                 AAD client application secret. Used in spn login. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_SECRET or AZURE_CLIENT_S
+ECRET environment variable
+  -e, --environment string                   Azure environment name (default &quot;AzurePublicCloud&quot;)
+      --federated-token-file string          Workload Identity federated token file. It may be specified in AZURE_FEDERATED_TOKEN_FILE environment variable
+  -h, --help                                 help for get-token
+      --identity-resource-id string          Managed Identity resource id.
+      --legacy                               set to true to get token with 'spn:' prefix in audience claim
+  -l, --login string                         Login method. Supported methods: devicecode, interactive, spn, ropc, msi, azurecli, workloadidentity. It may be specified in A
+AD_LOGIN_METHOD environment variable (default &quot;devicecode&quot;)
+      --password string                      password for ropc login flow. It may be specified in AAD_USER_PRINCIPAL_PASSWORD or AZURE_PASSWORD environment variable
+      --server-id string                     AAD server application ID
+  -t, --tenant-id string                     AAD tenant ID. It may be specified in AZURE_TENANT_ID environment variable
+      --token-cache-dir string               directory to cache token (default &quot;${HOME}/.kube/cache/kubelogin/&quot;)
+      --use-azurerm-env-vars                 Use environment variable names of Terraform Azure Provider (ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_CLIENT_CERTIFICATE_PATH, ARM
+_CLIENT_CERTIFICATE_PASSWORD, ARM_TENANT_ID)
+      --username string                      user name for ropc login flow. It may be specified in AAD_USER_PRINCIPAL_NAME or AZURE_USERNAME environment variable
+
+Global Flags:
+      --logtostderr   log to standard error instead of files (default true)
+  -v, --v Level       number for the log level verbosity
+</code></pre>
+<h2 id="exec-plugin-examples"><a class="header" href="#exec-plugin-examples">Exec Plugin Examples</a></h2>
 <blockquote>
 <p>cluster info including cluster CA and FQDN are omitted in below examples</p>
 </blockquote>
@@ -480,7 +640,7 @@ users:
         command: kubelogin
         env: null
 </code></pre>
-<h3 id="managed-service-identity"><a class="header" href="#managed-service-identity">Managed Service Identity</a></h3>
+<h3 id="managed-service-identity-1"><a class="header" href="#managed-service-identity-1">Managed Service Identity</a></h3>
 <pre><code class="language-yaml">kind: Config
 preferences: {}
 users:
@@ -531,7 +691,7 @@ users:
         command: kubelogin
         env: null
 </code></pre>
-<h3 id="workload-identity"><a class="header" href="#workload-identity">Workload Identity</a></h3>
+<h3 id="workload-identity-1"><a class="header" href="#workload-identity-1">Workload Identity</a></h3>
 <pre><code class="language-yaml">kind: Config
 preferences: {}
 users:
@@ -548,22 +708,136 @@ users:
         command: kubelogin
         env: null
 </code></pre>
-<h2 id="setup-for-kubernetes-oidc-provider-using-azure-ad"><a class="header" href="#setup-for-kubernetes-oidc-provider-using-azure-ad">Setup for Kubernetes OIDC Provider using Azure AD</a></h2>
-<p>Kubelogin can be used to authenticate to general kubernetes clusters using AAD as an OIDC provider. </p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="remove-tokens"><a class="header" href="#remove-tokens">remove-tokens</a></h1>
+<p>This subcommand removes the cached access/refresh token from filesystem. Note that only <code>devicelogin</code>, <code>interactive</code>, and <code>ropc</code> login modes will cache the token.</p>
+<h2 id="usage-2"><a class="header" href="#usage-2">Usage</a></h2>
+<pre><code class="language-sh">kubelogin remove-tokens -h
+Remove all cached tokens from filesystem
+
+Usage:
+  kubelogin remove-tokens [flags]
+
+Flags:
+  -h, --help                     help for remove-tokens
+      --token-cache-dir string   directory to cache token (default &quot;${HOME}/.kube/cache/kubelogin/&quot;)
+
+Global Flags:
+      --logtostderr   log to standard error instead of files (default true)
+  -v, --v Level       number for the log level verbosity
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="topics"><a class="header" href="#topics">Topics</a></h1>
+<p>This section documents different usages of <code>kubelogin</code> in details.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="using-in-different-environments"><a class="header" href="#using-in-different-environments">Using in different environments</a></h1>
+<p><code>kubelogin</code> supports Azure Environments:</p>
+<ul>
+<li>AzurePublicCloud (default value)</li>
+<li>AzureChinaCloud</li>
+<li>AzureUSGovernmentCloud</li>
+<li>AzureStackCloud</li>
+</ul>
+<p>You can specify <code>--environment</code> in <code>kubelogin convert-kubeconfig</code>.</p>
+<p>When using <code>AzureStackCloud</code> you will need to specify the actual endpoints in a config file, and set the environment variable <code>AZURE_ENVIRONMENT_FILEPATH</code> to that file.</p>
+<p>The configuration parameters of this file:</p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;AzureStackCloud&quot;,
+  &quot;managementPortalURL&quot;: &quot;...&quot;,
+  &quot;publishSettingsURL&quot;: &quot;...&quot;,
+  &quot;serviceManagementEndpoint&quot;: &quot;...&quot;,
+  &quot;resourceManagerEndpoint&quot;: &quot;...&quot;,
+  &quot;activeDirectoryEndpoint&quot;: &quot;...&quot;,
+  &quot;galleryEndpoint&quot;: &quot;...&quot;,
+  &quot;keyVaultEndpoint&quot;: &quot;...&quot;,
+  &quot;graphEndpoint&quot;: &quot;...&quot;,
+  &quot;serviceBusEndpoint&quot;: &quot;...&quot;,
+  &quot;batchManagementEndpoint&quot;: &quot;...&quot;,
+  &quot;storageEndpointSuffix&quot;: &quot;...&quot;,
+  &quot;sqlDatabaseDNSSuffix&quot;: &quot;...&quot;,
+  &quot;trafficManagerDNSSuffix&quot;: &quot;...&quot;,
+  &quot;keyVaultDNSSuffix&quot;: &quot;...&quot;,
+  &quot;serviceBusEndpointSuffix&quot;: &quot;...&quot;,
+  &quot;serviceManagementVMDNSSuffix&quot;: &quot;...&quot;,
+  &quot;resourceManagerVMDNSSuffix&quot;: &quot;...&quot;,
+  &quot;containerRegistryDNSSuffix&quot;: &quot;...&quot;,
+  &quot;cosmosDBDNSSuffix&quot;: &quot;...&quot;,
+  &quot;tokenAudience&quot;: &quot;...&quot;,
+  &quot;resourceIdentifiers&quot;: {
+    &quot;graph&quot;: &quot;...&quot;,
+    &quot;keyVault&quot;: &quot;...&quot;,
+    &quot;datalake&quot;: &quot;...&quot;,
+    &quot;batch&quot;: &quot;...&quot;,
+    &quot;operationalInsights&quot;: &quot;...&quot;
+  }
+}
+</code></pre>
+<p>The full configuration is available in the source code at <a href="https://github.com/Azure/go-autorest/blob/master/autorest/azure/environments.go">https://github.com/Azure/go-autorest/blob/master/autorest/azure/environments.go</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="using-service-principal"><a class="header" href="#using-service-principal">Using Service Principal</a></h1>
+<p>This section documents the end to end flow to use <code>kubelogin</code> to access AKS cluster with a service principal.</p>
+<h2 id="1-create-a-service-principal-or-use-an-existing-one"><a class="header" href="#1-create-a-service-principal-or-use-an-existing-one">1. Create a service principal or use an existing one.</a></h2>
+<pre><code class="language-sh">az ad sp create-for-rbac --skip-assignment --name myAKSAutomationServicePrincipal
+</code></pre>
+<p>The output is similar to the following example.</p>
+<pre><code class="language-json">{
+  &quot;appId&quot;: &quot;&lt;spn client id&gt;&quot;,
+  &quot;displayName&quot;: &quot;myAKSAutomationServicePrincipal&quot;,
+  &quot;name&quot;: &quot;http://myAKSAutomationServicePrincipal&quot;,
+  &quot;password&quot;: &quot;&lt;spn secret&gt;&quot;,
+  &quot;tenant&quot;: &quot;&lt;aad tenant id&gt;&quot;
+}
+</code></pre>
+<h2 id="2-query-your-service-principal-aad-object-id-by-using-the-command-below"><a class="header" href="#2-query-your-service-principal-aad-object-id-by-using-the-command-below">2. Query your service principal AAD Object ID by using the command below.</a></h2>
+<pre><code class="language-sh">az ad sp show --id &lt;spn client id&gt; --query &quot;id&quot;
+</code></pre>
+<h2 id="3-to-configure-the-role-binding-on-azure-kubernetes-service-the-user-in-rolebinding-should-be-the-sps-object-id"><a class="header" href="#3-to-configure-the-role-binding-on-azure-kubernetes-service-the-user-in-rolebinding-should-be-the-sps-object-id">3. To configure the role binding on Azure Kubernetes Service, the user in rolebinding should be the SP’s Object ID.</a></h2>
+<p>For example,</p>
+<pre><code class="language-yaml">apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sp-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: &lt;service-principal-object-id&gt;
+</code></pre>
+<h2 id="4-use-kubelogin-to-convert-the-kubeconfig"><a class="header" href="#4-use-kubelogin-to-convert-the-kubeconfig">4. Use <code>kubelogin</code> to convert the kubeconfig</a></h2>
+<pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l spn
+
+export AAD_SERVICE_PRINCIPAL_CLIENT_ID=&lt;spn client id&gt;
+export AAD_SERVICE_PRINCIPAL_CLIENT_SECRET=&lt;spn secret&gt;
+
+kubectl get nodes
+</code></pre>
+<p>or write your spn secret permanently into the kubeconfig (not preferred!):</p>
+<pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l spn --client-id &lt;spn client id&gt; --client-secret &lt;spn secret&gt;
+
+kubectl get nodes
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="setup-k8s-oidc-provider-using-azure-ad"><a class="header" href="#setup-k8s-oidc-provider-using-azure-ad">Setup k8s OIDC Provider using Azure AD</a></h1>
+<p><code>kubelogin</code> can be used to authenticate to general kubernetes clusters using AAD as an OIDC provider. </p>
 <ol>
-<li>Create an AAD Enterprise Application and the corresponding App Registration. Check the <code>Allow public client flows</code> checkbox. Configure groups to be included in the response. Take a note of the directory (tenant) ID as <code>$AAD_TENANT_ID</code> and the application (client) ID as <code>$AAD_CLIENT_ID</code></li>
-<li>Configure the API server with the following flags:</li>
-</ol>
+<li>
+<p>Create an AAD Enterprise Application and the corresponding App Registration. Check the <code>Allow public client flows</code> checkbox. 
+Configure groups to be included in the response. Take a note of the directory (tenant) ID as <code>$AAD_TENANT_ID</code> and the application (client) ID as <code>$AAD_CLIENT_ID</code></p>
+</li>
+<li>
+<p>Configure the API server with the following flags:</p>
 <ul>
 <li>Issuer URL: <code>--oidc-issuer-url=https://sts.windows.net/$AAD_TENANT_ID/</code></li>
 <li>Client ID: <code>--oidc-client-id=$AAD_CLIENT_ID</code></li>
 <li>Username claim: <code>--oidc-username-claim=upn</code></li>
 </ul>
 <p>See the <a href="https://kubernetes.io/docs/reference/access-authn-authz/authentication/#configuring-the-api-server">kubernetes docs for optional flags</a>. For EKS clusters <a href="https://docs.amazonaws.cn/en_us/eks/latest/userguide/authenticate-oidc-identity-provider.html">configure this on the Management Console</a> or via <a href="https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_identity_provider_config">terraform</a>.</p>
-<ol start="3">
-<li>Configure kubelogin to use the application from the first step:</li>
-</ol>
-<pre><code>kubectl config set-credentials &quot;azure-user&quot; \
+</li>
+<li>
+<p>Configure the <a href="topics/../concepts/exec-plugin.html">Exec plugin</a> with <code>kubelogin</code> to use the application from the first step:</p>
+<pre><code class="language-sh">kubectl config set-credentials &quot;azure-user&quot; \
   --exec-api-version=client.authentication.k8s.io/v1beta1 \
   --exec-command=kubelogin \
   --exec-arg=get-token \
@@ -576,27 +850,26 @@ users:
   --exec-arg=--tenant-id \
   --exec-arg=$AAD_TENANT_ID
 </code></pre>
-<ol start="4">
-<li>Use this credential to connect to the cluster:</li>
-</ol>
+</li>
+<li>
+<p>Use this credential to connect to the cluster:</p>
 <pre><code>kubectl config set-context &quot;$CLUSTER_NAME&quot; --cluster=&quot;$CLUSTER_NAME&quot; --user=azure-user
 kubectl config use-context &quot;$CLUSTER_NAME&quot;
 </code></pre>
-<h3 id="known-limitation"><a class="header" href="#known-limitation">Known limitation</a></h3>
+</li>
+</ol>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="using-kubelogin-in-jenkins"><a class="header" href="#using-kubelogin-in-jenkins">Using kubelogin in Jenkins</a></h1>
+<p>In Jenkins, workspaces are most likely run under <code>jenkins</code> user. Since <code>kubelogin</code> by default caches tokens at <code>${HOME}/.kube/cache/kubelogin</code> in <a href="topics/../concepts/login-modes/devicecode.html">device code</a>, 
+<a href="topics/../concepts/login-modes/interactive.html">web browser interactive</a>, and <a href="topics/../concepts/login-modes/ropc.html">ropc</a> <a href="topics/../concepts/login-modes.html">login modes</a>, 
+workspaces run concurrently may have token clashing resulting in <code>You must be logged in to the server (Unauthorized)</code> error message.
+To fix this, you can specify <code>--token-cache-dir</code> to a directory under Jenkins workspace such as <code>${WORKSPACE}/.kube/cache/kubelogin</code>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="known-issues"><a class="header" href="#known-issues">Known Issues</a></h1>
 <ul>
-<li><a href="https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-fed-group-claims">Maximum 200 groups will be included in the OIDC JWT</a>. For more than 200 groups, consider using <a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-add-app-roles-in-azure-ad-apps">Application Roles</a></li>
-<li>Groups created in AAD can only be included by their ObjectID and not name, as <a href="https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-fed-group-claims#group-claims-for-applications-migrating-from-ad-fs-and-other-identity-providers"><code>sAMAccountName</code> is only available for groups synchronized from Active Directory</a></li>
+<li><a href="https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-fed-group-claims">Maximum 200 groups will be included in the Azure AD JWT</a>. 
+For more than 200 groups, consider using <a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-add-app-roles-in-azure-ad-apps">Application Roles</a></li>
+<li>Groups created in Azure AD can only be included by their ObjectID and not name, as <a href="https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-fed-group-claims#group-claims-for-applications-migrating-from-ad-fs-and-other-identity-providers"><code>sAMAccountName</code> is only available for groups synchronized from Active Directory</a></li>
+<li><a href="https://github.com/Azure/kubelogin/issues/79"><code>kubelogin</code> may not work with MSI when run in Azure Container Instance</a></li>
 </ul>
-<h2 id="contributing"><a class="header" href="#contributing">Contributing</a></h2>
-<p>This project welcomes contributions and suggestions. Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit <a href="https://cla.opensource.microsoft.com">https://cla.opensource.microsoft.com</a>.</p>
-<p>When you submit a pull request, a CLA bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.</p>
-<p>This project has adopted the <a href="https://opensource.microsoft.com/codeofconduct/">Microsoft Open Source Code of Conduct</a>.
-For more information see the <a href="https://opensource.microsoft.com/codeofconduct/faq/">Code of Conduct FAQ</a> or
-contact <a href="mailto:opencode@microsoft.com">opencode@microsoft.com</a> with any additional questions or comments.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="development"><a class="header" href="#development">Development</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="releasing"><a class="header" href="#releasing">Releasing</a></h1>
 <p>To make a new release and publish please follow the following steps.</p>
@@ -618,7 +891,7 @@ Thanks to whoever was involved, pm.
 </code></pre>
 <h3 id="in-event-of-special-case-failures-post-build-and-release"><a class="header" href="#in-event-of-special-case-failures-post-build-and-release">In Event of Special Case Failures Post Build and Release.</a></h3>
 <p>In an event where build and release were successful but publish failed for something else, in that case please make sure we delete the unsucessful release note and release tag, before re-running the release again, this will get release fresh release notes and tag.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="contributing-1"><a class="header" href="#contributing-1">Contributing</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="contributing"><a class="header" href="#contributing">Contributing</a></h1>
 <p>The Azure Kubelogin project welcomes contributions and suggestions. Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit <a href="https://cla.microsoft.com">https://cla.microsoft.com</a>.</p>
 <p>When you submit a pull request, a CLA-bot will automatically determine whether you need to provide a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the instructions provided by the bot. You will only need to do this once across all repos using our CLA. Contributing</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="microsoft-open-source-code-of-conduct"><a class="header" href="#microsoft-open-source-code-of-conduct">Microsoft Open Source Code of Conduct</a></h1>
