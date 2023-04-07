@@ -151,6 +151,9 @@
 For more than 200 groups, consider using <a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-add-app-roles-in-azure-ad-apps">Application Roles</a></li>
 <li>Groups created in Azure AD can only be included by their ObjectID and not name, as <a href="https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-fed-group-claims#group-claims-for-applications-migrating-from-ad-fs-and-other-identity-providers"><code>sAMAccountName</code> is only available for groups synchronized from Active Directory</a></li>
 <li><a href="https://github.com/Azure/kubelogin/issues/79"><code>kubelogin</code> may not work with MSI when run in Azure Container Instance</a></li>
+<li>On AKS, <a href="./concepts/login-modes/sp.html">service principal</a> login mode will only work with managed AAD, not legacy AAD.</li>
+<li><a href="./concepts/login-modes/devicecode.html">Device code</a> login mode does not work when Conditional Access policy is configured on Azure AD tenant.
+Use <a href="./concepts/login-modes/interactive.html">web browser interactive</a> instead.</li>
 </ul>
 
                     </main>

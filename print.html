@@ -237,8 +237,28 @@ users:
 </code></pre>
 <p>When using <code>kubelogin</code> in Exec plugin, the kubeconfig tells <code>kubectl</code> to execute <code>kubelogin get-token</code> subcommand to perform various Azure AD <a href="concepts/./login-modes.html">login modes</a> to get the access token.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="login-modes"><a class="header" href="#login-modes">Login Modes</a></h1>
-<p>Most of the interaction with <code>kubelogin</code> is around <code>convert-kubeconfig</code> subcommand which uses the input kubeconfig specified in <code>--kubeconfig</code> or <code>KUBECONFIG</code> environment variable to convert to the final kubeconfig in <a href="concepts/./concepts/exec-plugin.html">exec format</a> based on specified login mode.
-In this section, the login modes will be explained in details.</p>
+<p>Most of the interaction with <code>kubelogin</code> is around <code>convert-kubeconfig</code> subcommand 
+which uses the input kubeconfig specified in <code>--kubeconfig</code> or <code>KUBECONFIG</code> environment variable 
+to convert to the final kubeconfig in <a href="concepts/./concepts/exec-plugin.html">exec format</a> based on specified login mode.</p>
+<p>In this section, the login modes will be explained in details.</p>
+<h2 id="how-login-works"><a class="header" href="#how-login-works">How Login Works</a></h2>
+<p>The login modes that <code>kubelogin</code> implements are <a href="https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow">AAD OAuth 2.0 token grant flows</a>.
+Throughout <code>kubelogin</code> subcommands, you will see below common flags. In general, these flags are already setup when you get the kubeconfig from AKS.</p>
+<ul>
+<li><code>--tenant-id</code>: <a href="https://learn.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-how-to-find-tenant">Azure AD tenant ID</a></li>
+<li><code>--client-id</code>: the application ID of the <a href="https://learn.microsoft.com/en-us/azure/active-directory/develop/msal-client-applications">public client application</a>.
+This client app is only used in <a href="concepts/./login-modes/devicecode.html">device code</a>, <a href="concepts/./login-modes/interactive.html">web browser interactive</a>, and <a href="concepts/./login-modes/ropc.html">ropc</a> login modes.</li>
+<li><code>--server-id</code>: the application ID of the <a href="https://learn.microsoft.com/en-us/azure/active-directory/fundamentals/auth-oauth2">web app, or resource server</a>. 
+The token should be issued to this resource.</li>
+</ul>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<ul>
+<li>https://learn.microsoft.com/en-us/azure/active-directory/fundamentals/auth-oauth2</li>
+<li>https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow</li>
+<li>https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-client-creds-grant-flow</li>
+<li>https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc</li>
+<li>https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc</li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="device-code"><a class="header" href="#device-code">Device Code</a></h1>
 <p>This is the default login mode in <code>convert-kubeconfig</code> subcommand. So <code>-l devicecode</code> is optional. This login will prompt the device code for user to login on a browser. </p>
 <p>Before <code>kubelogin</code> and <a href="concepts/login-modes/./concepts/exec-plugin.html">Exec plugin</a> were introduced, the azure authentication mode in <code>kubectl</code> supports device code flow only. 
@@ -262,7 +282,7 @@ kubectl remove-tokens
 <ul>
 <li>Device code login mode doesn’t work when Conditional Access policy is configured on AAD tenant. Use <a href="concepts/login-modes/./interactive.html">web browser interactive mode</a> instead.</li>
 </ul>
-<h2 id="references"><a class="header" href="#references">References</a></h2>
+<h2 id="references-1"><a class="header" href="#references-1">References</a></h2>
 <ul>
 <li>https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-device-code</li>
 </ul>
@@ -283,7 +303,7 @@ kubelogin convert-kubeconfig -l azurecli
 
 kubectl get nodes
 </code></pre>
-<h2 id="references-1"><a class="header" href="#references-1">References</a></h2>
+<h2 id="references-2"><a class="header" href="#references-2">References</a></h2>
 <ul>
 <li>https://learn.microsoft.com/en-us/cli/azure/</li>
 <li>https://github.com/Azure/azure-cli</li>
@@ -300,7 +320,7 @@ kubelogin convert-kubeconfig -l interactive
 
 kubectl get nodes
 </code></pre>
-<h2 id="references-2"><a class="header" href="#references-2">References</a></h2>
+<h2 id="references-3"><a class="header" href="#references-3">References</a></h2>
 <ul>
 <li>https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.interactivebrowsercredential?view=azure-python</li>
 </ul>
@@ -365,7 +385,7 @@ kubectl get nodes
 <h2 id="restrictions-1"><a class="header" href="#restrictions-1">Restrictions</a></h2>
 <ul>
 <li>on AKS, it will only work with managed AAD</li>
-<li>the service principal can be member of maximum 250 AAD groups</li>
+<li>the service principal can be member of maximum 200 AAD groups</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="managed-service-identity"><a class="header" href="#managed-service-identity">Managed Service Identity</a></h1>
 <p>This login mode should be used in an environment where 
@@ -869,6 +889,9 @@ To fix this, you can specify <code>--token-cache-dir</code> to a directory under
 For more than 200 groups, consider using <a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-add-app-roles-in-azure-ad-apps">Application Roles</a></li>
 <li>Groups created in Azure AD can only be included by their ObjectID and not name, as <a href="https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-fed-group-claims#group-claims-for-applications-migrating-from-ad-fs-and-other-identity-providers"><code>sAMAccountName</code> is only available for groups synchronized from Active Directory</a></li>
 <li><a href="https://github.com/Azure/kubelogin/issues/79"><code>kubelogin</code> may not work with MSI when run in Azure Container Instance</a></li>
+<li>On AKS, <a href="./concepts/login-modes/sp.html">service principal</a> login mode will only work with managed AAD, not legacy AAD.</li>
+<li><a href="./concepts/login-modes/devicecode.html">Device code</a> login mode does not work when Conditional Access policy is configured on Azure AD tenant.
+Use <a href="./concepts/login-modes/interactive.html">web browser interactive</a> instead.</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="development"><a class="header" href="#development">Development</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="releasing"><a class="header" href="#releasing">Releasing</a></h1>
