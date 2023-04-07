@@ -6,7 +6,13 @@ on:
     branches:
       - master
       - main
+    paths-ignore:
+      - docs/**
+      - README.md
   pull_request:
+    paths-ignore:
+      - docs/**
+      - README.md
 permissions:
   contents: read
   # Optional: allow read access to pull request. Use with `only-new-issues` option.
