@@ -1,5 +1,16 @@
 name: Build on Push
-on: [push, pull_request]
+on: 
+  push:
+    paths-ignore:
+      - docs/**
+      - README.md
+  pull_request:
+    branches:
+      - master
+    paths-ignore:
+      - docs/**
+      - README.md
+
 jobs:
   build:
     name: Build
