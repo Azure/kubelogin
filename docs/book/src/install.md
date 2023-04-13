@@ -15,6 +15,23 @@ brew update
 brew upgrade Azure/kubelogin/kubelogin
 ```
 
+## Linux
+
+### Using [asdf](https://asdf-vm.com/)
+
+```sh
+# install
+asdf plugin add kubelogin https://github.com/sechmann/asdf-kubelogin
+asdf install kubelogin latest
+asdf global kubelogin latest
+
+# upgrade
+asdf update
+asdf plugin update kubelogin
+asdf install kubelogin latest
+asdf global kubelogin latest
+```
+
 ## Windows
 
 ### Using winget
