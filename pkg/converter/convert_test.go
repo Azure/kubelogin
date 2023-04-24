@@ -1056,7 +1056,7 @@ func TestConvert(t *testing.T) {
 			},
 			overrideFlags: map[string]string{
 				flagLoginMethod: token.MSILogin,
-				"context":       clusterName1,
+				flagContext:     clusterName1,
 			},
 			expectedArgs: []string{
 				getTokenCommand,

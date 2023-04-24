@@ -34,6 +34,7 @@ const (
 	argTokenCacheDir      = "--token-cache-dir"
 
 	flagClientID           = "client-id"
+	flagContext            = "context"
 	flagServerID           = "server-id"
 	flagTenantID           = "tenant-id"
 	flagEnvironment        = "environment"
