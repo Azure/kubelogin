@@ -39,7 +39,7 @@ func TestConvert(t *testing.T) {
 		expectedArgs       []string
 		execArgItems       []string
 		command            string
-		contextName        string
+		expectedError      string
 	}{
 		{
 			name: "non azure kubeconfig",
@@ -1045,8 +1045,7 @@ func TestConvert(t *testing.T) {
 			command: execName,
 		},
 		{
-			name:        "convert with context specified, auth info not specified by the context should not be changed",
-			contextName: clusterName1,
+			name: "convert with context specified, auth info not specified by the context should not be changed",
 			authProviderConfig: map[string]string{
 				cfgEnvironment: envName,
 				cfgApiserverID: serverID,
@@ -1056,13 +1055,28 @@ func TestConvert(t *testing.T) {
 			},
 			overrideFlags: map[string]string{
 				flagLoginMethod: token.MSILogin,
-				"context":       clusterName1,
+				flagContext:     clusterName1,
 			},
 			expectedArgs: []string{
 				getTokenCommand,
 				argServerID, serverID,
 				argLoginMethod, token.MSILogin,
 			},
+		},
+		{
+			name: "convert with non-existent context specified, Convert should return error",
+			authProviderConfig: map[string]string{
+				cfgEnvironment: envName,
+				cfgApiserverID: serverID,
+				cfgClientID:    clientID,
+				cfgTenantID:    tenantID,
+				cfgConfigMode:  "0",
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.MSILogin,
+				flagContext:     "badContext",
+			},
+			expectedError: "no context exists with the name: \"badContext\"",
 		},
 	}
 	rootTmpDir, err := os.MkdirTemp("", "kubelogin-test")
@@ -1111,8 +1125,10 @@ func TestConvert(t *testing.T) {
 				},
 			}
 			err = Convert(o, &pathOptions)
-			if err != nil {
+			if data.expectedError == "" && err != nil {
 				t.Fatalf("Unexpected error from Convert: %v", err)
+			} else if data.expectedError != "" && (err == nil || err.Error() != data.expectedError) {
+				t.Fatalf("Expected error: %q, but got: %q", data.expectedError, err)
 			}
 
 			if o.context != "" {
