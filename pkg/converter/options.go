@@ -28,7 +28,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	if cf, ok := o.configFlags.(*genericclioptions.ConfigFlags); ok {
 		cf.AddFlags(fs)
 	}
-	fs.StringVar(&o.context, "context", "", "The name of the kubeconfig context to use")
+	fs.StringVar(&o.context, flagContext, "", "The name of the kubeconfig context to use")
 	o.TokenOptions.AddFlags(fs)
 }
 

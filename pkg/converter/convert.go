@@ -34,6 +34,7 @@ const (
 	argTokenCacheDir      = "--token-cache-dir"
 
 	flagClientID           = "client-id"
+	flagContext            = "context"
 	flagServerID           = "server-id"
 	flagTenantID           = "tenant-id"
 	flagEnvironment        = "environment"
@@ -151,7 +152,10 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 
 	targetAuthInfo := ""
 
-	if o.context != "" && config.Contexts[o.context] != nil {
+	if o.context != "" {
+		if config.Contexts[o.context] == nil {
+			return fmt.Errorf("no context exists with the name: %q", o.context)
+		}
 		targetAuthInfo = config.Contexts[o.context].AuthInfo
 	}
 
