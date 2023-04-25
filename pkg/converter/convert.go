@@ -149,7 +149,17 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 		return fmt.Errorf("unable to load kubeconfig: %s", err)
 	}
 
-	for _, authInfo := range config.AuthInfos {
+	targetAuthInfo := ""
+
+	if o.context != "" && config.Contexts[o.context] != nil {
+		targetAuthInfo = config.Contexts[o.context].AuthInfo
+	}
+
+	for name, authInfo := range config.AuthInfos {
+
+		if targetAuthInfo != "" && name != targetAuthInfo {
+			continue
+		}
 
 		//  is it legacy aad auth or is it exec using kubelogin?
 		if !isExecUsingkubelogin(authInfo) && !isLegacyAzureAuth(authInfo) {
