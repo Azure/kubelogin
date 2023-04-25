@@ -59,10 +59,11 @@ func (p *workloadIdentityToken) Token() (adal.Token, error) {
 	}
 
 	// create the confidential client to request an AAD token
+	authority := fmt.Sprintf("%s%s/oauth2/token", p.authorityHost, p.tenantID)
 	confidentialClientApp, err := confidential.New(
+		authority,
 		p.clientID,
-		cred,
-		confidential.WithAuthority(fmt.Sprintf("%s%s/oauth2/token", p.authorityHost, p.tenantID)))
+		cred)
 	if err != nil {
 		return emptyToken, fmt.Errorf("failed to create confidential client app. %s", err)
 	}
