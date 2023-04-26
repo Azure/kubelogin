@@ -30,9 +30,7 @@ type execCredentialPlugin struct {
 
 func New(o *Options) (ExecCredentialPlugin, error) {
 
-	logginOptionsObject := marshalOptionsForLogging(o)
-
-	klog.V(10).Info(logginOptionsObject)
+	klog.V(10).Info(o.ToString())
 	provider, err := newTokenProvider(o)
 	if err != nil {
 		return nil, err
@@ -49,26 +47,6 @@ func New(o *Options) (ExecCredentialPlugin, error) {
 		refresher:            newManualToken,
 		disableTokenCache:    disableTokenCache,
 	}, nil
-}
-
-func marshalOptionsForLogging(o *Options) KlogsLoggingPurposeOptions {
-	logginOptionsObject := KlogsLoggingPurposeOptions{
-		LoginMethod:            o.LoginMethod,
-		ClientID:               o.ClientID,
-		ClientCert:             o.ClientCert,
-		Username:               o.Username,
-		ServerID:               o.ServerID,
-		TenantID:               o.TenantID,
-		Environment:            o.Environment,
-		IsLegacy:               o.IsLegacy,
-		TokenCacheDir:          o.TokenCacheDir,
-		tokenCacheFile:         o.tokenCacheFile,
-		IdentityResourceID:     o.IdentityResourceID,
-		FederatedTokenFile:     o.FederatedTokenFile,
-		AuthorityHost:          o.AuthorityHost,
-		UseAzureRMTerraformEnv: o.UseAzureRMTerraformEnv,
-	}
-	return logginOptionsObject
 }
 
 func (p *execCredentialPlugin) Do() error {
