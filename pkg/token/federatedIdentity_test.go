@@ -55,11 +55,9 @@ func TestNewWorkloadIdentityTokenProvderEmpty(t *testing.T) {
 	}
 }
 
-func TestNewWorkloadIdentityToken(t *testing.T) {
-	workloadIdentityToken := workloadIdentityToken{}
-	_, err := workloadIdentityToken.Token()
-
-	if !ErrorContains(err, "failed to read signed assertion from token file:") {
+func TestReadJWTFromFS(t *testing.T) {
+	_, err := readJWTFromFS("")
+	if !ErrorContains(err, "no such file or directory") {
 		t.Errorf("unexpected error: %v", err)
 	}
 }

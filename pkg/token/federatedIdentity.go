@@ -49,14 +49,10 @@ func newWorkloadIdentityToken(clientID, federatedTokenFile, authorityHost, serve
 func (p *workloadIdentityToken) Token() (adal.Token, error) {
 	emptyToken := adal.Token{}
 
-	signedAssertion, err := readJWTFromFS(p.federatedTokenFile)
-	if err != nil {
-		return emptyToken, fmt.Errorf("failed to read signed assertion from token file: %s", err)
+	signedAssertionCallback := func(_ context.Context, _ confidential.AssertionRequestOptions) (string, error) {
+		return readJWTFromFS(p.federatedTokenFile)
 	}
-	cred, err := confidential.NewCredFromAssertion(signedAssertion)
-	if err != nil {
-		return emptyToken, fmt.Errorf("failed to create confidential creds: %s", err)
-	}
+	cred := confidential.NewCredFromAssertionCallback(signedAssertionCallback)
 
 	// create the confidential client to request an AAD token
 	authority := fmt.Sprintf("%s%s/oauth2/token", p.authorityHost, p.tenantID)
