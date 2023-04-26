@@ -31,6 +31,7 @@ func TestConvert(t *testing.T) {
 		authorityHost      = "https://login.microsoftonline.com/"
 		federatedTokenFile = "/tmp/file"
 		tokenCacheDir      = "/tmp/token_dir"
+		azureCLIDir        = "/tmp/foo"
 	)
 	testData := []struct {
 		name               string
@@ -40,6 +41,7 @@ func TestConvert(t *testing.T) {
 		execArgItems       []string
 		command            string
 		expectedError      string
+		expectedEnv        []clientcmdapi.ExecEnvVar
 	}{
 		{
 			name: "non azure kubeconfig",
@@ -1078,6 +1080,32 @@ func TestConvert(t *testing.T) {
 			},
 			expectedError: "no context exists with the name: \"badContext\"",
 		},
+		{
+			name: "with --azure-config-dir specified, exec.Env should be set accordingly",
+			authProviderConfig: map[string]string{
+				cfgEnvironment: envName,
+				cfgApiserverID: serverID,
+				cfgClientID:    clientID,
+				cfgTenantID:    tenantID,
+				cfgConfigMode:  "0",
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod:    token.AzureCLILogin,
+				flagContext:        clusterName1,
+				flagAzureConfigDir: azureCLIDir,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argLoginMethod, token.AzureCLILogin,
+			},
+			expectedEnv: []clientcmdapi.ExecEnvVar{
+				{
+					Name:  azureConfigDir,
+					Value: azureCLIDir,
+				},
+			},
+		},
 	}
 	rootTmpDir, err := os.MkdirTemp("", "kubelogin-test")
 	if err != nil {
@@ -1134,13 +1162,13 @@ func TestConvert(t *testing.T) {
 			if o.context != "" {
 				// when --context is specified, convert-kubeconfig will convert only the targeted context
 				// hence, we expect the second auth info not to change
-				validate(t, clusterName1, config.AuthInfos[clusterName1], data.authProviderConfig, data.expectedArgs)
+				validate(t, clusterName1, config.AuthInfos[clusterName1], data.authProviderConfig, data.expectedArgs, data.expectedEnv)
 				validateAuthInfoThatShouldNotChange(t, clusterName2, config.AuthInfos[clusterName2], data.authProviderConfig)
 			} else {
 				// when --context is not specified, convert-kubeconfig will convert every auth info in the kubeconfig
 				// hence, we expect the second auth info to be converted in the same way as the first one
-				validate(t, clusterName1, config.AuthInfos[clusterName1], data.authProviderConfig, data.expectedArgs)
-				validate(t, clusterName2, config.AuthInfos[clusterName2], data.authProviderConfig, data.expectedArgs)
+				validate(t, clusterName1, config.AuthInfos[clusterName1], data.authProviderConfig, data.expectedArgs, data.expectedEnv)
+				validate(t, clusterName2, config.AuthInfos[clusterName2], data.authProviderConfig, data.expectedArgs, data.expectedEnv)
 			}
 		})
 	}
@@ -1191,6 +1219,7 @@ func validate(
 	authInfo *clientcmdapi.AuthInfo,
 	authProviderConfig map[string]string,
 	expectedArgs []string,
+	expectedEnv []clientcmdapi.ExecEnvVar,
 ) {
 	if expectedArgs == nil {
 		if authInfo.AuthProvider == nil {
@@ -1218,9 +1247,6 @@ func validate(
 		t.Fatalf("[context:%s]: expected exec command: %s, actual: %s", clusterName, execAPIVersion, exec.APIVersion)
 	}
 
-	if len(exec.Env) > 0 {
-		t.Fatalf("[context:%s]: expected 0 environment variable. actual: %d", clusterName, len(exec.Env))
-	}
 	if exec.Args[0] != getTokenCommand {
 		t.Fatalf("[context:%s]: expected %s as first argument. actual: %s", clusterName, getTokenCommand, exec.Args[0])
 	}
@@ -1230,6 +1256,14 @@ func validate(
 	for _, v := range expectedArgs {
 		if !contains(exec.Args, v) {
 			t.Fatalf("[context:%s]: expected exec arg: %s not found in %v", clusterName, v, exec.Args)
+		}
+	}
+	if len(expectedEnv) != len(exec.Env) {
+		t.Fatalf("[context:%s]: expected Env has %d entries, got %d", clusterName, len(expectedEnv), len(exec.Env))
+	}
+	for i, v := range expectedEnv {
+		if exec.Env[i] != v {
+			t.Fatalf("[context:%s]: for exec.Env, expected %q at index %d, got %q", clusterName, v, i, exec.Env[i])
 		}
 	}
 }

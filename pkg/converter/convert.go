@@ -33,6 +33,7 @@ const (
 	argFederatedTokenFile = "--federated-token-file"
 	argTokenCacheDir      = "--token-cache-dir"
 
+	flagAzureConfigDir     = "azure-config-dir"
 	flagClientID           = "client-id"
 	flagContext            = "context"
 	flagServerID           = "server-id"
@@ -53,6 +54,8 @@ const (
 	execName        = "kubelogin"
 	getTokenCommand = "get-token"
 	execAPIVersion  = "client.authentication.k8s.io/v1beta1"
+
+	azureConfigDir = "AZURE_CONFIG_DIR"
 )
 
 func getArgValues(o Options, authInfo *api.AuthInfo) (argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal, argTokenCacheDirVal string, argIsLegacyConfigModeVal bool) {
@@ -192,6 +195,10 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 
 		switch o.TokenOptions.LoginMethod {
 		case token.AzureCLILogin:
+
+			if o.azureConfigDir != "" {
+				exec.Env = append(exec.Env, api.ExecEnvVar{Name: azureConfigDir, Value: o.azureConfigDir})
+			}
 
 			// when convert to azurecli login, tenantID from the input kubeconfig will be disregarded and
 			// will have to come from explicit flag `--tenant-id`.
