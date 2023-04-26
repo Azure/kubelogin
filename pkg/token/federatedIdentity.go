@@ -48,20 +48,15 @@ func newWorkloadIdentityToken(clientID, federatedTokenFile, authorityHost, serve
 
 func (p *workloadIdentityToken) Token() (adal.Token, error) {
 	emptyToken := adal.Token{}
-
-	signedAssertionCallback := func(_ context.Context, _ confidential.AssertionRequestOptions) (string, error) {
-		return readJWTFromFS(p.federatedTokenFile)
+	cred, err := newCredential(p.federatedTokenFile)
+	if err != nil {
+		return emptyToken, err
 	}
-	cred := confidential.NewCredFromAssertionCallback(signedAssertionCallback)
 
 	// create the confidential client to request an AAD token
-	authority := fmt.Sprintf("%s%s/oauth2/token", p.authorityHost, p.tenantID)
-	confidentialClientApp, err := confidential.New(
-		authority,
-		p.clientID,
-		cred)
+	confidentialClientApp, err := createClient(p.authorityHost, p.tenantID, p.clientID, cred)
 	if err != nil {
-		return emptyToken, fmt.Errorf("failed to create confidential client app. %s", err)
+		return emptyToken, err
 	}
 
 	resource := strings.TrimSuffix(p.serverID, "/")
@@ -80,6 +75,31 @@ func (p *workloadIdentityToken) Token() (adal.Token, error) {
 		ExpiresOn:   json.Number(fmt.Sprintf("%d", result.ExpiresOn.UTC().Unix())),
 		Resource:    p.serverID,
 	}, nil
+}
+
+func newCredential(federatedTokenFile string) (confidential.Credential, error) {
+	signedAssertion, err := readJWTFromFS(federatedTokenFile)
+	if err != nil {
+		return confidential.Credential{}, fmt.Errorf("failed to read signed assertion from token file: %s", err)
+	}
+	signedAssertionCallback := func(_ context.Context, _ confidential.AssertionRequestOptions) (string, error) {
+		return signedAssertion, nil
+	}
+	return confidential.NewCredFromAssertionCallback(signedAssertionCallback), nil
+}
+
+func createClient(authorityHost string, tenantID string, clientID string, cred confidential.Credential) (confidential.Client, error) {
+	authority := fmt.Sprintf("%s%s/oauth2/token", authorityHost, tenantID)
+	confidentialClientApp, err := confidential.New(
+		authority,
+		clientID,
+		cred)
+
+	if err != nil {
+		return confidential.Client{}, fmt.Errorf("failed to create confidential client app. %s", err)
+	}
+
+	return confidentialClientApp, err
 }
 
 // readJWTFromFS reads the jwt from file system

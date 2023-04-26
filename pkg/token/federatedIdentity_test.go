@@ -55,6 +55,10 @@ func TestNewWorkloadIdentityTokenProvderEmpty(t *testing.T) {
 	}
 }
 
+func TestNewCredentialEmptyString(t *testing.T) {
+	newCredential("")
+}
+
 func TestReadJWTFromFS(t *testing.T) {
 	_, err := readJWTFromFS("")
 	if !ErrorContains(err, "no such file or directory") {
