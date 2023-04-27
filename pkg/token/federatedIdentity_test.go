@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestNewWorkloadIdentityTokenProvderEmpty(t *testing.T) {
+func TestNewWorkloadIdentityTokenProviderEmpty(t *testing.T) {
 	testData := []struct {
 		name string
 	}{
@@ -55,11 +55,23 @@ func TestNewWorkloadIdentityTokenProvderEmpty(t *testing.T) {
 	}
 }
 
-func TestNewCredentialEmptyString(t *testing.T) {
-	newCredential("")
+func TestNewWorkloadIdentityToken(t *testing.T) {
+	workloadIdentityToken := workloadIdentityToken{}
+	_, err := workloadIdentityToken.Token()
+
+	if !ErrorContains(err, "failed to read signed assertion from token file:") {
+		t.Errorf("unexpected error: %v", err)
+	}
 }
 
-func TestReadJWTFromFS(t *testing.T) {
+func TestNewCredentialEmptyString(t *testing.T) {
+	_, err := newCredential("")
+	if !ErrorContains(err, "failed to read signed assertion from token file:") {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+func TestReadJWTFromFSEmptyString(t *testing.T) {
 	_, err := readJWTFromFS("")
 	if !ErrorContains(err, "no such file or directory") {
 		t.Errorf("unexpected error: %v", err)

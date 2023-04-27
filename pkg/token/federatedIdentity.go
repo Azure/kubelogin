@@ -77,17 +77,21 @@ func (p *workloadIdentityToken) Token() (adal.Token, error) {
 	}, nil
 }
 
+// newCredential creates a confidential.Credential from the provided token file
 func newCredential(federatedTokenFile string) (confidential.Credential, error) {
 	signedAssertion, err := readJWTFromFS(federatedTokenFile)
 	if err != nil {
 		return confidential.Credential{}, fmt.Errorf("failed to read signed assertion from token file: %s", err)
 	}
+	// Having the callback return the string read from the token file most closely resembles the implementation
+	// used in NewCredFromAssertion which was deprecated and used previously in this code.
 	signedAssertionCallback := func(_ context.Context, _ confidential.AssertionRequestOptions) (string, error) {
 		return signedAssertion, nil
 	}
 	return confidential.NewCredFromAssertionCallback(signedAssertionCallback), nil
 }
 
+// createClient creates a confidential.Client
 func createClient(authorityHost string, tenantID string, clientID string, cred confidential.Credential) (confidential.Client, error) {
 	authority := fmt.Sprintf("%s%s/oauth2/token", authorityHost, tenantID)
 	confidentialClientApp, err := confidential.New(
