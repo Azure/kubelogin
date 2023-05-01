@@ -22,7 +22,7 @@ kubelogin convert-kubeconfig
 kubectl get nodes
 
 # clean up cached token
-kubectl remove-tokens
+kubelogin remove-tokens
 ```
 
 ## Restrictions
