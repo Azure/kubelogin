@@ -39,6 +39,7 @@ asdf global kubelogin latest
 ### Using winget
 
 From Powershell:
+
 ```powershell
 winget install --id=Kubernetes.kubectl  -e
 winget install --id=Microsoft.Azure.Kubelogin  -e
@@ -46,7 +47,10 @@ winget install --id=Microsoft.Azure.Kubelogin  -e
 
 ### Using scoop
 
+This package is not maintained by Microsoft.
+
 From Powershell:
+
 ```powershell
 scoop install kubectl azure-kubelogin
 ```
@@ -54,6 +58,7 @@ scoop install kubectl azure-kubelogin
 ### Using azure cli
 
 From Powershell:
+
 ```powershell
 az aks install-cli
 $targetDir="$env:USERPROFILE\.azure-kubelogin"
@@ -66,4 +71,3 @@ if(-Not($oldPathArray -Contains "$targetDir")) {
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path","User"),[System.Environment]::GetEnvironmentVariable("Path","Machine") -join ";"
 }
 ```
-
