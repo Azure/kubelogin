@@ -146,10 +146,27 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="using-kubelogin-in-jenkins"><a class="header" href="#using-kubelogin-in-jenkins">Using kubelogin in Jenkins</a></h1>
-<p>In Jenkins, workspaces are most likely run under <code>jenkins</code> user. Since <code>kubelogin</code> by default caches tokens at <code>${HOME}/.kube/cache/kubelogin</code> in <a href="../concepts/login-modes/devicecode.html">device code</a>, 
-<a href="../concepts/login-modes/interactive.html">web browser interactive</a>, and <a href="../concepts/login-modes/ropc.html">ropc</a> <a href="../concepts/login-modes.html">login modes</a>, 
-workspaces run concurrently may have token clashing resulting in <code>You must be logged in to the server (Unauthorized)</code> error message.
-To fix this, you can specify <code>--token-cache-dir</code> to a directory under Jenkins workspace such as <code>${WORKSPACE}/.kube/cache/kubelogin</code>.</p>
+<p>In Jenkins, since workspaces are most likely run under <code>jenkins</code> user, different login modes may have different configuration requirements to allow multiple builds to run concurrently. When it is not configured properly, there may be clashing in cache or login context that results in <code>You must be logged in to the server (Unauthorized)</code> error message.</p>
+<h2 id="using-azure-cli-login-mode"><a class="header" href="#using-azure-cli-login-mode">Using Azure CLI Login mode</a></h2>
+<p>When Azure CLI is installed in Jenkins environment, Azure CLI’s config directory likely resides in Jenkins workspace directory. To use the Azure CLI, environment variable <code>AZURE_CONFIG_DIR</code> should be specified.</p>
+<p>Using kubelogin <code>convert-kubeconfig</code> subcommand with <code>--azure-config-dir</code>, the generated kubeconfig will configure the environment variable for <code>get-token</code> subcommand to find the corresponding Azure config directory. For example,</p>
+<pre><code class="language-sh">stage('Download kubeconfig and convert') {
+    steps {
+        sh 'az aks get-credentials -g ${RESOURCE_GROUP} -n ${CLUSTER_NAME}'
+        sh 'kubelogin convert-kubeconfig -l azurecli --azure-config-dir ${WORKSPACE}/.azure'
+    }
+}
+
+stage('Run kubectl') {
+    steps {
+        sh 'kubectl get nodes'
+    }
+}
+</code></pre>
+<h2 id="using-device-code-web-browser-and-ropc-login-modes"><a class="header" href="#using-device-code-web-browser-and-ropc-login-modes">Using Device Code, Web Browser, and ROPC Login Modes</a></h2>
+<p>Since <code>kubelogin</code> by default caches tokens at <code>${HOME}/.kube/cache/kubelogin</code> in <a href="../concepts/login-modes/devicecode.html">device code</a>,
+<a href="../concepts/login-modes/interactive.html">web browser interactive</a>, and <a href="../concepts/login-modes/ropc.html">ropc</a> <a href="../concepts/login-modes.html">login modes</a>,
+<code>kubelogin covert-kubeconfig --token-cache-dir</code> should be specified to a directory under Jenkins workspace such as <code>${WORKSPACE}/.kube/cache/kubelogin</code>.</p>
 
                     </main>
 

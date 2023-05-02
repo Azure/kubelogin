@@ -190,6 +190,7 @@ asdf global kubelogin latest
 winget install --id=Microsoft.Azure.Kubelogin  -e
 </code></pre>
 <h3 id="using-scoop"><a class="header" href="#using-scoop">Using scoop</a></h3>
+<p>This package is not maintained by Microsoft.</p>
 <p>From Powershell:</p>
 <pre><code class="language-powershell">scoop install kubectl azure-kubelogin
 </code></pre>
@@ -301,8 +302,8 @@ kubelogin remove-tokens
 <li>https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-device-code</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="azure-cli"><a class="header" href="#azure-cli">Azure CLI</a></h1>
-<p>This login mode uses the already logged-in context performed by Azure CLI to get the <a href="https://docs.microsoft.com/en-us/cli/azure/account?view=azure-cli-latest#az_account_get_access_token">access token</a>. 
-The token will be issued in the same Azure AD tenant as in <code>az login</code>. </p>
+<p>This login mode uses the already logged-in context performed by Azure CLI to get the <a href="https://docs.microsoft.com/en-us/cli/azure/account?view=azure-cli-latest#az_account_get_access_token">access token</a>.
+The token will be issued in the same Azure AD tenant as in <code>az login</code>.</p>
 <p><code>kubelogin</code> will not cache any token since it’s already managed by Azure CLI.</p>
 <blockquote>
 <h3 id="note"><a class="header" href="#note">NOTE</a></h3>
@@ -317,6 +318,7 @@ kubelogin convert-kubeconfig -l azurecli
 
 kubectl get nodes
 </code></pre>
+<p>When Azure CLI’s config directory is outside the <code>${HOME}</code> directory, <code>--azure-config-dir</code> should be specified in <code>convert-kubeconfig</code> subcommand. It will generate the kubeconfig with environment variable configured. The same thing can also be achieved by setting environment variable <code>AZURE_CONFIG_DIR</code> to this directory while running <code>kubectl</code> command.</p>
 <h2 id="references-2"><a class="header" href="#references-2">References</a></h2>
 <ul>
 <li>https://learn.microsoft.com/en-us/cli/azure/</li>
@@ -505,6 +507,7 @@ Use &quot;kubelogin [command] --help&quot; for more information about a command.
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="covert-kubeconfig"><a class="header" href="#covert-kubeconfig">covert-kubeconfig</a></h1>
 <p>This subcommand converts kubeconfig to <a href="cli/../concepts/exec-plugin.html">Exec plugin</a> using <code>kubelogin get-token</code> with specified <a href="cli/../concepts/login-modes.html">login mode</a>.</p>
+<p>Note that when <code>--context</code> is specified, only the matching kubeconfig context will be converted. Otherwise, every kubeconfig context that uses azure auth or Exec plugin will be converted.</p>
 <h2 id="usage"><a class="header" href="#usage">Usage</a></h2>
 <pre><code class="language-sh">kubelogin convert-kubeconfig -h
 convert kubeconfig to use exec auth module
@@ -514,27 +517,24 @@ Usage:
 
 Flags:
       --authority-host string                Workload Identity authority host. It may be specified in AZURE_AUTHORITY_HOST environment variable
-      --client-certificate string            AAD client cert in pfx. Used in spn login. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE or AZURE_CLIENT_CER
-TIFICATE_PATH environment variable
-      --client-certificate-password string   Password for AAD client cert. Used in spn login. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE_PASSWORD or A
-ZURE_CLIENT_CERTIFICATE_PASSWORD environment variable
+      --azure-config-dir string              Azure CLI config path
+      --client-certificate string            AAD client cert in pfx. Used in spn login. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE or AZURE_CLIENT_CERTIFICATE_PATH environment variable
+      --client-certificate-password string   Password for AAD client cert. Used in spn login. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE_PASSWORD or AZURE_CLIENT_CERTIFICATE_PASSWORD environment variable
       --client-id string                     AAD client application ID. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_ID or AZURE_CLIENT_ID environment variable
-      --client-secret string                 AAD client application secret. Used in spn login. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_SECRET or AZURE_CLIENT_S
-ECRET environment variable
+      --client-secret string                 AAD client application secret. Used in spn login. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_SECRET or AZURE_CLIENT_SECRET environment variable
+      --context string                       The name of the kubeconfig context to use
   -e, --environment string                   Azure environment name (default &quot;AzurePublicCloud&quot;)
       --federated-token-file string          Workload Identity federated token file. It may be specified in AZURE_FEDERATED_TOKEN_FILE environment variable
   -h, --help                                 help for convert-kubeconfig
       --identity-resource-id string          Managed Identity resource id.
       --kubeconfig string                    Path to the kubeconfig file to use for CLI requests.
       --legacy                               set to true to get token with 'spn:' prefix in audience claim
-  -l, --login string                         Login method. Supported methods: devicecode, interactive, spn, ropc, msi, azurecli, workloadidentity. It may be specified in A
-AD_LOGIN_METHOD environment variable (default &quot;devicecode&quot;)
+  -l, --login string                         Login method. Supported methods: devicecode, interactive, spn, ropc, msi, azurecli, workloadidentity. It may be specified in AAD_LOGIN_METHOD environment variable (default &quot;devicecode&quot;)
       --password string                      password for ropc login flow. It may be specified in AAD_USER_PRINCIPAL_PASSWORD or AZURE_PASSWORD environment variable
       --server-id string                     AAD server application ID
   -t, --tenant-id string                     AAD tenant ID. It may be specified in AZURE_TENANT_ID environment variable
       --token-cache-dir string               directory to cache token (default &quot;${HOME}/.kube/cache/kubelogin/&quot;)
-      --use-azurerm-env-vars                 Use environment variable names of Terraform Azure Provider (ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_CLIENT_CERTIFICATE_PATH, ARM
-_CLIENT_CERTIFICATE_PASSWORD, ARM_TENANT_ID)
+      --use-azurerm-env-vars                 Use environment variable names of Terraform Azure Provider (ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_CLIENT_CERTIFICATE_PATH, ARM_CLIENT_CERTIFICATE_PASSWORD, ARM_TENANT_ID)
       --username string                      user name for ropc login flow. It may be specified in AAD_USER_PRINCIPAL_NAME or AZURE_USERNAME environment variable
 
 Global Flags:
@@ -893,10 +893,27 @@ kubectl config use-context &quot;$CLUSTER_NAME&quot;
 </li>
 </ol>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="using-kubelogin-in-jenkins"><a class="header" href="#using-kubelogin-in-jenkins">Using kubelogin in Jenkins</a></h1>
-<p>In Jenkins, workspaces are most likely run under <code>jenkins</code> user. Since <code>kubelogin</code> by default caches tokens at <code>${HOME}/.kube/cache/kubelogin</code> in <a href="topics/../concepts/login-modes/devicecode.html">device code</a>, 
-<a href="topics/../concepts/login-modes/interactive.html">web browser interactive</a>, and <a href="topics/../concepts/login-modes/ropc.html">ropc</a> <a href="topics/../concepts/login-modes.html">login modes</a>, 
-workspaces run concurrently may have token clashing resulting in <code>You must be logged in to the server (Unauthorized)</code> error message.
-To fix this, you can specify <code>--token-cache-dir</code> to a directory under Jenkins workspace such as <code>${WORKSPACE}/.kube/cache/kubelogin</code>.</p>
+<p>In Jenkins, since workspaces are most likely run under <code>jenkins</code> user, different login modes may have different configuration requirements to allow multiple builds to run concurrently. When it is not configured properly, there may be clashing in cache or login context that results in <code>You must be logged in to the server (Unauthorized)</code> error message.</p>
+<h2 id="using-azure-cli-login-mode-1"><a class="header" href="#using-azure-cli-login-mode-1">Using Azure CLI Login mode</a></h2>
+<p>When Azure CLI is installed in Jenkins environment, Azure CLI’s config directory likely resides in Jenkins workspace directory. To use the Azure CLI, environment variable <code>AZURE_CONFIG_DIR</code> should be specified.</p>
+<p>Using kubelogin <code>convert-kubeconfig</code> subcommand with <code>--azure-config-dir</code>, the generated kubeconfig will configure the environment variable for <code>get-token</code> subcommand to find the corresponding Azure config directory. For example,</p>
+<pre><code class="language-sh">stage('Download kubeconfig and convert') {
+    steps {
+        sh 'az aks get-credentials -g ${RESOURCE_GROUP} -n ${CLUSTER_NAME}'
+        sh 'kubelogin convert-kubeconfig -l azurecli --azure-config-dir ${WORKSPACE}/.azure'
+    }
+}
+
+stage('Run kubectl') {
+    steps {
+        sh 'kubectl get nodes'
+    }
+}
+</code></pre>
+<h2 id="using-device-code-web-browser-and-ropc-login-modes"><a class="header" href="#using-device-code-web-browser-and-ropc-login-modes">Using Device Code, Web Browser, and ROPC Login Modes</a></h2>
+<p>Since <code>kubelogin</code> by default caches tokens at <code>${HOME}/.kube/cache/kubelogin</code> in <a href="topics/../concepts/login-modes/devicecode.html">device code</a>,
+<a href="topics/../concepts/login-modes/interactive.html">web browser interactive</a>, and <a href="topics/../concepts/login-modes/ropc.html">ropc</a> <a href="topics/../concepts/login-modes.html">login modes</a>,
+<code>kubelogin covert-kubeconfig --token-cache-dir</code> should be specified to a directory under Jenkins workspace such as <code>${WORKSPACE}/.kube/cache/kubelogin</code>.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="known-issues"><a class="header" href="#known-issues">Known Issues</a></h1>
 <ul>
 <li><a href="https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-fed-group-claims">Maximum 200 groups will be included in the Azure AD JWT</a>. 

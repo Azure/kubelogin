@@ -146,8 +146,8 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="azure-cli"><a class="header" href="#azure-cli">Azure CLI</a></h1>
-<p>This login mode uses the already logged-in context performed by Azure CLI to get the <a href="https://docs.microsoft.com/en-us/cli/azure/account?view=azure-cli-latest#az_account_get_access_token">access token</a>. 
-The token will be issued in the same Azure AD tenant as in <code>az login</code>. </p>
+<p>This login mode uses the already logged-in context performed by Azure CLI to get the <a href="https://docs.microsoft.com/en-us/cli/azure/account?view=azure-cli-latest#az_account_get_access_token">access token</a>.
+The token will be issued in the same Azure AD tenant as in <code>az login</code>.</p>
 <p><code>kubelogin</code> will not cache any token since it’s already managed by Azure CLI.</p>
 <blockquote>
 <h3 id="note"><a class="header" href="#note">NOTE</a></h3>
@@ -162,6 +162,7 @@ kubelogin convert-kubeconfig -l azurecli
 
 kubectl get nodes
 </code></pre>
+<p>When Azure CLI’s config directory is outside the <code>${HOME}</code> directory, <code>--azure-config-dir</code> should be specified in <code>convert-kubeconfig</code> subcommand. It will generate the kubeconfig with environment variable configured. The same thing can also be achieved by setting environment variable <code>AZURE_CONFIG_DIR</code> to this directory while running <code>kubectl</code> command.</p>
 <h2 id="references"><a class="header" href="#references">References</a></h2>
 <ul>
 <li>https://learn.microsoft.com/en-us/cli/azure/</li>
