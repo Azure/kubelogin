@@ -7,6 +7,7 @@ import (
 	"github.com/Azure/kubelogin/pkg/token"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
+	"k8s.io/klog"
 )
 
 const (
@@ -148,7 +149,17 @@ func isExecUsingkubelogin(authInfoPtr *api.AuthInfo) (ok bool) {
 }
 
 func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
-	config, err := o.configFlags.ToRawKubeConfigLoader().RawConfig()
+	clientConfig := o.configFlags.ToRawKubeConfigLoader()
+	var kubeconfigs []string
+	if clientConfig.ConfigAccess().GetExplicitFile() != "" {
+		kubeconfigs = append(kubeconfigs, clientConfig.ConfigAccess().GetExplicitFile())
+	} else {
+		kubeconfigs = append(kubeconfigs, clientConfig.ConfigAccess().GetLoadingPrecedence()...)
+	}
+
+	klog.V(7).Infof("Loading kubeconfig from %s", strings.Join(kubeconfigs, ":"))
+
+	config, err := clientConfig.RawConfig()
 	if err != nil {
 		return fmt.Errorf("unable to load kubeconfig: %s", err)
 	}
@@ -168,10 +179,15 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 			continue
 		}
 
+		klog.V(7).Infof("context: %q", name)
+
 		//  is it legacy aad auth or is it exec using kubelogin?
 		if !isExecUsingkubelogin(authInfo) && !isLegacyAzureAuth(authInfo) {
 			continue
 		}
+
+		klog.V(7).Info("converting...")
+
 		argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal, argTokenCacheDirVal, isLegacyConfigMode := getArgValues(o, authInfo)
 		exec := &api.ExecConfig{
 			Command: execName,
