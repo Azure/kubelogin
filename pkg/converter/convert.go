@@ -151,10 +151,13 @@ func isExecUsingkubelogin(authInfoPtr *api.AuthInfo) (ok bool) {
 func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 	clientConfig := o.configFlags.ToRawKubeConfigLoader()
 	var kubeconfigs []string
-	if clientConfig.ConfigAccess().GetExplicitFile() != "" {
-		kubeconfigs = append(kubeconfigs, clientConfig.ConfigAccess().GetExplicitFile())
-	} else {
-		kubeconfigs = append(kubeconfigs, clientConfig.ConfigAccess().GetLoadingPrecedence()...)
+
+	if clientConfig.ConfigAccess() != nil {
+		if clientConfig.ConfigAccess().GetExplicitFile() != "" {
+			kubeconfigs = append(kubeconfigs, clientConfig.ConfigAccess().GetExplicitFile())
+		} else {
+			kubeconfigs = append(kubeconfigs, clientConfig.ConfigAccess().GetLoadingPrecedence()...)
+		}
 	}
 
 	klog.V(7).Infof("Loading kubeconfig from %s", strings.Join(kubeconfigs, ":"))
