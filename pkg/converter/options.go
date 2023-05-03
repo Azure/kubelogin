@@ -10,6 +10,9 @@ type Options struct {
 	Flags        *pflag.FlagSet
 	configFlags  genericclioptions.RESTClientGetter
 	TokenOptions token.Options
+	// context is the kubeconfig context name
+	context        string
+	azureConfigDir string
 }
 
 func stringptr(str string) *string { return &str }
@@ -26,6 +29,8 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	if cf, ok := o.configFlags.(*genericclioptions.ConfigFlags); ok {
 		cf.AddFlags(fs)
 	}
+	fs.StringVar(&o.context, flagContext, "", "The name of the kubeconfig context to use")
+	fs.StringVar(&o.azureConfigDir, flagAzureConfigDir, "", "Azure CLI config path")
 	o.TokenOptions.AddFlags(fs)
 }
 

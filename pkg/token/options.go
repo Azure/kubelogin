@@ -10,23 +10,6 @@ import (
 	"k8s.io/client-go/util/homedir"
 )
 
-type KlogsLoggingPurposeOptions struct {
-	LoginMethod            string
-	ClientID               string
-	ClientCert             string
-	Username               string
-	ServerID               string
-	TenantID               string
-	Environment            string
-	IsLegacy               bool
-	TokenCacheDir          string
-	tokenCacheFile         string
-	IdentityResourceID     string
-	FederatedTokenFile     string
-	AuthorityHost          string
-	UseAzureRMTerraformEnv bool
-}
-
 type Options struct {
 	LoginMethod            string
 	ClientID               string
@@ -229,8 +212,9 @@ func (o *Options) UpdateFromEnv() {
 	}
 }
 
-func (o *Options) String() string {
-	return fmt.Sprintf("Login Method: %s, Environment: %s, TenantID: %s, ServerID: %s, ClientID: %s, IsLegacy: %t, msiResourceID: %s, tokenCacheDir: %s, tokenCacheFile: %s",
+func (o *Options) ToString() string {
+	azureConfigDir := os.Getenv("AZURE_CONFIG_DIR")
+	return fmt.Sprintf("Login Method: %s, Environment: %s, TenantID: %s, ServerID: %s, ClientID: %s, IsLegacy: %t, msiResourceID: %s, tokenCacheDir: %s, tokenCacheFile: %s, AZURE_CONFIG_DIR: %s",
 		o.LoginMethod,
 		o.Environment,
 		o.TenantID,
@@ -239,7 +223,9 @@ func (o *Options) String() string {
 		o.IsLegacy,
 		o.IdentityResourceID,
 		o.TokenCacheDir,
-		o.tokenCacheFile)
+		o.tokenCacheFile,
+		azureConfigDir,
+	)
 }
 
 func getCacheFileName(o *Options) string {

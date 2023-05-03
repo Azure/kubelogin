@@ -17,3 +17,6 @@ bin
 # vendor/
 
 coverage.txt
+
+# JetBrains IDE folder
+.idea

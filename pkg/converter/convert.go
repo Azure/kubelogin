@@ -33,7 +33,9 @@ const (
 	argFederatedTokenFile = "--federated-token-file"
 	argTokenCacheDir      = "--token-cache-dir"
 
+	flagAzureConfigDir     = "azure-config-dir"
 	flagClientID           = "client-id"
+	flagContext            = "context"
 	flagServerID           = "server-id"
 	flagTenantID           = "tenant-id"
 	flagEnvironment        = "environment"
@@ -52,6 +54,8 @@ const (
 	execName        = "kubelogin"
 	getTokenCommand = "get-token"
 	execAPIVersion  = "client.authentication.k8s.io/v1beta1"
+
+	azureConfigDir = "AZURE_CONFIG_DIR"
 )
 
 func getArgValues(o Options, authInfo *api.AuthInfo) (argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal, argTokenCacheDirVal string, argIsLegacyConfigModeVal bool) {
@@ -149,7 +153,20 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 		return fmt.Errorf("unable to load kubeconfig: %s", err)
 	}
 
-	for _, authInfo := range config.AuthInfos {
+	targetAuthInfo := ""
+
+	if o.context != "" {
+		if config.Contexts[o.context] == nil {
+			return fmt.Errorf("no context exists with the name: %q", o.context)
+		}
+		targetAuthInfo = config.Contexts[o.context].AuthInfo
+	}
+
+	for name, authInfo := range config.AuthInfos {
+
+		if targetAuthInfo != "" && name != targetAuthInfo {
+			continue
+		}
 
 		//  is it legacy aad auth or is it exec using kubelogin?
 		if !isExecUsingkubelogin(authInfo) && !isLegacyAzureAuth(authInfo) {
@@ -178,6 +195,10 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 
 		switch o.TokenOptions.LoginMethod {
 		case token.AzureCLILogin:
+
+			if o.azureConfigDir != "" {
+				exec.Env = append(exec.Env, api.ExecEnvVar{Name: azureConfigDir, Value: o.azureConfigDir})
+			}
 
 			// when convert to azurecli login, tenantID from the input kubeconfig will be disregarded and
 			// will have to come from explicit flag `--tenant-id`.
