@@ -1,6 +1,8 @@
 package converter
 
 import (
+	"fmt"
+
 	"github.com/Azure/kubelogin/pkg/token"
 	"github.com/spf13/pflag"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -40,6 +42,10 @@ func (o *Options) Validate() error {
 
 func (o *Options) UpdateFromEnv() {
 	o.TokenOptions.UpdateFromEnv()
+}
+
+func (o *Options) ToString() string {
+	return fmt.Sprintf("Context: %s, %s", o.context, o.TokenOptions.ToString())
 }
 
 func (o *Options) isSet(name string) bool {

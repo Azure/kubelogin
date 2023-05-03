@@ -152,6 +152,8 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 	clientConfig := o.configFlags.ToRawKubeConfigLoader()
 	var kubeconfigs []string
 
+	klog.V(5).Info(o.ToString())
+
 	if clientConfig.ConfigAccess() != nil {
 		if clientConfig.ConfigAccess().GetExplicitFile() != "" {
 			kubeconfigs = append(kubeconfigs, clientConfig.ConfigAccess().GetExplicitFile())
@@ -160,7 +162,7 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 		}
 	}
 
-	klog.V(7).Infof("Loading kubeconfig from %s", strings.Join(kubeconfigs, ":"))
+	klog.V(5).Infof("Loading kubeconfig from %s", strings.Join(kubeconfigs, ":"))
 
 	config, err := clientConfig.RawConfig()
 	if err != nil {
@@ -182,14 +184,14 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 			continue
 		}
 
-		klog.V(7).Infof("context: %q", name)
+		klog.V(5).Infof("context: %q", name)
 
 		//  is it legacy aad auth or is it exec using kubelogin?
 		if !isExecUsingkubelogin(authInfo) && !isLegacyAzureAuth(authInfo) {
 			continue
 		}
 
-		klog.V(7).Info("converting...")
+		klog.V(5).Info("converting...")
 
 		argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal, argTokenCacheDirVal, isLegacyConfigMode := getArgValues(o, authInfo)
 		exec := &api.ExecConfig{
