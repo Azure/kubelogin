@@ -55,6 +55,7 @@ const (
 	execName        = "kubelogin"
 	getTokenCommand = "get-token"
 	execAPIVersion  = "client.authentication.k8s.io/v1beta1"
+	execInstallHint = "Install kubelogin for use with kubectl by running az aks install-cli"
 
 	azureConfigDir = "AZURE_CONFIG_DIR"
 )
@@ -200,6 +201,7 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 				getTokenCommand,
 			},
 			APIVersion: execAPIVersion,
+			InstallHint: execInstallHint
 		}
 
 		exec.Args = append(exec.Args, argLoginMethod, o.TokenOptions.LoginMethod)
