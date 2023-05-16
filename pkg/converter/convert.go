@@ -200,8 +200,8 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 			Args: []string{
 				getTokenCommand,
 			},
-			APIVersion: execAPIVersion,
-			InstallHint: execInstallHint
+			APIVersion:  execAPIVersion,
+			InstallHint: execInstallHint,
 		}
 
 		exec.Args = append(exec.Args, argLoginMethod, o.TokenOptions.LoginMethod)
