@@ -1244,7 +1244,11 @@ func validate(
 	}
 
 	if exec.APIVersion != execAPIVersion {
-		t.Fatalf("[context:%s]: expected exec command: %s, actual: %s", clusterName, execAPIVersion, exec.APIVersion)
+		t.Fatalf("[context:%s]: expected API Version: %s, actual: %s", clusterName, execAPIVersion, exec.APIVersion)
+	}
+
+	if exec.InstallHint != execInstallHint {
+		t.Fatalf("[context:%s]: expected install hint: %s, actual: %s", clusterName, execInstallHint, exec.InstallHint)
 	}
 
 	if exec.Args[0] != getTokenCommand {
