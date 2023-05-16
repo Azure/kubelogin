@@ -1,13 +1,17 @@
 package token
 
 import (
+	"context"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"os"
+	"strconv"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"golang.org/x/crypto/pkcs12"
 )
@@ -55,56 +59,38 @@ func newServicePrincipalToken(oAuthConfig adal.OAuthConfig, clientID, clientSecr
 	}, nil
 }
 
+// Token fetches an azcore.AccessToken from the Azure CLI SDK and converts it to an adal.Token for use with kubelogin.
 func (p *servicePrincipalToken) Token() (adal.Token, error) {
 	emptyToken := adal.Token{}
-	callback := func(t adal.Token) error {
-		return nil
-	}
 
-	var (
-		spt *adal.ServicePrincipalToken
-		err error
-	)
-
-	if p.clientSecret != "" {
-		spt, err = adal.NewServicePrincipalToken(
-			p.oAuthConfig,
-			p.clientID,
-			p.clientSecret,
-			p.resourceID,
-			callback)
-		if err != nil {
-			return emptyToken, fmt.Errorf("failed to create service principal token using secret: %s", err)
-		}
-	} else if p.clientCert != "" {
-		certData, err := os.ReadFile(p.clientCert)
-		if err != nil {
-			return emptyToken, fmt.Errorf("failed to read the certificate file (%s): %w", p.clientCert, err)
-		}
-
-		// Get the certificate and private key from pfx file
-		cert, rsaPrivateKey, err := decodePkcs12(certData, p.clientCertPassword)
-		if err != nil {
-			return emptyToken, fmt.Errorf("failed to decode pkcs12 certificate while creating spt: %w", err)
-		}
-
-		spt, err = adal.NewServicePrincipalTokenFromCertificate(
-			p.oAuthConfig,
-			p.clientID,
-			cert,
-			rsaPrivateKey,
-			p.resourceID,
-			callback)
-		if err != nil {
-			return emptyToken, fmt.Errorf("failed to create service principal token using cert: %s", err)
-		}
-	}
-
-	err = spt.Refresh()
+	// Request a new Azure CLI token provider
+	cred, err := azidentity.NewAzureCLICredential(&azidentity.AzureCLICredentialOptions{
+		TenantID: p.tenantID,
+	})
 	if err != nil {
-		return emptyToken, err
+		return emptyToken, fmt.Errorf("unable to create credential. Received: %v", err)
 	}
-	return spt.Token(), nil
+
+	// Use the token provider to get a new token
+	cliAccessToken, err := cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: []string{p.resourceID}})
+	if err != nil {
+		return emptyToken, fmt.Errorf("expected an empty error but received: %v", err)
+	}
+	if cliAccessToken.Token == "" {
+		return emptyToken, errors.New("did not receive a token")
+	}
+
+	// azurecore.AccessTokens have ExpiresOn as Time.Time. We need to convert it to JSON.Number
+	// by fetching the time in seconds since the Unix epoch via Unix() and then converting to a
+	// JSON.Number via formatting as a string using a base-10 int64 conversion.
+	expiresOn := json.Number(strconv.FormatInt(cliAccessToken.ExpiresOn.Unix(), 10))
+
+	// Re-wrap the azurecore.AccessToken into an adal.Token
+	return adal.Token{
+		AccessToken: cliAccessToken.Token,
+		ExpiresOn:   expiresOn,
+		Resource:    p.resourceID,
+	}, nil
 }
 
 func isPublicKeyEqual(key1, key2 *rsa.PublicKey) bool {
