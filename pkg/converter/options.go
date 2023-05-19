@@ -13,8 +13,9 @@ type Options struct {
 	configFlags  genericclioptions.RESTClientGetter
 	TokenOptions token.Options
 	// context is the kubeconfig context name
-	context        string
-	azureConfigDir string
+	context         string
+	azureConfigDir  string
+	execInstallHint string
 }
 
 func stringptr(str string) *string { return &str }
@@ -33,6 +34,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	}
 	fs.StringVar(&o.context, flagContext, "", "The name of the kubeconfig context to use")
 	fs.StringVar(&o.azureConfigDir, flagAzureConfigDir, "", "Azure CLI config path")
+	fs.StringVar(&o.execInstallHint, flagExecInstallHint, "", "The install hint for the kubelogin command when converting to exec format.")
 	o.TokenOptions.AddFlags(fs)
 }
 

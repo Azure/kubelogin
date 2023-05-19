@@ -34,17 +34,19 @@ func TestConvert(t *testing.T) {
 		azureCLIDir        = "/tmp/foo"
 	)
 	testData := []struct {
-		name               string
-		authProviderConfig map[string]string
-		overrideFlags      map[string]string
-		expectedArgs       []string
-		execArgItems       []string
-		command            string
-		expectedError      string
-		expectedEnv        []clientcmdapi.ExecEnvVar
+		name                string
+		authProviderConfig  map[string]string
+		overrideFlags       map[string]string
+		expectedArgs        []string
+		execArgItems        []string
+		command             string
+		expectedError       string
+		expectedEnv         []clientcmdapi.ExecEnvVar
+		expectedInstallHint string
 	}{
 		{
-			name: "non azure kubeconfig",
+			name:                "non azure kubeconfig",
+			expectedInstallHint: execInstallHint,
 		},
 		{
 			name: "using legacy azure auth to convert to msi",
@@ -63,6 +65,7 @@ func TestConvert(t *testing.T) {
 				argServerID, serverID,
 				argLoginMethod, token.MSILogin,
 			},
+			expectedInstallHint: execInstallHint,
 		},
 		{
 			name: "using legacy azure auth to convert to msi with client-id override",
@@ -83,6 +86,7 @@ func TestConvert(t *testing.T) {
 				argClientID, "msi-client-id",
 				argLoginMethod, token.MSILogin,
 			},
+			expectedInstallHint: execInstallHint,
 		},
 		{
 			name: "using legacy azure auth to convert to workload identity",
@@ -101,6 +105,7 @@ func TestConvert(t *testing.T) {
 				argServerID, serverID,
 				argLoginMethod, token.WorkloadIdentityLogin,
 			},
+			expectedInstallHint: execInstallHint,
 		},
 		{
 			name: "using legacy azure auth to convert to workload identity with overrides",
@@ -127,6 +132,7 @@ func TestConvert(t *testing.T) {
 				argFederatedTokenFile, federatedTokenFile,
 				argLoginMethod, token.WorkloadIdentityLogin,
 			},
+			expectedInstallHint: execInstallHint,
 		},
 		{
 			name: "using legacy azure auth to convert to spn without setting environment",
@@ -147,6 +153,7 @@ func TestConvert(t *testing.T) {
 				argTenantID, tenantID,
 				argLoginMethod, token.ServicePrincipalLogin,
 			},
+			expectedInstallHint: execInstallHint,
 		},
 		{
 			name: "using legacy azure auth to convert to spn with clientSecret",
@@ -171,6 +178,7 @@ func TestConvert(t *testing.T) {
 				argEnvironment, envName,
 				argLoginMethod, token.ServicePrincipalLogin,
 			},
+			expectedInstallHint: execInstallHint,
 		},
 		{
 			name: "using legacy azure auth to convert to spn with clientCert",
@@ -195,6 +203,7 @@ func TestConvert(t *testing.T) {
 				argEnvironment, envName,
 				argLoginMethod, token.ServicePrincipalLogin,
 			},
+			expectedInstallHint: execInstallHint,
 		},
 		{
 			name: "using legacy azure auth to convert to spn with password-protected clientCert",
@@ -221,6 +230,7 @@ func TestConvert(t *testing.T) {
 				argEnvironment, envName,
 				argLoginMethod, token.ServicePrincipalLogin,
 			},
+			expectedInstallHint: execInstallHint,
 		},
 		{
 			name: "using legacy azure auth to convert to ropc",
@@ -242,6 +252,7 @@ func TestConvert(t *testing.T) {
 				argEnvironment, envName,
 				argLoginMethod, token.ROPCLogin,
 			},
+			expectedInstallHint: execInstallHint,
 		},
 		{
 			name: "using legacy azure auth to convert to ropc with username and password",
@@ -267,6 +278,7 @@ func TestConvert(t *testing.T) {
 				argEnvironment, envName,
 				argLoginMethod, token.ROPCLogin,
 			},
+			expectedInstallHint: execInstallHint,
 		},
 		{
 			name: "using legacy azure auth to convert to azurecli",
@@ -285,6 +297,7 @@ func TestConvert(t *testing.T) {
 				argServerID, serverID,
 				argLoginMethod, token.AzureCLILogin,
 			},
+			expectedInstallHint: execInstallHint,
 		},
 		{
 			name: "using legacy azure auth to convert to azurecli with --tenant-id override",
@@ -305,6 +318,7 @@ func TestConvert(t *testing.T) {
 				argLoginMethod, token.AzureCLILogin,
 				argTenantID, tenantID,
 			},
+			expectedInstallHint: execInstallHint,
 		},
 		{
 			name: "using legacy azure auth to convert to azurecli with --token-cache-dir override",
@@ -325,6 +339,27 @@ func TestConvert(t *testing.T) {
 				argLoginMethod, token.AzureCLILogin,
 				argTokenCacheDir, tokenCacheDir,
 			},
+			expectedInstallHint: execInstallHint,
+		},
+		{
+			name: "using legacy azure auth to convert to azurecli with --install-hint override",
+			authProviderConfig: map[string]string{
+				cfgEnvironment: envName,
+				cfgApiserverID: serverID,
+				cfgClientID:    clientID,
+				cfgTenantID:    tenantID,
+				cfgConfigMode:  "1",
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod:     token.AzureCLILogin,
+				flagExecInstallHint: "Custom Install Hint",
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argLoginMethod, token.AzureCLILogin,
+			},
+			expectedInstallHint: "Custom Install Hint",
 		},
 		{
 			name: "using legacy azure auth to convert to devicecode with redundant arguments",
@@ -356,6 +391,7 @@ func TestConvert(t *testing.T) {
 				argIsLegacy,
 				argLoginMethod, loginMethod,
 			},
+			expectedInstallHint: execInstallHint,
 		},
 		{
 			name: "using legacy azure auth with configMode: \"1\" to convert to devicecode with --legacy",
@@ -379,6 +415,7 @@ func TestConvert(t *testing.T) {
 				argIsLegacy,
 				argLoginMethod, loginMethod,
 			},
+			expectedInstallHint: execInstallHint,
 		},
 		{
 			name: "using legacy azure auth to convert without --login should default to devicecode",
@@ -397,6 +434,7 @@ func TestConvert(t *testing.T) {
 				argIsLegacy,
 				argLoginMethod, token.DeviceCodeLogin,
 			},
+			expectedInstallHint: execInstallHint,
 		},
 		{
 			name: "using legacy azure auth with configMode: \"0\" to convert without --login should default to devicecode",
@@ -416,6 +454,7 @@ func TestConvert(t *testing.T) {
 				argIsLegacy,
 				argLoginMethod, token.DeviceCodeLogin,
 			},
+			expectedInstallHint: execInstallHint,
 		},
 		{
 			name: "using legacy azure auth with configMode: \"1\" to convert without --login should result in devicecode without --legacy",
@@ -434,6 +473,7 @@ func TestConvert(t *testing.T) {
 				argTenantID, tenantID,
 				argLoginMethod, token.DeviceCodeLogin,
 			},
+			expectedInstallHint: execInstallHint,
 		},
 		{
 			name: "with exec format kubeconfig, convert from azurecli to azurecli",
@@ -453,7 +493,8 @@ func TestConvert(t *testing.T) {
 				argServerID, serverID,
 				argLoginMethod, token.AzureCLILogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from azurecli to azurecli with --tenant-id",
@@ -475,7 +516,8 @@ func TestConvert(t *testing.T) {
 				argLoginMethod, token.AzureCLILogin,
 				argTenantID, tenantID,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from azurecli to azurecli, with envName as overrides",
@@ -495,7 +537,8 @@ func TestConvert(t *testing.T) {
 				argServerID, serverID,
 				argLoginMethod, token.AzureCLILogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from azurecli to azurecli, with args as overrides",
@@ -515,7 +558,8 @@ func TestConvert(t *testing.T) {
 				argLoginMethod, token.AzureCLILogin,
 				argTenantID, tenantID,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from azurecli to devicecode",
@@ -536,7 +580,8 @@ func TestConvert(t *testing.T) {
 				argTenantID, tenantID,
 				argLoginMethod, token.DeviceCodeLogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from azurecli to devicecode, with args as overrides",
@@ -559,7 +604,8 @@ func TestConvert(t *testing.T) {
 				argTenantID, tenantID,
 				argLoginMethod, token.DeviceCodeLogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from devicecode to devicecode without override",
@@ -579,7 +625,8 @@ func TestConvert(t *testing.T) {
 				argEnvironment, envName,
 				argLoginMethod, token.DeviceCodeLogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from devicecode to devicecode with --legacy",
@@ -603,7 +650,8 @@ func TestConvert(t *testing.T) {
 				argIsLegacy,
 				argLoginMethod, token.DeviceCodeLogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig using devicecode and --legacy, convert to devicecode should still have --legacy",
@@ -628,7 +676,8 @@ func TestConvert(t *testing.T) {
 				argIsLegacy,
 				argLoginMethod, token.DeviceCodeLogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from devicecode to azurecli",
@@ -648,7 +697,8 @@ func TestConvert(t *testing.T) {
 				argServerID, serverID,
 				argLoginMethod, token.AzureCLILogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from devicecode to azurecli with --token-cache-dir override",
@@ -670,7 +720,8 @@ func TestConvert(t *testing.T) {
 				argLoginMethod, token.AzureCLILogin,
 				argTokenCacheDir, tokenCacheDir,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig already having --token-cache-dir, convert from devicecode to azurecli",
@@ -692,7 +743,8 @@ func TestConvert(t *testing.T) {
 				argLoginMethod, token.AzureCLILogin,
 				argTokenCacheDir, tokenCacheDir,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from devicecode to spn",
@@ -715,7 +767,8 @@ func TestConvert(t *testing.T) {
 				argClientID, clientID,
 				argLoginMethod, token.ServicePrincipalLogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from devicecode to spn without setting environment",
@@ -736,7 +789,8 @@ func TestConvert(t *testing.T) {
 				argClientID, clientID,
 				argLoginMethod, token.ServicePrincipalLogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from devicecode to spn with clientID",
@@ -760,7 +814,8 @@ func TestConvert(t *testing.T) {
 				argTenantID, tenantID,
 				argLoginMethod, token.ServicePrincipalLogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from devicecode to spn with --legacy",
@@ -786,7 +841,8 @@ func TestConvert(t *testing.T) {
 				argIsLegacy,
 				argLoginMethod, token.ServicePrincipalLogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from devicecode to msi",
@@ -806,7 +862,8 @@ func TestConvert(t *testing.T) {
 				argServerID, serverID,
 				argLoginMethod, token.MSILogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from devicecode to msi with clientID override",
@@ -828,7 +885,8 @@ func TestConvert(t *testing.T) {
 				argClientID, spClientID,
 				argLoginMethod, token.MSILogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from devicecode to msi with identity-resource-id override",
@@ -850,7 +908,8 @@ func TestConvert(t *testing.T) {
 				argIdentityResourceID, identityResourceID,
 				argLoginMethod, token.MSILogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from devicecode to ropc",
@@ -873,7 +932,8 @@ func TestConvert(t *testing.T) {
 				argEnvironment, envName,
 				argLoginMethod, token.ROPCLogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from devicecode to ropc with --legacy",
@@ -898,7 +958,8 @@ func TestConvert(t *testing.T) {
 				argIsLegacy,
 				argLoginMethod, token.ROPCLogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from devicecode to ropc with username and password",
@@ -925,7 +986,8 @@ func TestConvert(t *testing.T) {
 				argEnvironment, envName,
 				argLoginMethod, token.ROPCLogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from devicecode to workload identity",
@@ -945,7 +1007,8 @@ func TestConvert(t *testing.T) {
 				argServerID, serverID,
 				argLoginMethod, token.WorkloadIdentityLogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from devicecode to workload identity with override",
@@ -973,7 +1036,8 @@ func TestConvert(t *testing.T) {
 				argFederatedTokenFile, federatedTokenFile,
 				argLoginMethod, token.WorkloadIdentityLogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from devicecode to interactive",
@@ -996,7 +1060,8 @@ func TestConvert(t *testing.T) {
 				argEnvironment, envName,
 				argLoginMethod, token.InteractiveLogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from devicecode to interactive without setting environment",
@@ -1017,7 +1082,8 @@ func TestConvert(t *testing.T) {
 				argClientID, clientID,
 				argLoginMethod, token.InteractiveLogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "with exec format kubeconfig, convert from devicecode to interactive with override",
@@ -1044,7 +1110,8 @@ func TestConvert(t *testing.T) {
 				argEnvironment, envName,
 				argLoginMethod, token.InteractiveLogin,
 			},
-			command: execName,
+			expectedInstallHint: execInstallHint,
+			command:             execName,
 		},
 		{
 			name: "convert with context specified, auth info not specified by the context should not be changed",
@@ -1064,6 +1131,7 @@ func TestConvert(t *testing.T) {
 				argServerID, serverID,
 				argLoginMethod, token.MSILogin,
 			},
+			expectedInstallHint: execInstallHint,
 		},
 		{
 			name: "convert with non-existent context specified, Convert should return error",
@@ -1105,6 +1173,7 @@ func TestConvert(t *testing.T) {
 					Value: azureCLIDir,
 				},
 			},
+			expectedInstallHint: execInstallHint,
 		},
 	}
 	rootTmpDir, err := os.MkdirTemp("", "kubelogin-test")
@@ -1162,13 +1231,13 @@ func TestConvert(t *testing.T) {
 			if o.context != "" {
 				// when --context is specified, convert-kubeconfig will convert only the targeted context
 				// hence, we expect the second auth info not to change
-				validate(t, clusterName1, config.AuthInfos[clusterName1], data.authProviderConfig, data.expectedArgs, data.expectedEnv)
+				validate(t, clusterName1, config.AuthInfos[clusterName1], data.authProviderConfig, data.expectedArgs, data.expectedEnv, data.expectedInstallHint)
 				validateAuthInfoThatShouldNotChange(t, clusterName2, config.AuthInfos[clusterName2], data.authProviderConfig)
 			} else {
 				// when --context is not specified, convert-kubeconfig will convert every auth info in the kubeconfig
 				// hence, we expect the second auth info to be converted in the same way as the first one
-				validate(t, clusterName1, config.AuthInfos[clusterName1], data.authProviderConfig, data.expectedArgs, data.expectedEnv)
-				validate(t, clusterName2, config.AuthInfos[clusterName2], data.authProviderConfig, data.expectedArgs, data.expectedEnv)
+				validate(t, clusterName1, config.AuthInfos[clusterName1], data.authProviderConfig, data.expectedArgs, data.expectedEnv, data.expectedInstallHint)
+				validate(t, clusterName2, config.AuthInfos[clusterName2], data.authProviderConfig, data.expectedArgs, data.expectedEnv, data.expectedInstallHint)
 			}
 		})
 	}
@@ -1220,6 +1289,7 @@ func validate(
 	authProviderConfig map[string]string,
 	expectedArgs []string,
 	expectedEnv []clientcmdapi.ExecEnvVar,
+	expectedInstallHint string,
 ) {
 	if expectedArgs == nil {
 		if authInfo.AuthProvider == nil {
@@ -1247,8 +1317,8 @@ func validate(
 		t.Fatalf("[context:%s]: expected API Version: %s, actual: %s", clusterName, execAPIVersion, exec.APIVersion)
 	}
 
-	if exec.InstallHint != execInstallHint {
-		t.Fatalf("[context:%s]: expected install hint: %s, actual: %s", clusterName, execInstallHint, exec.InstallHint)
+	if exec.InstallHint != expectedInstallHint {
+		t.Fatalf("[context:%s]: expected install hint: %s, actual: %s", clusterName, expectedInstallHint, exec.InstallHint)
 	}
 
 	if exec.Args[0] != getTokenCommand {
