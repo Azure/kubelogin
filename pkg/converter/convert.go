@@ -55,7 +55,11 @@ const (
 	execName        = "kubelogin"
 	getTokenCommand = "get-token"
 	execAPIVersion  = "client.authentication.k8s.io/v1beta1"
-	execInstallHint = "Install kubelogin for use with kubectl by running az aks install-cli"
+	execInstallHint = `
+kubelogin is not installed which is required to connect to AAD enabled cluster.
+
+To learn more, please go to https://aka.ms/aks/kubelogin
+`
 
 	azureConfigDir = "AZURE_CONFIG_DIR"
 )
