@@ -208,6 +208,11 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 			InstallHint: execInstallHint,
 		}
 
+		// Preserve any existing install hint
+		if authInfo.Exec != nil && authInfo.Exec.InstallHint != "" {
+			exec.InstallHint = authInfo.Exec.InstallHint
+		}
+
 		exec.Args = append(exec.Args, argLoginMethod, o.TokenOptions.LoginMethod)
 
 		// all login methods require --server-id specified
