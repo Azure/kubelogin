@@ -51,7 +51,6 @@ const (
 	flagAuthorityHost      = "authority-host"
 	flagFederatedTokenFile = "federated-token-file"
 	flagTokenCacheDir      = "token-cache-dir"
-	flagExecInstallHint    = "install-hint"
 
 	execName        = "kubelogin"
 	getTokenCommand = "get-token"
@@ -203,10 +202,6 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 			},
 			APIVersion:  execAPIVersion,
 			InstallHint: execInstallHint,
-		}
-
-		if o.execInstallHint != "" {
-			exec.InstallHint = o.execInstallHint
 		}
 
 		exec.Args = append(exec.Args, argLoginMethod, o.TokenOptions.LoginMethod)
