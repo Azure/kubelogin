@@ -58,7 +58,7 @@ const (
 	execInstallHint = `
 kubelogin is not installed which is required to connect to AAD enabled cluster.
 
-To learn more, please go to https://aka.ms/aks/kubelogin
+To learn more, please go to https://azure.github.io/kubelogin/
 `
 
 	azureConfigDir = "AZURE_CONFIG_DIR"
