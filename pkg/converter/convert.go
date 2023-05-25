@@ -55,6 +55,11 @@ const (
 	execName        = "kubelogin"
 	getTokenCommand = "get-token"
 	execAPIVersion  = "client.authentication.k8s.io/v1beta1"
+	execInstallHint = `
+kubelogin is not installed which is required to connect to AAD enabled cluster.
+
+To learn more, please go to https://azure.github.io/kubelogin/
+`
 
 	azureConfigDir = "AZURE_CONFIG_DIR"
 )
@@ -199,7 +204,13 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 			Args: []string{
 				getTokenCommand,
 			},
-			APIVersion: execAPIVersion,
+			APIVersion:  execAPIVersion,
+			InstallHint: execInstallHint,
+		}
+
+		// Preserve any existing install hint
+		if authInfo.Exec != nil && authInfo.Exec.InstallHint != "" {
+			exec.InstallHint = authInfo.Exec.InstallHint
 		}
 
 		exec.Args = append(exec.Args, argLoginMethod, o.TokenOptions.LoginMethod)

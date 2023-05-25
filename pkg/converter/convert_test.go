@@ -34,17 +34,33 @@ func TestConvert(t *testing.T) {
 		azureCLIDir        = "/tmp/foo"
 	)
 	testData := []struct {
-		name               string
-		authProviderConfig map[string]string
-		overrideFlags      map[string]string
-		expectedArgs       []string
-		execArgItems       []string
-		command            string
-		expectedError      string
-		expectedEnv        []clientcmdapi.ExecEnvVar
+		name                string
+		authProviderConfig  map[string]string
+		overrideFlags       map[string]string
+		expectedArgs        []string
+		execArgItems        []string
+		command             string
+		expectedExecName    string
+		installHint         string
+		expectedInstallHint string
+		expectedError       string
+		expectedEnv         []clientcmdapi.ExecEnvVar
 	}{
 		{
 			name: "non azure kubeconfig",
+		},
+		{
+			name:             "non azure kubeconfig in exec format with install hint",
+			command:          "foo",
+			expectedExecName: "foo",
+			execArgItems: []string{
+				"--bar",
+			},
+			expectedArgs: []string{
+				"--bar",
+			},
+			installHint:         "foo install hint",
+			expectedInstallHint: "foo install hint",
 		},
 		{
 			name: "using legacy azure auth to convert to msi",
@@ -63,6 +79,25 @@ func TestConvert(t *testing.T) {
 				argServerID, serverID,
 				argLoginMethod, token.MSILogin,
 			},
+		},
+		{
+			name: "using legacy azure auth to convert to msi will overwrite install hint",
+			authProviderConfig: map[string]string{
+				cfgEnvironment: envName,
+				cfgApiserverID: serverID,
+				cfgClientID:    clientID,
+				cfgTenantID:    tenantID,
+				cfgConfigMode:  "0",
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.MSILogin,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argLoginMethod, token.MSILogin,
+			},
+			installHint: "Overwrite this install hint",
 		},
 		{
 			name: "using legacy azure auth to convert to msi with client-id override",
@@ -456,6 +491,28 @@ func TestConvert(t *testing.T) {
 			command: execName,
 		},
 		{
+			name: "with exec format kubeconfig, convert from azurecli to azurecli with existing install hint",
+			execArgItems: []string{
+				getTokenCommand,
+				argEnvironment, envName,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argLoginMethod, token.AzureCLILogin,
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.AzureCLILogin,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argLoginMethod, token.AzureCLILogin,
+			},
+			command:             execName,
+			installHint:         "Preserve this install hint",
+			expectedInstallHint: "Preserve this install hint",
+		},
+		{
 			name: "with exec format kubeconfig, convert from azurecli to azurecli with --tenant-id",
 			execArgItems: []string{
 				getTokenCommand,
@@ -537,6 +594,29 @@ func TestConvert(t *testing.T) {
 				argLoginMethod, token.DeviceCodeLogin,
 			},
 			command: execName,
+		},
+		{
+			name: "with exec format kubeconfig, convert from azurecli to devicecode with existing install hint",
+			execArgItems: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argLoginMethod, token.AzureCLILogin,
+			},
+			overrideFlags: map[string]string{
+				flagClientID:    clientID,
+				flagTenantID:    tenantID,
+				flagLoginMethod: token.DeviceCodeLogin,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argLoginMethod, token.DeviceCodeLogin,
+			},
+			command:             execName,
+			installHint:         "Preserve this install hint",
+			expectedInstallHint: "Preserve this install hint",
 		},
 		{
 			name: "with exec format kubeconfig, convert from azurecli to devicecode, with args as overrides",
@@ -1131,6 +1211,7 @@ func TestConvert(t *testing.T) {
 				authProviderName,
 				data.authProviderConfig,
 				data.execArgItems,
+				data.installHint,
 			)
 			fs := &pflag.FlagSet{}
 			o := Options{
@@ -1162,13 +1243,13 @@ func TestConvert(t *testing.T) {
 			if o.context != "" {
 				// when --context is specified, convert-kubeconfig will convert only the targeted context
 				// hence, we expect the second auth info not to change
-				validate(t, clusterName1, config.AuthInfos[clusterName1], data.authProviderConfig, data.expectedArgs, data.expectedEnv)
+				validate(t, clusterName1, config.AuthInfos[clusterName1], data.authProviderConfig, data.expectedArgs, data.expectedExecName, data.expectedInstallHint, data.expectedEnv)
 				validateAuthInfoThatShouldNotChange(t, clusterName2, config.AuthInfos[clusterName2], data.authProviderConfig)
 			} else {
 				// when --context is not specified, convert-kubeconfig will convert every auth info in the kubeconfig
 				// hence, we expect the second auth info to be converted in the same way as the first one
-				validate(t, clusterName1, config.AuthInfos[clusterName1], data.authProviderConfig, data.expectedArgs, data.expectedEnv)
-				validate(t, clusterName2, config.AuthInfos[clusterName2], data.authProviderConfig, data.expectedArgs, data.expectedEnv)
+				validate(t, clusterName1, config.AuthInfos[clusterName1], data.authProviderConfig, data.expectedArgs, data.expectedExecName, data.expectedInstallHint, data.expectedEnv)
+				validate(t, clusterName2, config.AuthInfos[clusterName2], data.authProviderConfig, data.expectedArgs, data.expectedExecName, data.expectedInstallHint, data.expectedEnv)
 			}
 		})
 	}
@@ -1178,6 +1259,7 @@ func createValidTestConfigs(
 	name1, name2, commandName, authProviderName string,
 	authProviderConfig map[string]string,
 	execArgItems []string,
+	installHint string,
 ) *clientcmdapi.Config {
 	const server = "https://anything.com:8080"
 
@@ -1190,8 +1272,9 @@ func createValidTestConfigs(
 		if authProviderConfig == nil && execArgItems != nil {
 			config.AuthInfos[name] = &clientcmdapi.AuthInfo{
 				Exec: &clientcmdapi.ExecConfig{
-					Args:    execArgItems,
-					Command: commandName,
+					Args:        execArgItems,
+					Command:     commandName,
+					InstallHint: installHint,
 				},
 			}
 		} else {
@@ -1219,6 +1302,8 @@ func validate(
 	authInfo *clientcmdapi.AuthInfo,
 	authProviderConfig map[string]string,
 	expectedArgs []string,
+	expectedExecName string,
+	expectedInstallHint string,
 	expectedEnv []clientcmdapi.ExecEnvVar,
 ) {
 	if expectedArgs == nil {
@@ -1239,17 +1324,35 @@ func validate(
 		t.Fatalf("[context:%s]: %s", clusterName, "unable to find exec plugin")
 	}
 
-	if exec.Command != execName {
-		t.Fatalf("[context:%s]: expected exec command: %s, actual: %s", clusterName, execName, exec.Command)
+	// default to the kubelogin exec name
+	if expectedExecName == "" {
+		expectedExecName = execName
 	}
 
-	if exec.APIVersion != execAPIVersion {
-		t.Fatalf("[context:%s]: expected exec command: %s, actual: %s", clusterName, execAPIVersion, exec.APIVersion)
+	if exec.Command != expectedExecName {
+		t.Fatalf("[context:%s]: expected exec command: %s, actual: %s", clusterName, expectedExecName, exec.Command)
 	}
 
-	if exec.Args[0] != getTokenCommand {
-		t.Fatalf("[context:%s]: expected %s as first argument. actual: %s", clusterName, getTokenCommand, exec.Args[0])
+	// defautl to the kubelogin install hint
+	if expectedInstallHint == "" {
+		expectedInstallHint = execInstallHint
 	}
+
+	if exec.InstallHint != expectedInstallHint {
+		t.Fatalf("[context:%s]: expected install hint: %s, actual: %s", clusterName, expectedInstallHint, exec.InstallHint)
+	}
+
+	// Only validate the API version and first arg if exec is using kubelogin
+	if exec.Command == execName {
+		if exec.APIVersion != execAPIVersion {
+			t.Fatalf("[context:%s]: expected API Version: %s, actual: %s", clusterName, execAPIVersion, exec.APIVersion)
+		}
+
+		if exec.Args[0] != getTokenCommand {
+			t.Fatalf("[context:%s]: expected %s as first argument. actual: %s", clusterName, getTokenCommand, exec.Args[0])
+		}
+	}
+
 	if len(exec.Args) != len(expectedArgs) {
 		t.Fatalf("[context:%s]: expected exec args: %v, actual: %v", clusterName, expectedArgs, exec.Args)
 	}
