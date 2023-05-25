@@ -66,7 +66,7 @@ func (p *servicePrincipalToken) Token() (adal.Token, error) {
 	emptyToken := adal.Token{}
 	var spnAccessToken azcore.AccessToken
 
-	// Request a new Azure token provider for secret or certificate
+	// Request a new Azure token provider for service principal
 	if p.clientSecret != "" {
 		cred, err := azidentity.NewClientSecretCredential(
 			p.tenantID,
@@ -110,6 +110,7 @@ func (p *servicePrincipalToken) Token() (adal.Token, error) {
 		if err != nil {
 			return emptyToken, fmt.Errorf("expected an empty error but received: %v", err)
 		}
+
 	} else {
 		return emptyToken, errors.New("service principal token requires either client secret or certificate")
 	}
