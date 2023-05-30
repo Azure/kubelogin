@@ -63,16 +63,26 @@ func newServicePrincipalToken(oAuthConfig adal.OAuthConfig, clientID, clientSecr
 
 // Token fetches an azcore.AccessToken from the Azure SDK and converts it to an adal.Token for use with kubelogin.
 func (p *servicePrincipalToken) Token() (adal.Token, error) {
+	return p.TokenOptions(nil)
+}
+
+func (p *servicePrincipalToken) TokenOptions(options *azcore.ClientOptions) (adal.Token, error) {
 	emptyToken := adal.Token{}
 	var spnAccessToken azcore.AccessToken
 
 	// Request a new Azure token provider for service principal
 	if p.clientSecret != "" {
+		clientOptions := &azidentity.ClientSecretCredentialOptions{}
+		if options == nil {
+			clientOptions = &azidentity.ClientSecretCredentialOptions{}
+		} else {
+			clientOptions.ClientOptions = *options
+		}
 		cred, err := azidentity.NewClientSecretCredential(
 			p.tenantID,
 			p.clientID,
 			p.clientSecret,
-			nil,
+			clientOptions,
 		)
 		if err != nil {
 			return emptyToken, fmt.Errorf("unable to create credential. Received: %v", err)
@@ -85,6 +95,12 @@ func (p *servicePrincipalToken) Token() (adal.Token, error) {
 		}
 
 	} else if p.clientCert != "" {
+		clientOptions := &azidentity.ClientCertificateCredentialOptions{}
+		if options == nil {
+			clientOptions = &azidentity.ClientCertificateCredentialOptions{}
+		} else {
+			clientOptions.ClientOptions = *options
+		}
 		certData, err := os.ReadFile(p.clientCert)
 		if err != nil {
 			return emptyToken, fmt.Errorf("failed to read the certificate file (%s): %w", p.clientCert, err)
@@ -101,7 +117,7 @@ func (p *servicePrincipalToken) Token() (adal.Token, error) {
 			p.clientID,
 			[]*x509.Certificate{cert},
 			rsaPrivateKey,
-			nil,
+			clientOptions,
 		)
 		if err != nil {
 			return emptyToken, fmt.Errorf("unable to create credential. Received: %v", err)
