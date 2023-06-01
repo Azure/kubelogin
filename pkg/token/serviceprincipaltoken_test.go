@@ -28,11 +28,7 @@ const (
 )
 
 func TestMissingLoginMethods(t *testing.T) {
-	p := &servicePrincipalToken{
-		clientID:   os.Getenv(clientID),
-		resourceID: os.Getenv(resourceID),
-		tenantID:   os.Getenv(tenantID),
-	}
+	p := &servicePrincipalToken{}
 	expectedErr := "service principal token requires either client secret or certificate"
 
 	_, err := p.Token()
@@ -41,14 +37,11 @@ func TestMissingLoginMethods(t *testing.T) {
 	}
 }
 
-func TestBadSecret(t *testing.T) {
+func TestMissingCertFile(t *testing.T) {
 	p := &servicePrincipalToken{
-		clientID:     os.Getenv(clientID),
-		clientSecret: badSecret,
-		resourceID:   os.Getenv(resourceID),
-		tenantID:     os.Getenv(tenantID),
+		clientCert: "testdata/noCertHere.pfx",
 	}
-	expectedErr := "ClientSecretCredential authentication failed"
+	expectedErr := "failed to read the certificate file"
 
 	_, err := p.Token()
 	if !ErrorContains(err, expectedErr) {
@@ -58,46 +51,14 @@ func TestBadSecret(t *testing.T) {
 
 func TestBadCertPassword(t *testing.T) {
 	p := &servicePrincipalToken{
-		clientID:           os.Getenv(clientID),
-		clientCert:         os.Getenv(clientCert),
-		clientCertPassword: "bad_password",
-		resourceID:         os.Getenv(resourceID),
-		tenantID:           os.Getenv(tenantID),
+		clientCert:         "testdata/testCert.pfx",
+		clientCertPassword: badSecret,
 	}
 	expectedErr := "failed to decode pkcs12 certificate while creating spt: pkcs12: decryption password incorrect"
 
 	_, err := p.Token()
 	if !ErrorContains(err, expectedErr) {
 		t.Errorf("expected error %v, but got %v", expectedErr, err)
-	}
-}
-
-func TestSecretToken(t *testing.T) {
-	p := &servicePrincipalToken{
-		clientID:     os.Getenv(clientID),
-		clientSecret: os.Getenv(clientSecret),
-		resourceID:   os.Getenv(resourceID),
-		tenantID:     os.Getenv(tenantID),
-	}
-
-	_, err := p.Token()
-	if err != nil {
-		t.Errorf("unexpected error %v", err)
-	}
-}
-
-func TestCertToken(t *testing.T) {
-	p := &servicePrincipalToken{
-		clientID:           os.Getenv(clientID),
-		clientCert:         os.Getenv(clientCert),
-		clientCertPassword: os.Getenv(clientCertPass),
-		resourceID:         os.Getenv(resourceID),
-		tenantID:           os.Getenv(tenantID),
-	}
-
-	_, err := p.Token()
-	if err != nil {
-		t.Errorf("unexpected error %v", err)
 	}
 }
 
@@ -157,12 +118,21 @@ func getVCRHttpClient(path string) (*recorder.Recorder, *http.Client) {
 	rec.AddHook(hook, recorder.BeforeSaveHook)
 
 	rec.SetMatcher(customMatcher)
+	rec.SetReplayableInteractions(true)
 
 	return rec, rec.GetDefaultClient()
 }
 
 func customMatcher(r *http.Request, i cassette.Request) bool {
-	r.URL.Path = strings.ReplaceAll(r.URL.Path, os.Getenv(tenantID), tenantID)
+	id := os.Getenv(tenantID)
+	if id == "" {
+		id = "00000000-0000-0000-0000-000000000000"
+	}
+	switch os.Getenv(vcrMode) {
+	case vcrModeRecordOnly:
+	default:
+		r.URL.Path = strings.ReplaceAll(r.URL.Path, id, tenantID)
+	}
 	return cassette.DefaultMatcher(r, i)
 }
 
@@ -226,6 +196,24 @@ func TestServicePrincipalLoginVCR(t *testing.T) {
 			clientOpts := azcore.ClientOptions{
 				Cloud:     cloud.AzurePublic,
 				Transport: httpClient,
+			}
+			if tc.p.clientID == "" {
+				tc.p.clientID = clientID
+			}
+			if tc.p.clientSecret == "" && strings.Contains(tc.cassetteName, "Secret") {
+				tc.p.clientSecret = clientSecret
+			}
+			if tc.p.clientCert == "" {
+				tc.p.clientCert = "testdata/testCert.pfx"
+			}
+			if tc.p.clientCertPassword == "" {
+				tc.p.clientCertPassword = "TestPassword"
+			}
+			if tc.p.resourceID == "" {
+				tc.p.resourceID = resourceID
+			}
+			if tc.p.tenantID == "" {
+				tc.p.tenantID = "00000000-0000-0000-0000-000000000000"
 			}
 
 			token, err := tc.p.TokenOptions(&clientOpts)

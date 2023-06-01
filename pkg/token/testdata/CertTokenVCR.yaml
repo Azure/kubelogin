@@ -40,7 +40,7 @@ interactions:
             Content-Type:
                 - application/json; charset=utf-8
             Date:
-                - Tue, 30 May 2023 21:44:18 GMT
+                - Thu, 01 Jun 2023 17:24:37 GMT
             P3p:
                 - CP="DSP CUR OTPi IND OTRi ONL FIN"
             Strict-Transport-Security:
@@ -48,12 +48,12 @@ interactions:
             X-Content-Type-Options:
                 - nosniff
             X-Ms-Ests-Server:
-                - 2.1.15427.11 - NCUS ProdSlices
+                - 2.1.15427.11 - SCUS ProdSlices
             X-Xss-Protection:
                 - "0"
         status: 200 OK
         code: 200
-        duration: 269.740765ms
+        duration: 222.817832ms
     - id: 1
       request:
         proto: HTTP/1.1
@@ -93,7 +93,7 @@ interactions:
             Content-Type:
                 - application/json; charset=utf-8
             Date:
-                - Tue, 30 May 2023 21:44:18 GMT
+                - Thu, 01 Jun 2023 17:24:37 GMT
             P3p:
                 - CP="DSP CUR OTPi IND OTRi ONL FIN"
             Strict-Transport-Security:
@@ -101,12 +101,12 @@ interactions:
             X-Content-Type-Options:
                 - nosniff
             X-Ms-Ests-Server:
-                - 2.1.15427.11 - EUS ProdSlices
+                - 2.1.15427.11 - WUS2 ProdSlices
             X-Xss-Protection:
                 - "0"
         status: 200 OK
         code: 200
-        duration: 99.748809ms
+        duration: 92.161909ms
     - id: 2
       request:
         proto: HTTP/1.1
@@ -158,7 +158,7 @@ interactions:
             Content-Type:
                 - application/json; charset=utf-8
             Date:
-                - Tue, 30 May 2023 21:44:19 GMT
+                - Thu, 01 Jun 2023 17:24:37 GMT
             Expires:
                 - "-1"
             P3p:
@@ -170,9 +170,9 @@ interactions:
             X-Content-Type-Options:
                 - nosniff
             X-Ms-Ests-Server:
-                - 2.1.15427.11 - WUS2 ProdSlices
+                - 2.1.15427.11 - SCUS ProdSlices
             X-Xss-Protection:
                 - "0"
         status: 200 OK
         code: 200
-        duration: 160.223036ms
+        duration: 166.870623ms
