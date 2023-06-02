@@ -9,6 +9,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
+	"github.com/google/uuid"
 	"gopkg.in/dnaeon/go-vcr.v3/cassette"
 	"gopkg.in/dnaeon/go-vcr.v3/recorder"
 )
@@ -24,6 +25,7 @@ const (
 	vcrModeRecordOnly = "RecordOnly"
 	badSecret         = "Bad_Secret"
 	redactionToken    = "[REDACTED]"
+	testToken         = "TEST_ACCESS_TOKEN"
 )
 
 func TestMissingLoginMethods(t *testing.T) {
@@ -62,7 +64,7 @@ func TestBadCertPassword(t *testing.T) {
 }
 
 // getVCRHttpClient setup Go-vcr
-func getVCRHttpClient(path string) (*recorder.Recorder, *http.Client) {
+func getVCRHttpClient(path string, token string) (*recorder.Recorder, *http.Client) {
 	if len(path) == 0 || path == "" {
 		return nil, nil
 	}
@@ -72,49 +74,66 @@ func getVCRHttpClient(path string) (*recorder.Recorder, *http.Client) {
 		Mode:         getVCRMode(),
 	}
 	rec, _ := recorder.NewWithOptions(opts)
-	// rec.SetRealTransport(&http.Transport{
-	// 	TLSNextProto: make(map[string]func(authority string, c *tls.Conn) http.RoundTripper),
-	// 	// #nosec G402: PAV2 service only supports TLS12
-	// 	TLSClientConfig: &tls.Config{
-	// 		Renegotiation: tls.RenegotiateFreelyAsClient,
-	// 		MinVersion:    tls.VersionTLS12,
-	// 		MaxVersion:    tls.VersionTLS12,
-	// 	},
-	// })
 
 	hook := func(i *cassette.Interaction) error {
+		var detectedClientId, detectedClientSecret, detectedClientAssertion, detectedScope string
 		// Delete sensitive content
 		delete(i.Response.Headers, "Set-Cookie")
 		delete(i.Response.Headers, "X-Ms-Request-Id")
 		if i.Request.Form["client_id"] != nil {
+			detectedClientId = i.Request.Form["client_id"][0]
 			i.Request.Form["client_id"] = []string{redactionToken}
 		}
 		if i.Request.Form["client_secret"] != nil && i.Request.Form["client_secret"][0] != badSecret {
+			detectedClientSecret = i.Request.Form["client_secret"][0]
 			i.Request.Form["client_secret"] = []string{redactionToken}
 		}
 		if i.Request.Form["client_assertion"] != nil {
+			detectedClientAssertion = i.Request.Form["client_assertion"][0]
 			i.Request.Form["client_assertion"] = []string{redactionToken}
 		}
 		if i.Request.Form["scope"] != nil {
+			detectedScope = i.Request.Form["scope"][0][:strings.IndexByte(i.Request.Form["scope"][0], '/')]
 			i.Request.Form["scope"] = []string{redactionToken + "/.default openid offline_access profile"}
 		}
 		i.Request.URL = strings.ReplaceAll(i.Request.URL, os.Getenv(tenantID), tenantID)
 		i.Response.Body = strings.ReplaceAll(i.Response.Body, os.Getenv(tenantID), tenantID)
 
-		if strings.Contains(i.Request.Body, "client_secret") {
-			i.Request.Body = `client_id=[REDACTED]&client_secret=[REDACTED]&grant_type=client_credentials&scope=[REDACTED]%2F.default+openid+offline_access+profile`
+		if detectedClientId != "" {
+			i.Request.Body = strings.ReplaceAll(i.Request.Body, detectedClientId, redactionToken)
 		}
 
-		if strings.Contains(i.Request.Body, "client_assertion") {
-			i.Request.Body = `client_assertion=[REDACTED]&client_assertion_type=urn%3Aietf%3Aparams%3Aoauth%3Aclient-assertion-type%3Ajwt-bearer&client_id=[REDACTED]&client_info=1&grant_type=client_credentials&scope=[REDACTED]%2F.default+openid+offline_access+profile`
+		if detectedClientSecret != "" {
+			i.Request.Body = strings.ReplaceAll(i.Request.Body, detectedClientSecret, redactionToken)
+		}
+
+		if detectedClientAssertion != "" {
+			i.Request.Body = strings.ReplaceAll(i.Request.Body, detectedClientAssertion, redactionToken)
+		}
+
+		if detectedScope != "" {
+			i.Request.Body = strings.ReplaceAll(i.Request.Body, detectedScope, redactionToken)
 		}
 
 		if strings.Contains(i.Response.Body, "access_token") {
-			i.Response.Body = `{"token_type":"Bearer","expires_in":86399,"ext_expires_in":86399,"access_token":"[REDACTED]"}`
+			i.Response.Body = `{"token_type":"Bearer","expires_in":86399,"ext_expires_in":86399,"access_token":"` + testToken + `"}`
+		}
+
+		if strings.Contains(i.Response.Body, "Invalid client secret provided") {
+			i.Response.Body = `{"error":"invalid_client","error_description":"AADSTS7000215: Invalid client secret provided. Ensure the secret being sent in the request is the client secret value, not the client secret ID, for a secret added to app ''[REDACTED]''.\r\nTrace ID: [REDACTED]\r\nCorrelation ID: [REDACTED]\r\nTimestamp: 2023-06-02 21:00:26Z","error_codes":[7000215],"timestamp":"2023-06-02 21:00:26Z","trace_id":"[REDACTED]","correlation_id":"[REDACTED]","error_uri":"https://login.microsoftonline.com/error?code=7000215"}`
 		}
 		return nil
 	}
 	rec.AddHook(hook, recorder.BeforeSaveHook)
+
+	playbackHook := func(i *cassette.Interaction) error {
+		// Return a verifiable unique token on each test
+		if strings.Contains(i.Response.Body, "access_token") {
+			i.Response.Body = strings.ReplaceAll(i.Response.Body, testToken, token)
+		}
+		return nil
+	}
+	rec.AddHook(playbackHook, recorder.BeforeResponseReplayHook)
 
 	rec.SetMatcher(customMatcher)
 	rec.SetReplayableInteractions(true)
@@ -145,7 +164,7 @@ func getVCRMode() recorder.Mode {
 	}
 }
 
-func TestServicePrincipalLoginVCR(t *testing.T) {
+func TestServicePrincipalTokenVCR(t *testing.T) {
 	pEnv := &servicePrincipalToken{
 		clientID:           os.Getenv(clientID),
 		clientSecret:       os.Getenv(clientSecret),
@@ -173,6 +192,7 @@ func TestServicePrincipalLoginVCR(t *testing.T) {
 	if pEnv.tenantID == "" {
 		pEnv.tenantID = "00000000-0000-0000-0000-000000000000"
 	}
+	var expectedToken string
 
 	testCase := []struct {
 		cassetteName  string
@@ -182,7 +202,7 @@ func TestServicePrincipalLoginVCR(t *testing.T) {
 	}{
 		{
 			// Test using incorrect secret value
-			cassetteName: "BadSecretVCR",
+			cassetteName: "ServicePrincipalTokenFromBadSecretVCR",
 			p: &servicePrincipalToken{
 				clientID:     pEnv.clientID,
 				clientSecret: badSecret,
@@ -194,7 +214,7 @@ func TestServicePrincipalLoginVCR(t *testing.T) {
 		},
 		{
 			// Test using service principal secret value to get token
-			cassetteName: "SecretTokenVCR",
+			cassetteName: "ServicePrincipalTokenFromSecretVCR",
 			p: &servicePrincipalToken{
 				clientID:     pEnv.clientID,
 				clientSecret: pEnv.clientSecret,
@@ -206,7 +226,7 @@ func TestServicePrincipalLoginVCR(t *testing.T) {
 		},
 		{
 			// Test using service principal certificate to get token
-			cassetteName: "CertTokenVCR",
+			cassetteName: "ServicePrincipalTokenFromCertVCR",
 			p: &servicePrincipalToken{
 				clientID:           pEnv.clientID,
 				clientCert:         pEnv.clientCert,
@@ -221,7 +241,10 @@ func TestServicePrincipalLoginVCR(t *testing.T) {
 
 	for _, tc := range testCase {
 		t.Run(tc.cassetteName, func(t *testing.T) {
-			vcrRecorder, httpClient := getVCRHttpClient(fmt.Sprintf("testdata/%s", tc.cassetteName))
+			if tc.expectedError == nil {
+				expectedToken = uuid.New().String()
+			}
+			vcrRecorder, httpClient := getVCRHttpClient(fmt.Sprintf("testdata/%s", tc.cassetteName), expectedToken)
 
 			clientOpts := azcore.ClientOptions{
 				Cloud:     cloud.AzurePublic,
@@ -236,7 +259,12 @@ func TestServicePrincipalLoginVCR(t *testing.T) {
 				}
 			} else {
 				if token.AccessToken == "" {
-					t.Error("Expected valid token, but received empty token.")
+					t.Error("expected valid token, but received empty token.")
+				}
+				if vcrRecorder.Mode() == recorder.ModeReplayOnly {
+					if token.AccessToken != expectedToken {
+						t.Errorf("unexpected token returned (expected %v, but got %v)", expectedToken, token.AccessToken)
+					}
 				}
 			}
 		})
