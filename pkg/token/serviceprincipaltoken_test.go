@@ -1,7 +1,6 @@
 package token
 
 import (
-	"crypto/tls"
 	"fmt"
 	"net/http"
 	"os"
@@ -73,15 +72,15 @@ func getVCRHttpClient(path string) (*recorder.Recorder, *http.Client) {
 		Mode:         getVCRMode(),
 	}
 	rec, _ := recorder.NewWithOptions(opts)
-	rec.SetRealTransport(&http.Transport{
-		TLSNextProto: make(map[string]func(authority string, c *tls.Conn) http.RoundTripper),
-		// #nosec G402: PAV2 service only supports TLS12
-		TLSClientConfig: &tls.Config{
-			Renegotiation: tls.RenegotiateFreelyAsClient,
-			MinVersion:    tls.VersionTLS12,
-			MaxVersion:    tls.VersionTLS12,
-		},
-	})
+	// rec.SetRealTransport(&http.Transport{
+	// 	TLSNextProto: make(map[string]func(authority string, c *tls.Conn) http.RoundTripper),
+	// 	// #nosec G402: PAV2 service only supports TLS12
+	// 	TLSClientConfig: &tls.Config{
+	// 		Renegotiation: tls.RenegotiateFreelyAsClient,
+	// 		MinVersion:    tls.VersionTLS12,
+	// 		MaxVersion:    tls.VersionTLS12,
+	// 	},
+	// })
 
 	hook := func(i *cassette.Interaction) error {
 		// Delete sensitive content
@@ -147,76 +146,89 @@ func getVCRMode() recorder.Mode {
 }
 
 func TestServicePrincipalLoginVCR(t *testing.T) {
+	pEnv := &servicePrincipalToken{
+		clientID:           os.Getenv(clientID),
+		clientSecret:       os.Getenv(clientSecret),
+		clientCert:         os.Getenv(clientCert),
+		clientCertPassword: os.Getenv(clientCertPass),
+		resourceID:         os.Getenv(resourceID),
+		tenantID:           os.Getenv(tenantID),
+	}
+	// Use defaults if environmental variables are empty
+	if pEnv.clientID == "" {
+		pEnv.clientID = clientID
+	}
+	if pEnv.clientSecret == "" {
+		pEnv.clientSecret = clientSecret
+	}
+	if pEnv.clientCert == "" {
+		pEnv.clientCert = "testdata/testCert.pfx"
+	}
+	if pEnv.clientCertPassword == "" {
+		pEnv.clientCertPassword = "TestPassword"
+	}
+	if pEnv.resourceID == "" {
+		pEnv.resourceID = resourceID
+	}
+	if pEnv.tenantID == "" {
+		pEnv.tenantID = "00000000-0000-0000-0000-000000000000"
+	}
+
 	testCase := []struct {
 		cassetteName  string
-		description   string
 		p             *servicePrincipalToken
 		expectedError error
+		useSecret     bool
 	}{
 		{
+			// Test using incorrect secret value
 			cassetteName: "BadSecretVCR",
-			description:  "Test using incorrect secret value",
 			p: &servicePrincipalToken{
-				clientID:     os.Getenv(clientID),
+				clientID:     pEnv.clientID,
 				clientSecret: badSecret,
-				resourceID:   os.Getenv(resourceID),
-				tenantID:     os.Getenv(tenantID),
+				resourceID:   pEnv.resourceID,
+				tenantID:     pEnv.tenantID,
 			},
 			expectedError: fmt.Errorf("ClientSecretCredential authentication failed"),
+			useSecret:     true,
 		},
 		{
+			// Test using service principal secret value to get token
 			cassetteName: "SecretTokenVCR",
-			description:  "Test using service principal secret value to get token",
 			p: &servicePrincipalToken{
-				clientID:     os.Getenv(clientID),
-				clientSecret: os.Getenv(clientSecret),
-				resourceID:   os.Getenv(resourceID),
-				tenantID:     os.Getenv(tenantID),
+				clientID:     pEnv.clientID,
+				clientSecret: pEnv.clientSecret,
+				resourceID:   pEnv.resourceID,
+				tenantID:     pEnv.tenantID,
 			},
 			expectedError: nil,
+			useSecret:     true,
 		},
 		{
+			// Test using service principal certificate to get token
 			cassetteName: "CertTokenVCR",
-			description:  "Test ",
 			p: &servicePrincipalToken{
-				clientID:           os.Getenv(clientID),
-				clientCert:         os.Getenv(clientCert),
-				clientCertPassword: os.Getenv(clientCertPass),
-				resourceID:         os.Getenv(resourceID),
-				tenantID:           os.Getenv(tenantID),
+				clientID:           pEnv.clientID,
+				clientCert:         pEnv.clientCert,
+				clientCertPassword: pEnv.clientCertPassword,
+				resourceID:         pEnv.resourceID,
+				tenantID:           pEnv.tenantID,
 			},
 			expectedError: nil,
+			useSecret:     false,
 		},
 	}
 
 	for _, tc := range testCase {
-		t.Run(tc.description, func(t *testing.T) {
+		t.Run(tc.cassetteName, func(t *testing.T) {
 			vcrRecorder, httpClient := getVCRHttpClient(fmt.Sprintf("testdata/%s", tc.cassetteName))
 
 			clientOpts := azcore.ClientOptions{
 				Cloud:     cloud.AzurePublic,
 				Transport: httpClient,
 			}
-			if tc.p.clientID == "" {
-				tc.p.clientID = clientID
-			}
-			if tc.p.clientSecret == "" && strings.Contains(tc.cassetteName, "Secret") {
-				tc.p.clientSecret = clientSecret
-			}
-			if tc.p.clientCert == "" {
-				tc.p.clientCert = "testdata/testCert.pfx"
-			}
-			if tc.p.clientCertPassword == "" {
-				tc.p.clientCertPassword = "TestPassword"
-			}
-			if tc.p.resourceID == "" {
-				tc.p.resourceID = resourceID
-			}
-			if tc.p.tenantID == "" {
-				tc.p.tenantID = "00000000-0000-0000-0000-000000000000"
-			}
 
-			token, err := tc.p.TokenOptions(&clientOpts)
+			token, err := tc.p.TokenWithOptions(&clientOpts)
 			defer vcrRecorder.Stop()
 			if err != nil {
 				if !ErrorContains(err, tc.expectedError.Error()) {

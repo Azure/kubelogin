@@ -63,19 +63,17 @@ func newServicePrincipalToken(oAuthConfig adal.OAuthConfig, clientID, clientSecr
 
 // Token fetches an azcore.AccessToken from the Azure SDK and converts it to an adal.Token for use with kubelogin.
 func (p *servicePrincipalToken) Token() (adal.Token, error) {
-	return p.TokenOptions(nil)
+	return p.TokenWithOptions(nil)
 }
 
-func (p *servicePrincipalToken) TokenOptions(options *azcore.ClientOptions) (adal.Token, error) {
+func (p *servicePrincipalToken) TokenWithOptions(options *azcore.ClientOptions) (adal.Token, error) {
 	emptyToken := adal.Token{}
 	var spnAccessToken azcore.AccessToken
 
 	// Request a new Azure token provider for service principal
 	if p.clientSecret != "" {
 		clientOptions := &azidentity.ClientSecretCredentialOptions{}
-		if options == nil {
-			clientOptions = &azidentity.ClientSecretCredentialOptions{}
-		} else {
+		if options != nil {
 			clientOptions.ClientOptions = *options
 		}
 		cred, err := azidentity.NewClientSecretCredential(
@@ -91,14 +89,14 @@ func (p *servicePrincipalToken) TokenOptions(options *azcore.ClientOptions) (ada
 		// Use the token provider to get a new token
 		spnAccessToken, err = cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: []string{p.resourceID + "/.default"}})
 		if err != nil {
-			return emptyToken, fmt.Errorf("expected an empty error but received: %v", err)
+			return emptyToken, fmt.Errorf("failed to create service principal token using secret: %s", err)
 		}
 
 	} else if p.clientCert != "" {
-		clientOptions := &azidentity.ClientCertificateCredentialOptions{}
-		if options == nil {
-			clientOptions = &azidentity.ClientCertificateCredentialOptions{}
-		} else {
+		clientOptions := &azidentity.ClientCertificateCredentialOptions{
+			SendCertificateChain: true,
+		}
+		if options != nil {
 			clientOptions.ClientOptions = *options
 		}
 		certData, err := os.ReadFile(p.clientCert)
@@ -124,7 +122,7 @@ func (p *servicePrincipalToken) TokenOptions(options *azcore.ClientOptions) (ada
 		}
 		spnAccessToken, err = cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: []string{p.resourceID + "/.default"}})
 		if err != nil {
-			return emptyToken, fmt.Errorf("expected an empty error but received: %v", err)
+			return emptyToken, fmt.Errorf("failed to create service principal token using cert: %s", err)
 		}
 
 	} else {
@@ -132,7 +130,7 @@ func (p *servicePrincipalToken) TokenOptions(options *azcore.ClientOptions) (ada
 	}
 
 	if spnAccessToken.Token == "" {
-		return emptyToken, errors.New("did not receive a token")
+		return emptyToken, errors.New("unexpectedly got empty access token")
 	}
 
 	// azurecore.AccessTokens have ExpiresOn as Time.Time. We need to convert it to JSON.Number
