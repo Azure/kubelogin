@@ -12,6 +12,7 @@ import (
 	"strconv"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/go-autorest/autorest/adal"
@@ -30,10 +31,10 @@ type servicePrincipalToken struct {
 	clientCertPassword string
 	resourceID         string
 	tenantID           string
-	oAuthConfig        adal.OAuthConfig
+	cloud              cloud.Configuration
 }
 
-func newServicePrincipalToken(oAuthConfig adal.OAuthConfig, clientID, clientSecret, clientCert, clientCertPassword, resourceID, tenantID string) (TokenProvider, error) {
+func newServicePrincipalToken(cloud *cloud.Configuration, clientID, clientSecret, clientCert, clientCertPassword, resourceID, tenantID string) (TokenProvider, error) {
 	if clientID == "" {
 		return nil, errors.New("clientID cannot be empty")
 	}
@@ -57,7 +58,7 @@ func newServicePrincipalToken(oAuthConfig adal.OAuthConfig, clientID, clientSecr
 		clientCertPassword: clientCertPassword,
 		resourceID:         resourceID,
 		tenantID:           tenantID,
-		oAuthConfig:        oAuthConfig,
+		cloud:              *cloud,
 	}, nil
 }
 
@@ -72,7 +73,11 @@ func (p *servicePrincipalToken) TokenWithOptions(options *azcore.ClientOptions) 
 
 	// Request a new Azure token provider for service principal
 	if p.clientSecret != "" {
-		clientOptions := &azidentity.ClientSecretCredentialOptions{}
+		clientOptions := &azidentity.ClientSecretCredentialOptions{
+			ClientOptions: azcore.ClientOptions{
+				Cloud: p.cloud,
+			},
+		}
 		if options != nil {
 			clientOptions.ClientOptions = *options
 		}
