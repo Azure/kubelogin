@@ -99,10 +99,10 @@ func (p *servicePrincipalToken) TokenWithOptions(options *azcore.ClientOptions) 
 
 	} else if p.clientCert != "" {
 		clientOptions := &azidentity.ClientCertificateCredentialOptions{
-			SendCertificateChain: true,
 			ClientOptions: azcore.ClientOptions{
 				Cloud: p.cloud,
 			},
+			SendCertificateChain: true,
 		}
 		if options != nil {
 			clientOptions.ClientOptions = *options
