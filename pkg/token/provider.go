@@ -44,9 +44,9 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 	return nil, errors.New("unsupported token provider")
 }
 
-func getCloudConfig(envName string) (*cloud.Configuration, error) {
+func getCloudConfig(envName string) (cloud.Configuration, error) {
 	env, err := getAzureEnvironment(envName)
-	c := &cloud.Configuration{
+	c := cloud.Configuration{
 		ActiveDirectoryAuthorityHost: env.ActiveDirectoryEndpoint,
 	}
 	return c, err

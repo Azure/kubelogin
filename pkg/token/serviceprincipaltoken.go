@@ -34,7 +34,7 @@ type servicePrincipalToken struct {
 	cloud              cloud.Configuration
 }
 
-func newServicePrincipalToken(cloud *cloud.Configuration, clientID, clientSecret, clientCert, clientCertPassword, resourceID, tenantID string) (TokenProvider, error) {
+func newServicePrincipalToken(cloud cloud.Configuration, clientID, clientSecret, clientCert, clientCertPassword, resourceID, tenantID string) (TokenProvider, error) {
 	if clientID == "" {
 		return nil, errors.New("clientID cannot be empty")
 	}
@@ -58,7 +58,7 @@ func newServicePrincipalToken(cloud *cloud.Configuration, clientID, clientSecret
 		clientCertPassword: clientCertPassword,
 		resourceID:         resourceID,
 		tenantID:           tenantID,
-		cloud:              *cloud,
+		cloud:              cloud,
 	}, nil
 }
 
