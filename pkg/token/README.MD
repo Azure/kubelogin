@@ -1,4 +1,4 @@
-Instruction for recording response using [GO-VCR](https://github.com/dnaeon/go-vcr) for unit test by jonachang
+Instruction for recording response using [GO-VCR](https://github.com/dnaeon/go-vcr) for unit test
 # Things to know if you want to record new recording
 * All the recorded responses have been saved under folder `/testdata`
 
