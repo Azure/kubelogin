@@ -88,13 +88,13 @@ func (p *servicePrincipalToken) TokenWithOptions(options *azcore.ClientOptions) 
 			clientOptions,
 		)
 		if err != nil {
-			return emptyToken, fmt.Errorf("unable to create credential. Received: %v", err)
+			return emptyToken, fmt.Errorf("unable to create credential. Received: %w", err)
 		}
 
 		// Use the token provider to get a new token
 		spnAccessToken, err = cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: []string{p.resourceID + "/.default"}})
 		if err != nil {
-			return emptyToken, fmt.Errorf("failed to create service principal token using secret: %s", err)
+			return emptyToken, fmt.Errorf("failed to create service principal token using secret: %w", err)
 		}
 
 	} else if p.clientCert != "" {

@@ -26,7 +26,7 @@ func TestMissingLoginMethods(t *testing.T) {
 
 	_, err := p.Token()
 	if !ErrorContains(err, expectedErr) {
-		t.Errorf("expected error %v, but got %v", expectedErr, err)
+		t.Errorf("expected error %s, but got %s", expectedErr, err)
 	}
 }
 
@@ -38,7 +38,7 @@ func TestMissingCertFile(t *testing.T) {
 
 	_, err := p.Token()
 	if !ErrorContains(err, expectedErr) {
-		t.Errorf("expected error %v, but got %v", expectedErr, err)
+		t.Errorf("expected error %s, but got %s", expectedErr, err)
 	}
 }
 
@@ -51,7 +51,7 @@ func TestBadCertPassword(t *testing.T) {
 
 	_, err := p.Token()
 	if !ErrorContains(err, expectedErr) {
-		t.Errorf("expected error %v, but got %v", expectedErr, err)
+		t.Errorf("expected error %s, but got %s", expectedErr, err)
 	}
 }
 
@@ -146,7 +146,7 @@ func TestServicePrincipalTokenVCR(t *testing.T) {
 			defer vcrRecorder.Stop()
 			if err != nil {
 				if !ErrorContains(err, tc.expectedError.Error()) {
-					t.Errorf("expected error %v, but got %v", tc.expectedError.Error(), err)
+					t.Errorf("expected error %s, but got %s", tc.expectedError.Error(), err)
 				}
 			} else {
 				if token.AccessToken == "" {
@@ -154,7 +154,7 @@ func TestServicePrincipalTokenVCR(t *testing.T) {
 				}
 				if vcrRecorder.Mode() == recorder.ModeReplayOnly {
 					if token.AccessToken != expectedToken {
-						t.Errorf("unexpected token returned (expected %v, but got %v)", expectedToken, token.AccessToken)
+						t.Errorf("unexpected token returned (expected %s, but got %s)", expectedToken, token.AccessToken)
 					}
 				}
 			}
