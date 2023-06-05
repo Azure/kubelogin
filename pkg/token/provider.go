@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 )
@@ -19,13 +20,17 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get oAuthConfig. isLegacy: %t, err: %s", o.IsLegacy, err)
 	}
+	cloudConfiguration, err := getCloudConfig(o.Environment)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cloud.Configuration. err: %s", err)
+	}
 	switch o.LoginMethod {
 	case DeviceCodeLogin:
 		return newDeviceCodeTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID)
 	case InteractiveLogin:
 		return newInteractiveTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID)
 	case ServicePrincipalLogin:
-		return newServicePrincipalToken(*oAuthConfig, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID)
+		return newServicePrincipalToken(cloudConfiguration, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID)
 	case ROPCLogin:
 		return newResourceOwnerToken(*oAuthConfig, o.ClientID, o.Username, o.Password, o.ServerID, o.TenantID)
 	case MSILogin:
@@ -37,6 +42,14 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 	}
 
 	return nil, errors.New("unsupported token provider")
+}
+
+func getCloudConfig(envName string) (cloud.Configuration, error) {
+	env, err := getAzureEnvironment(envName)
+	c := cloud.Configuration{
+		ActiveDirectoryAuthorityHost: env.ActiveDirectoryEndpoint,
+	}
+	return c, err
 }
 
 func getOAuthConfig(envName, tenantID string, isLegacy bool) (*adal.OAuthConfig, error) {

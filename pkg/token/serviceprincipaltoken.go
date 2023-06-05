@@ -1,13 +1,20 @@
 package token
 
 import (
+	"context"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"golang.org/x/crypto/pkcs12"
 )
@@ -24,10 +31,10 @@ type servicePrincipalToken struct {
 	clientCertPassword string
 	resourceID         string
 	tenantID           string
-	oAuthConfig        adal.OAuthConfig
+	cloud              cloud.Configuration
 }
 
-func newServicePrincipalToken(oAuthConfig adal.OAuthConfig, clientID, clientSecret, clientCert, clientCertPassword, resourceID, tenantID string) (TokenProvider, error) {
+func newServicePrincipalToken(cloud cloud.Configuration, clientID, clientSecret, clientCert, clientCertPassword, resourceID, tenantID string) (TokenProvider, error) {
 	if clientID == "" {
 		return nil, errors.New("clientID cannot be empty")
 	}
@@ -51,32 +58,55 @@ func newServicePrincipalToken(oAuthConfig adal.OAuthConfig, clientID, clientSecr
 		clientCertPassword: clientCertPassword,
 		resourceID:         resourceID,
 		tenantID:           tenantID,
-		oAuthConfig:        oAuthConfig,
+		cloud:              cloud,
 	}, nil
 }
 
+// Token fetches an azcore.AccessToken from the Azure SDK and converts it to an adal.Token for use with kubelogin.
 func (p *servicePrincipalToken) Token() (adal.Token, error) {
+	return p.TokenWithOptions(nil)
+}
+
+func (p *servicePrincipalToken) TokenWithOptions(options *azcore.ClientOptions) (adal.Token, error) {
 	emptyToken := adal.Token{}
-	callback := func(t adal.Token) error {
-		return nil
-	}
+	var spnAccessToken azcore.AccessToken
 
-	var (
-		spt *adal.ServicePrincipalToken
-		err error
-	)
-
+	// Request a new Azure token provider for service principal
 	if p.clientSecret != "" {
-		spt, err = adal.NewServicePrincipalToken(
-			p.oAuthConfig,
+		clientOptions := &azidentity.ClientSecretCredentialOptions{
+			ClientOptions: azcore.ClientOptions{
+				Cloud: p.cloud,
+			},
+		}
+		if options != nil {
+			clientOptions.ClientOptions = *options
+		}
+		cred, err := azidentity.NewClientSecretCredential(
+			p.tenantID,
 			p.clientID,
 			p.clientSecret,
-			p.resourceID,
-			callback)
+			clientOptions,
+		)
 		if err != nil {
-			return emptyToken, fmt.Errorf("failed to create service principal token using secret: %s", err)
+			return emptyToken, fmt.Errorf("unable to create credential. Received: %w", err)
 		}
+
+		// Use the token provider to get a new token
+		spnAccessToken, err = cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: []string{p.resourceID + "/.default"}})
+		if err != nil {
+			return emptyToken, fmt.Errorf("failed to create service principal token using secret: %w", err)
+		}
+
 	} else if p.clientCert != "" {
+		clientOptions := &azidentity.ClientCertificateCredentialOptions{
+			ClientOptions: azcore.ClientOptions{
+				Cloud: p.cloud,
+			},
+			SendCertificateChain: true,
+		}
+		if options != nil {
+			clientOptions.ClientOptions = *options
+		}
 		certData, err := os.ReadFile(p.clientCert)
 		if err != nil {
 			return emptyToken, fmt.Errorf("failed to read the certificate file (%s): %w", p.clientCert, err)
@@ -88,23 +118,40 @@ func (p *servicePrincipalToken) Token() (adal.Token, error) {
 			return emptyToken, fmt.Errorf("failed to decode pkcs12 certificate while creating spt: %w", err)
 		}
 
-		spt, err = adal.NewServicePrincipalTokenFromCertificate(
-			p.oAuthConfig,
+		cred, err := azidentity.NewClientCertificateCredential(
+			p.tenantID,
 			p.clientID,
-			cert,
+			[]*x509.Certificate{cert},
 			rsaPrivateKey,
-			p.resourceID,
-			callback)
+			clientOptions,
+		)
+		if err != nil {
+			return emptyToken, fmt.Errorf("unable to create credential. Received: %v", err)
+		}
+		spnAccessToken, err = cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: []string{p.resourceID + "/.default"}})
 		if err != nil {
 			return emptyToken, fmt.Errorf("failed to create service principal token using cert: %s", err)
 		}
+
+	} else {
+		return emptyToken, errors.New("service principal token requires either client secret or certificate")
 	}
 
-	err = spt.Refresh()
-	if err != nil {
-		return emptyToken, err
+	if spnAccessToken.Token == "" {
+		return emptyToken, errors.New("unexpectedly got empty access token")
 	}
-	return spt.Token(), nil
+
+	// azurecore.AccessTokens have ExpiresOn as Time.Time. We need to convert it to JSON.Number
+	// by fetching the time in seconds since the Unix epoch via Unix() and then converting to a
+	// JSON.Number via formatting as a string using a base-10 int64 conversion.
+	expiresOn := json.Number(strconv.FormatInt(spnAccessToken.ExpiresOn.Unix(), 10))
+
+	// Re-wrap the azurecore.AccessToken into an adal.Token
+	return adal.Token{
+		AccessToken: spnAccessToken.Token,
+		ExpiresOn:   expiresOn,
+		Resource:    p.resourceID,
+	}, nil
 }
 
 func isPublicKeyEqual(key1, key2 *rsa.PublicKey) bool {
