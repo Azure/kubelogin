@@ -1,5 +1,38 @@
 # Change Log
 
+## 0.0.30
+
+### Enhancements
+
+- added verbose logging in convert-kubeconfig by @weinong in https://github.com/Azure/kubelogin/pull/272
+- Adding installHint field to kubeconfigs that have been converted to the exec format by @cirvine-MSFT in https://github.com/Azure/kubelogin/pull/282
+
+### Maintenance
+
+- Bump github.com/Azure/azure-sdk-for-go/sdk/azcore from 1.1.1 to 1.5.0 by @dependabot in https://github.com/Azure/kubelogin/pull/249
+- Bump github.com/AzureAD/microsoft-authentication-library-for-go from 0.9.0 to 1.0.0 by @dependabot in https://github.com/Azure/kubelogin/pull/259
+- Bump k8s.io/cli-runtime from 0.26.3 to 0.27.1 by @dependabot in https://github.com/Azure/kubelogin/pull/262
+- Bump github.com/Azure/go-autorest/autorest from 0.11.28 to 0.11.29 by @dependabot in https://github.com/Azure/kubelogin/pull/273
+- add unit tests for `manualtoken_test.go` by @khareyash05 in https://github.com/Azure/kubelogin/pull/268
+- Bump github.com/Azure/azure-sdk-for-go/sdk/azcore from 1.5.0 to 1.6.0 by @dependabot in https://github.com/Azure/kubelogin/pull/274
+- Bump golang.org/x/crypto from 0.8.0 to 0.9.0 by @dependabot in https://github.com/Azure/kubelogin/pull/277
+- Bump github.com/Azure/azure-sdk-for-go/sdk/azidentity from 1.2.2 to 1.3.0 by @dependabot in https://github.com/Azure/kubelogin/pull/278
+- Bump k8s.io/apimachinery from 0.27.1 to 0.27.2 by @dependabot in https://github.com/Azure/kubelogin/pull/283
+- Bump k8s.io/cli-runtime from 0.27.1 to 0.27.2 by @dependabot in https://github.com/Azure/kubelogin/pull/285
+- Azidentity migration for service principal token by @ekoehn in https://github.com/Azure/kubelogin/pull/287
+- update go to address CVE by @weinong in https://github.com/Azure/kubelogin/pull/290
+
+### Doc Update
+
+- update doc for v0.0.29 by @weinong in https://github.com/Azure/kubelogin/pull/270
+
+### New Contributors
+
+- @khareyash05 made their first contribution in https://github.com/Azure/kubelogin/pull/268
+- @ekoehn made their first contribution in https://github.com/Azure/kubelogin/pull/287
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.0.29...v0.0.30
+
 ## [0.0.29]
 
 ### Enhancements
@@ -97,9 +130,4 @@
 ### Experimental Features
 
 - build: add support for Ubuntu snap package by @Exodus in https://github.com/Azure/kubelogin/pull/182
-- update workflow to build and publish snap package by @weinong in https://github.com/Azure/kubelogin/pull/183
-
-### New Contributors
-
-- @Tatsinnit made their first contribution in https://github.com/Azure/kubelogin/pull/178
-- @Exodus made their first contribution in https://github.com/Azure/kubelogin/pull/182
+- update workflow
