@@ -1,5 +1,5 @@
 name: Build on Push
-on: 
+on:
   push:
     paths-ignore:
       - docs/**
@@ -18,60 +18,60 @@ jobs:
     env:
       GO111MODULE: on
     steps:
-    - name: Set up Go 1.19
-      uses: actions/setup-go@v3
-      with:
-        go-version: 1.19
-      id: go
+      - name: Set up Go 1.19
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19.10
+        id: go
 
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v3
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
 
-    - name: Build
-      run: make
+      - name: Build
+        run: make
 
-    - name: Test
-      run: make test
+      - name: Test
+        run: make test
 
-    - name: Build (linux)
-      env:
-        GOOS: linux
-        GOARCH: amd64
-      run: make
+      - name: Build (linux)
+        env:
+          GOOS: linux
+          GOARCH: amd64
+        run: make
 
-    - name: Build (linux/arm)
-      env:
-        GOOS: linux
-        GOARCH: arm64
-      run: make
+      - name: Build (linux/arm)
+        env:
+          GOOS: linux
+          GOARCH: arm64
+        run: make
 
-    - name: Build (darwin)
-      env:
-        GOOS: darwin
-        GOARCH: amd64
-      run: make
+      - name: Build (darwin)
+        env:
+          GOOS: darwin
+          GOARCH: amd64
+        run: make
 
-    - name: Build (darwin/arm)
-      env:
-        GOOS: darwin
-        GOARCH: arm64
-      run: make
+      - name: Build (darwin/arm)
+        env:
+          GOOS: darwin
+          GOARCH: arm64
+        run: make
 
-    - name: Build (windows)
-      env:
-        GOOS: windows
-        GOARCH: amd64
-      run: make
+      - name: Build (windows)
+        env:
+          GOOS: windows
+          GOARCH: amd64
+        run: make
 
-    - name: Build (windows/arm)
-      env:
-        GOOS: windows
-        GOARCH: arm64
-      run: make
+      - name: Build (windows/arm)
+        env:
+          GOOS: windows
+          GOARCH: arm64
+        run: make
 
-    - name: Snap Build
-      uses: snapcore/action-build@v1
-      id: snapbuild
+      - name: Snap Build
+        uses: snapcore/action-build@v1
+        id: snapbuild
 
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v3
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
