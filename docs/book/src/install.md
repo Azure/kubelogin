@@ -23,7 +23,7 @@ _asdf and the asdf-kubelogin plugin are not maintained by Microsoft._
 
 ```sh
 # install
-asdf plugin add kubelogin https://github.com/sechmann/asdf-kubelogin
+asdf plugin add kubelogin
 asdf install kubelogin latest
 asdf global kubelogin latest
 
