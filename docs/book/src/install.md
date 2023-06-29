@@ -55,7 +55,7 @@ From Powershell:
 scoop install kubectl azure-kubelogin
 ```
 
-### Using choco
+### Using chocolatey
 
 This package is not maintained by Microsoft.
 
