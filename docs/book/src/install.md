@@ -55,6 +55,16 @@ From Powershell:
 scoop install kubectl azure-kubelogin
 ```
 
+### Using chocolatey
+
+This package is not maintained by Microsoft.
+
+From Powershell:
+
+```powershell
+choco install kubernetes-cli azure-kubelogin
+```
+
 ### Using azure cli
 
 From Powershell:
