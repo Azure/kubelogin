@@ -1,5 +1,31 @@
 # Change Log
 
+## [0.0.31]
+
+### Enhancements
+
+- upgrade klog from v1 to v2 by @peterbom in https://github.com/Azure/kubelogin/pull/306
+
+### Maintenance
+
+- Bump k8s.io/apimachinery from 0.27.2 to 0.27.3 by @dependabot in https://github.com/Azure/kubelogin/pull/297 
+- Bump golang.org/x/crypto from 0.10.0 to 0.11.0 by @dependabot in https://github.com/Azure/kubelogin/pull/303
+- Bump github.com/Azure/azure-sdk-for-go/sdk/azcore from 1.6.0 to 1.6.1  by @dependabot in https://github.com/Azure/kubelogin/pull/292
+- Bump golang.org/x/crypto from 0.9.0 to 0.10.0 by @dependabot in https://github.com/Azure/kubelogin/pull/294 
+
+### Doc Update
+
+- docs: Use asdf-plugins index instead of hard coded repo https://github.com/Azure/kubelogin/pull/298
+- Add chocolatey installation instructions https://github.com/Azure/kubelogin/pull/299
+
+### New Contributors
+
+- @peterbom made their first contribution in https://github.com/Azure/kubelogin/pull/306
+- @sechmann made their first contribution in https://github.com/Azure/kubelogin/pull/298
+- @moredatapls made their first contribution in https://github.com/Azure/kubelogin/pull/299
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.0.30...v0.0.31
+
 ## [0.0.30]
 
 ### Enhancements
