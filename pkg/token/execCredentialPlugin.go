@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/Azure/go-autorest/autorest/adal"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 )
 
 const (

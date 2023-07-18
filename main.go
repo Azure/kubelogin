@@ -6,7 +6,7 @@ import (
 
 	"github.com/Azure/kubelogin/pkg/cmd"
 	"github.com/spf13/pflag"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 )
 
 func main() {

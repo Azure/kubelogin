@@ -7,7 +7,7 @@ import (
 	"github.com/Azure/kubelogin/pkg/token"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
-	"k8s.io/klog"
+	klog "k8s.io/klog/v2"
 )
 
 const (
