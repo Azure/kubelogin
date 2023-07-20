@@ -15,7 +15,7 @@ require (
 	golang.org/x/crypto v0.11.0
 	gopkg.in/dnaeon/go-vcr.v3 v3.1.2
 	gopkg.in/retry.v1 v1.0.3
-	k8s.io/apimachinery v0.27.3
+	k8s.io/apimachinery v0.27.4
 	k8s.io/cli-runtime v0.27.2
 	k8s.io/client-go v0.27.2
 	k8s.io/klog/v2 v2.100.1
