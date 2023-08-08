@@ -28,6 +28,7 @@ type Options struct {
 	FederatedTokenFile     string
 	AuthorityHost          string
 	UseAzureRMTerraformEnv bool
+	IsPopTokenEnabled      bool
 }
 
 const (
@@ -118,6 +119,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.BoolVar(&o.IsLegacy, "legacy", o.IsLegacy, "set to true to get token with 'spn:' prefix in audience claim")
 	fs.BoolVar(&o.UseAzureRMTerraformEnv, "use-azurerm-env-vars", o.UseAzureRMTerraformEnv,
 		"Use environment variable names of Terraform Azure Provider (ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_CLIENT_CERTIFICATE_PATH, ARM_CLIENT_CERTIFICATE_PASSWORD, ARM_TENANT_ID)")
+	fs.BoolVar(&o.IsPopTokenEnabled, "pop-enabled", o.IsPopTokenEnabled, "set to true to use a PoP token for authentication or false to use a traditional JWT token")
 }
 
 func (o *Options) Validate() error {
