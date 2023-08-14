@@ -28,7 +28,7 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 	case DeviceCodeLogin:
 		return newDeviceCodeTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID)
 	case InteractiveLogin:
-		return newInteractiveTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID)
+		return newInteractiveTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID, ParsePopClaims(o.PopClaims))
 	case ServicePrincipalLogin:
 		return newServicePrincipalToken(cloudConfiguration, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID)
 	case ROPCLogin:
