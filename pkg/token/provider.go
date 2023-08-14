@@ -26,7 +26,7 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 	}
 	switch o.LoginMethod {
 	case DeviceCodeLogin:
-		return newDeviceCodeTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID)
+		return newDeviceCodeTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID, ParsePopClaims(o.PopClaims))
 	case InteractiveLogin:
 		return newInteractiveTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID, ParsePopClaims(o.PopClaims))
 	case ServicePrincipalLogin:
