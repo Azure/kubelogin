@@ -59,9 +59,9 @@ func (p *InteractiveToken) Token() (adal.Token, error) {
 	scopes := []string{p.resourceID + "/.default"}
 
 	var token string
-	var expiresOn json.Number
+	var expiresOn int64
 
-	if p.popClaims == nil {
+	if p.popClaims == nil || len(p.popClaims) == 0 {
 		cred, err := azidentity.NewInteractiveBrowserCredential(&azidentity.InteractiveBrowserCredentialOptions{
 			ClientOptions: clientOpts,
 			TenantID:      p.tenantID,
@@ -80,13 +80,10 @@ func (p *InteractiveToken) Token() (adal.Token, error) {
 		if token == "" {
 			return emptyToken, errors.New("did not receive a token")
 		}
-		// azurecore.AccessTokens have ExpiresOn as Time.Time. We need to convert it to JSON.Number
-		// by fetching the time in seconds since the Unix epoch via Unix() and then converting to a
-		// JSON.Number via formatting as a string using a base-10 int64 conversion.
-		expiresOn = json.Number(strconv.FormatInt(interactiveToken.ExpiresOn.Unix(), 10))
+		expiresOn = interactiveToken.ExpiresOn.Unix()
 	} else {
-		// if pop token option is enabled, convert the access token into a PoP token before wrapping
-		// it into the adal token
+		// If PoP token support is enabled and the correct u-claim is provided, use the MSAL
+		// token provider to acquire a new token.
 		client, err := public.New(
 			p.clientID,
 			public.WithAuthority(clientOpts.Cloud.ActiveDirectoryAuthorityHost),
@@ -108,16 +105,18 @@ func (p *InteractiveToken) Token() (adal.Token, error) {
 			log.Fatal(err)
 		}
 		token = result.AccessToken
-		// azurecore.AccessTokens have ExpiresOn as Time.Time. We need to convert it to JSON.Number
-		// by fetching the time in seconds since the Unix epoch via Unix() and then converting to a
-		// JSON.Number via formatting as a string using a base-10 int64 conversion.
-		expiresOn = json.Number(strconv.FormatInt(result.IDToken.ExpirationTime, 10))
+		expiresOn = result.ExpiresOn.Unix()
 	}
+
+	// azurecore.AccessTokens have ExpiresOn as Time.Time. We need to convert it to JSON.Number
+	// by fetching the time in seconds since the Unix epoch via Unix() and then converting to a
+	// JSON.Number via formatting as a string using a base-10 int64 conversion.
+	expiresOnJson := json.Number(strconv.FormatInt(expiresOn, 10))
 
 	// Re-wrap the azurecore.AccessToken into an adal.Token
 	return adal.Token{
 		AccessToken: token,
-		ExpiresOn:   expiresOn,
+		ExpiresOn:   expiresOnJson,
 		Resource:    p.resourceID,
 	}, nil
 }

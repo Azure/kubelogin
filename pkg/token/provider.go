@@ -5,6 +5,7 @@ package token
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/go-autorest/autorest/adal"
@@ -24,11 +25,15 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get cloud.Configuration. err: %s", err)
 	}
+	popClaimsMap, err := parsePopClaims(o.PopClaims)
+	if o.IsPopTokenEnabled && err != nil {
+		return nil, fmt.Errorf("failed to parse pop token claims. err: %w", err)
+	}
 	switch o.LoginMethod {
 	case DeviceCodeLogin:
-		return newDeviceCodeTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID, ParsePopClaims(o.PopClaims))
+		return newDeviceCodeTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID, popClaimsMap)
 	case InteractiveLogin:
-		return newInteractiveTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID, ParsePopClaims(o.PopClaims))
+		return newInteractiveTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID, popClaimsMap)
 	case ServicePrincipalLogin:
 		return newServicePrincipalToken(cloudConfiguration, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID)
 	case ROPCLogin:
@@ -75,4 +80,23 @@ func getAzureEnvironment(environment string) (azure.Environment, error) {
 		environment = defaultEnvironmentName
 	}
 	return azure.EnvironmentFromName(environment)
+}
+
+// Parses the pop token claims. Pop token claims are passed in as a comma-separated string
+// in the format "key1=val1,key2=val2".
+func parsePopClaims(popClaims []string) (map[string]string, error) {
+	claimsMap := make(map[string]string)
+	for _, claim := range popClaims {
+		claimPair := strings.Split(claim, "=")
+		key := strings.TrimSpace(claimPair[0])
+		val := strings.TrimSpace(claimPair[1])
+		if key == "" || val == "" {
+			return nil, fmt.Errorf("error parsing PoP token claims. Ensure the claims are formatted as `key=value` with no extra whitespace.")
+		}
+		claimsMap[key] = val
+	}
+	if claimsMap["u"] == "" {
+		return nil, fmt.Errorf("required u-claim not provided for PoP token flow. Please provide the ARM ID of the connected cluster in the format `u=<ARM_ID`.")
+	}
+	return claimsMap, nil
 }

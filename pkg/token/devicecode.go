@@ -47,7 +47,7 @@ func (p *deviceCodeTokenProvider) Token() (adal.Token, error) {
 	emptyToken := adal.Token{}
 	client := &autorest.Client{}
 	var token *adal.Token
-	if p.popClaims == nil {
+	if p.popClaims == nil || len(p.popClaims) == 0 {
 		deviceCode, err := adal.InitiateDeviceAuth(client, p.oAuthConfig, p.clientID, p.resourceID)
 		if err != nil {
 			return emptyToken, fmt.Errorf("initialing the device code authentication: %s", err)
