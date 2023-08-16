@@ -83,7 +83,7 @@ func (p *InteractiveToken) Token() (adal.Token, error) {
 		expiresOn = interactiveToken.ExpiresOn.Unix()
 	} else {
 		// If PoP token support is enabled and the correct u-claim is provided, use the MSAL
-		// token provider to acquire a new token.
+		// token provider to acquire a new token
 		client, err := public.New(
 			p.clientID,
 			public.WithAuthority(clientOpts.Cloud.ActiveDirectoryAuthorityHost),
@@ -110,10 +110,10 @@ func (p *InteractiveToken) Token() (adal.Token, error) {
 
 	// azurecore.AccessTokens have ExpiresOn as Time.Time. We need to convert it to JSON.Number
 	// by fetching the time in seconds since the Unix epoch via Unix() and then converting to a
-	// JSON.Number via formatting as a string using a base-10 int64 conversion.
+	// JSON.Number via formatting as a string using a base-10 int64 conversion
 	expiresOnJson := json.Number(strconv.FormatInt(expiresOn, 10))
 
-	// Re-wrap the azurecore.AccessToken into an adal.Token
+	// re-wrap the azurecore.AccessToken into an adal.Token
 	return adal.Token{
 		AccessToken: token,
 		ExpiresOn:   expiresOnJson,

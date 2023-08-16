@@ -25,7 +25,7 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get cloud.Configuration. err: %s", err)
 	}
-	popClaimsMap, err := parsePopClaims(o.PopClaims)
+	popClaimsMap, err := parsePopClaims(o.PoPClaims)
 	if o.IsPopTokenEnabled && err != nil {
 		return nil, fmt.Errorf("failed to parse pop token claims. err: %w", err)
 	}

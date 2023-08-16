@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/spf13/pflag"
 )
 
@@ -149,7 +150,7 @@ func TestOptionsWithEnvVars(t *testing.T) {
 			}
 			o.AddFlags(&pflag.FlagSet{})
 			o.UpdateFromEnv()
-			if o != tc.expected {
+			if !cmp.Equal(o, tc.expected, cmp.AllowUnexported(Options{})) {
 				t.Fatalf("expected option: %+v, got %+v", tc.expected, o)
 			}
 		})

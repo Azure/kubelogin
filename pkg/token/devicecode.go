@@ -95,7 +95,7 @@ func (p *deviceCodeTokenProvider) Token() (adal.Token, error) {
 		}
 		expiresOn := json.Number(strconv.FormatInt(result.IDToken.ExpirationTime, 10))
 
-		// Re-wrap the azurecore.AccessToken into an adal.Token
+		// re-wrap the azurecore.AccessToken into an adal.Token
 		token = &adal.Token{
 			AccessToken: formatted,
 			ExpiresOn:   expiresOn,
