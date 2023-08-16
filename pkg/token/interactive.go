@@ -111,12 +111,12 @@ func (p *InteractiveToken) Token() (adal.Token, error) {
 	// azurecore.AccessTokens have ExpiresOn as Time.Time. We need to convert it to JSON.Number
 	// by fetching the time in seconds since the Unix epoch via Unix() and then converting to a
 	// JSON.Number via formatting as a string using a base-10 int64 conversion
-	expiresOnJson := json.Number(strconv.FormatInt(expiresOn, 10))
+	expiresOnJSON := json.Number(strconv.FormatInt(expiresOn, 10))
 
 	// re-wrap the azurecore.AccessToken into an adal.Token
 	return adal.Token{
 		AccessToken: token,
-		ExpiresOn:   expiresOnJson,
+		ExpiresOn:   expiresOnJSON,
 		Resource:    p.resourceID,
 	}, nil
 }

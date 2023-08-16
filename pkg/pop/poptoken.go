@@ -41,7 +41,7 @@ func (as *PopAuthenticationScheme) KeyID() string {
 func (as *PopAuthenticationScheme) FormatAccessToken(accessToken string) (string, error) {
 	ts := time.Now().Unix()
 	nonce := uuid.New().String()
-	nonce = strings.Replace(nonce, "-", "", -1)
+	nonce = strings.ReplaceAll(nonce, "-", "")
 	header := fmt.Sprintf(`{"typ":"pop","alg":"%s","kid":"%s"}`, as.PoPKey.Alg(), as.PoPKey.KeyID())
 	headerB64 := base64.RawURLEncoding.EncodeToString([]byte(header))
 	payload := fmt.Sprintf(`{"at":"%s","ts":%d,"u":"%s","cnf":{"jwk":%s},"nonce":"%s"}`, accessToken, ts, as.Host, as.PoPKey.JWK(), nonce)
@@ -161,7 +161,7 @@ func GetSwPoPKey() *swKey {
 
 	key, err := generateSwKey()
 	if err != nil {
-		log.Fatal("unable to generate popkey")
+		log.Panicf("unable to generate popkey. err: %v", err)
 	}
 	pswKey = key
 
@@ -172,7 +172,7 @@ func GetSwPoPKey() *swKey {
 			<-ticker.C
 			key, err := generateSwKey()
 			if err != nil {
-				log.Fatal("unable to generate popkey")
+				log.Panicf("unable to generate popkey. err: %v", err)
 			}
 			pwsKeyMutex.Lock()
 			pswKey = key

@@ -142,7 +142,7 @@ func (o *Options) Validate() error {
 	}
 
 	if o.PoPClaims != nil && !o.IsPopTokenEnabled {
-		return fmt.Errorf("pop-enabled flag is required to use the PoP token feature. Please provide both pop-enabled and pop-claims flags.")
+		return fmt.Errorf("pop-enabled flag is required to use the PoP token feature. Please provide both pop-enabled and pop-claims flags")
 	}
 
 	return nil
