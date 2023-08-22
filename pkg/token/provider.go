@@ -35,7 +35,7 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 	case InteractiveLogin:
 		return newInteractiveTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID, popClaimsMap)
 	case ServicePrincipalLogin:
-		return newServicePrincipalToken(cloudConfiguration, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID)
+		return newServicePrincipalToken(cloudConfiguration, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID, popClaimsMap)
 	case ROPCLogin:
 		return newResourceOwnerToken(*oAuthConfig, o.ClientID, o.Username, o.Password, o.ServerID, o.TenantID)
 	case MSILogin:

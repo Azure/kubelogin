@@ -16,6 +16,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/go-autorest/autorest/adal"
+	"github.com/Azure/kubelogin/pkg/pop"
+	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/confidential"
 	"golang.org/x/crypto/pkcs12"
 )
 
@@ -32,9 +34,10 @@ type servicePrincipalToken struct {
 	resourceID         string
 	tenantID           string
 	cloud              cloud.Configuration
+	popClaims          map[string]string
 }
 
-func newServicePrincipalToken(cloud cloud.Configuration, clientID, clientSecret, clientCert, clientCertPassword, resourceID, tenantID string) (TokenProvider, error) {
+func newServicePrincipalToken(cloud cloud.Configuration, clientID, clientSecret, clientCert, clientCertPassword, resourceID, tenantID string, popClaims map[string]string) (TokenProvider, error) {
 	if clientID == "" {
 		return nil, errors.New("clientID cannot be empty")
 	}
@@ -59,6 +62,7 @@ func newServicePrincipalToken(cloud cloud.Configuration, clientID, clientSecret,
 		resourceID:         resourceID,
 		tenantID:           tenantID,
 		cloud:              cloud,
+		popClaims:          popClaims,
 	}, nil
 }
 
@@ -69,34 +73,17 @@ func (p *servicePrincipalToken) Token() (adal.Token, error) {
 
 func (p *servicePrincipalToken) TokenWithOptions(options *azcore.ClientOptions) (adal.Token, error) {
 	emptyToken := adal.Token{}
-	var spnAccessToken azcore.AccessToken
+	var accessToken string
+	var expirationTimeUnix int64
+	var err error
+	scopes := []string{p.resourceID + "/.default"}
 
 	// Request a new Azure token provider for service principal
 	if p.clientSecret != "" {
-		clientOptions := &azidentity.ClientSecretCredentialOptions{
-			ClientOptions: azcore.ClientOptions{
-				Cloud: p.cloud,
-			},
-		}
-		if options != nil {
-			clientOptions.ClientOptions = *options
-		}
-		cred, err := azidentity.NewClientSecretCredential(
-			p.tenantID,
-			p.clientID,
-			p.clientSecret,
-			clientOptions,
-		)
-		if err != nil {
-			return emptyToken, fmt.Errorf("unable to create credential. Received: %w", err)
-		}
-
-		// Use the token provider to get a new token
-		spnAccessToken, err = cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: []string{p.resourceID + "/.default"}})
+		accessToken, expirationTimeUnix, err = p.getTokenWithClientSecret(options, scopes)
 		if err != nil {
 			return emptyToken, fmt.Errorf("failed to create service principal token using secret: %w", err)
 		}
-
 	} else if p.clientCert != "" {
 		clientOptions := &azidentity.ClientCertificateCredentialOptions{
 			ClientOptions: azcore.ClientOptions{
@@ -128,30 +115,96 @@ func (p *servicePrincipalToken) TokenWithOptions(options *azcore.ClientOptions) 
 		if err != nil {
 			return emptyToken, fmt.Errorf("unable to create credential. Received: %v", err)
 		}
-		spnAccessToken, err = cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: []string{p.resourceID + "/.default"}})
+		spnAccessToken, err := cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: []string{p.resourceID + "/.default"}})
 		if err != nil {
 			return emptyToken, fmt.Errorf("failed to create service principal token using cert: %s", err)
 		}
 
+		accessToken = spnAccessToken.Token
+		expirationTimeUnix = spnAccessToken.ExpiresOn.Unix()
 	} else {
 		return emptyToken, errors.New("service principal token requires either client secret or certificate")
 	}
 
-	if spnAccessToken.Token == "" {
+	if accessToken == "" {
 		return emptyToken, errors.New("unexpectedly got empty access token")
 	}
 
 	// azurecore.AccessTokens have ExpiresOn as Time.Time. We need to convert it to JSON.Number
 	// by fetching the time in seconds since the Unix epoch via Unix() and then converting to a
 	// JSON.Number via formatting as a string using a base-10 int64 conversion.
-	expiresOn := json.Number(strconv.FormatInt(spnAccessToken.ExpiresOn.Unix(), 10))
+	expiresOn := json.Number(strconv.FormatInt(expirationTimeUnix, 10))
 
 	// Re-wrap the azurecore.AccessToken into an adal.Token
 	return adal.Token{
-		AccessToken: spnAccessToken.Token,
+		AccessToken: accessToken,
 		ExpiresOn:   expiresOn,
 		Resource:    p.resourceID,
 	}, nil
+}
+
+func (p *servicePrincipalToken) getTokenWithClientSecret(options *azcore.ClientOptions, scopes []string) (string, int64, error) {
+	if p.popClaims != nil && len(p.popClaims) > 0 {
+		// if PoP token support is enabled, use the PoP token flow to request the token
+		return p.getPoPTokenWithClientSecret(scopes)
+	}
+
+	clientOptions := &azidentity.ClientSecretCredentialOptions{
+		ClientOptions: azcore.ClientOptions{
+			Cloud: p.cloud,
+		},
+	}
+	if options != nil {
+		clientOptions.ClientOptions = *options
+	}
+	cred, err := azidentity.NewClientSecretCredential(
+		p.tenantID,
+		p.clientID,
+		p.clientSecret,
+		clientOptions,
+	)
+	if err != nil {
+		return "", -1, fmt.Errorf("unable to create credential. Received: %w", err)
+	}
+
+	// Use the token provider to get a new token
+	spnAccessToken, err := cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: scopes})
+	if err != nil {
+		return "", -1, fmt.Errorf("failed to create service principal bearer token using secret: %w", err)
+	}
+
+	return spnAccessToken.Token, spnAccessToken.ExpiresOn.Unix(), nil
+}
+
+func (p *servicePrincipalToken) getPoPTokenWithClientSecret(scopes []string) (string, int64, error) {
+	cred, err := confidential.NewCredFromSecret(p.clientSecret)
+	if err != nil {
+		return "", -1, fmt.Errorf("unable to create credential. Received: %w", err)
+	}
+
+	client, err := confidential.New(p.cloud.ActiveDirectoryAuthorityHost, p.clientID, cred)
+	if err != nil {
+		return "", -1, fmt.Errorf("unable to create client. Received: %w", err)
+	}
+
+	result, err := client.AcquireTokenSilent(
+		context.Background(),
+		scopes,
+		confidential.WithAuthenticationScheme(
+			&pop.PopAuthenticationScheme{
+				Host:   p.popClaims["u"],
+				PoPKey: pop.GetSwPoPKey(),
+			},
+		),
+	)
+	if err != nil {
+		result, err = client.AcquireTokenByCredential(context.Background(), scopes)
+		if err != nil {
+			return "", -1, fmt.Errorf("failed to create service principal PoP token using secret: %w", err)
+		}
+	}
+
+	return result.AccessToken, result.ExpiresOn.Unix(), nil
 }
 
 func isPublicKeyEqual(key1, key2 *rsa.PublicKey) bool {
