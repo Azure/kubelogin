@@ -25,8 +25,8 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get cloud.Configuration. err: %s", err)
 	}
-	popClaimsMap, err := parsePopClaims(o.PoPClaims)
-	if o.IsPopTokenEnabled && err != nil {
+	popClaimsMap, err := parsePopClaims(o.PoPTokenClaims)
+	if o.IsPoPTokenEnabled && err != nil {
 		return nil, fmt.Errorf("failed to parse pop token claims. err: %w", err)
 	}
 	switch o.LoginMethod {
@@ -84,9 +84,10 @@ func getAzureEnvironment(environment string) (azure.Environment, error) {
 
 // Parses the pop token claims. Pop token claims are passed in as a comma-separated string
 // in the format "key1=val1,key2=val2".
-func parsePopClaims(popClaims []string) (map[string]string, error) {
+func parsePopClaims(popClaims string) (map[string]string, error) {
+	claimsArray := strings.Split(popClaims, ",")
 	claimsMap := make(map[string]string)
-	for _, claim := range popClaims {
+	for _, claim := range claimsArray {
 		claimPair := strings.Split(claim, "=")
 		key := strings.TrimSpace(claimPair[0])
 		val := strings.TrimSpace(claimPair[1])
@@ -96,7 +97,7 @@ func parsePopClaims(popClaims []string) (map[string]string, error) {
 		claimsMap[key] = val
 	}
 	if claimsMap["u"] == "" {
-		return nil, fmt.Errorf("required u-claim not provided for PoP token flow. Please provide the ARM ID of the connected cluster in the format `u=<ARM_ID`")
+		return nil, fmt.Errorf("required u-claim not provided for PoP token flow. Please provide the ARM ID of the connected cluster in the format `u=<ARM_ID>`")
 	}
 	return claimsMap, nil
 }

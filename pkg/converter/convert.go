@@ -33,6 +33,8 @@ const (
 	argAuthorityHost      = "--authority-host"
 	argFederatedTokenFile = "--federated-token-file"
 	argTokenCacheDir      = "--token-cache-dir"
+	argIsPoPTokenEnabled  = "--pop-enabled"
+	argPoPTokenClaims     = "--pop-claims"
 
 	flagAzureConfigDir     = "azure-config-dir"
 	flagClientID           = "client-id"
@@ -51,6 +53,8 @@ const (
 	flagAuthorityHost      = "authority-host"
 	flagFederatedTokenFile = "federated-token-file"
 	flagTokenCacheDir      = "token-cache-dir"
+	flagIsPoPTokenEnabled  = "pop-enabled"
+	flagPoPTokenClaims     = "pop-claims"
 
 	execName        = "kubelogin"
 	getTokenCommand = "get-token"
@@ -64,7 +68,16 @@ To learn more, please go to https://azure.github.io/kubelogin/
 	azureConfigDir = "AZURE_CONFIG_DIR"
 )
 
-func getArgValues(o Options, authInfo *api.AuthInfo) (argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal, argTokenCacheDirVal string, argIsLegacyConfigModeVal bool) {
+func getArgValues(o Options, authInfo *api.AuthInfo) (
+	argServerIDVal,
+	argClientIDVal,
+	argEnvironmentVal,
+	argTenantIDVal,
+	argTokenCacheDirVal,
+	argPoPTokenClaimsVal string,
+	argIsLegacyConfigModeVal,
+	argIsPoPTokenEnabledVal bool,
+) {
 	if authInfo == nil {
 		return
 	}
@@ -127,6 +140,20 @@ func getArgValues(o Options, authInfo *api.AuthInfo) (argServerIDVal, argClientI
 		argTokenCacheDirVal = o.TokenOptions.TokenCacheDir
 	} else {
 		argTokenCacheDirVal = getExecArg(authInfo, argTokenCacheDir)
+	}
+
+	if o.isSet(flagIsPoPTokenEnabled) {
+		argIsPoPTokenEnabledVal = o.TokenOptions.IsPoPTokenEnabled
+	} else {
+		if found := getExecBoolArg(authInfo, argIsPoPTokenEnabled); found {
+			argIsPoPTokenEnabledVal = true
+		}
+	}
+
+	if o.isSet(flagPoPTokenClaims) {
+		argPoPTokenClaimsVal = o.TokenOptions.PoPTokenClaims
+	} else {
+		argPoPTokenClaimsVal = getExecArg(authInfo, argPoPTokenClaims)
 	}
 
 	return
@@ -198,7 +225,7 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 
 		klog.V(5).Info("converting...")
 
-		argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal, argTokenCacheDirVal, isLegacyConfigMode := getArgValues(o, authInfo)
+		argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal, argTokenCacheDirVal, argPoPTokenClaimsVal, isLegacyConfigMode, isPopTokenEnabled := getArgValues(o, authInfo)
 		exec := &api.ExecConfig{
 			Command: execName,
 			Args: []string{
@@ -280,6 +307,12 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 			if argEnvironmentVal != "" {
 				// environment is optional
 				exec.Args = append(exec.Args, argEnvironment, argEnvironmentVal)
+			}
+
+			// poP token flags are optional but must be provided together
+			exec.Args, err = validatePoPClaims(exec.Args, isPopTokenEnabled, argPoPTokenClaims, argPoPTokenClaimsVal)
+			if err != nil {
+				return err
 			}
 
 		case token.ServicePrincipalLogin:
@@ -419,4 +452,26 @@ func getExecBoolArg(authInfoPtr *api.AuthInfo, someArg string) bool {
 		}
 	}
 	return false
+}
+
+// If enabling PoP token support, users must provide both "--pop-enabled" and "--pop-claims" flags together.
+// If either is provided without the other, validation should throw an error, otherwise the get-token command
+// will fail under the hood.
+func validatePoPClaims(args []string, isPopTokenEnabled bool, popTokenClaimsFlag, popTokenClaimsVal string) ([]string, error) {
+	if isPopTokenEnabled && popTokenClaimsVal == "" {
+		// pop-enabled and pop-claims must be provided together
+		return nil, fmt.Errorf("%s is required when specifying %s", argPoPTokenClaims, argIsPoPTokenEnabled)
+	}
+
+	if popTokenClaimsVal != "" && !isPopTokenEnabled {
+		// pop-enabled and pop-claims must be provided together
+		return nil, fmt.Errorf("%s is required when specifying %s", argIsPoPTokenEnabled, argPoPTokenClaims)
+	}
+
+	if isPopTokenEnabled && popTokenClaimsVal != "" {
+		args = append(args, argIsPoPTokenEnabled)
+		args = append(args, popTokenClaimsFlag, popTokenClaimsVal)
+	}
+
+	return args, nil
 }
