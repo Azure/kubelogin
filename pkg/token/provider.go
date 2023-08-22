@@ -85,6 +85,9 @@ func getAzureEnvironment(environment string) (azure.Environment, error) {
 // Parses the pop token claims. Pop token claims are passed in as a comma-separated string
 // in the format "key1=val1,key2=val2".
 func parsePopClaims(popClaims string) (map[string]string, error) {
+	if popClaims == "" {
+		return nil, fmt.Errorf("error parsing PoP token claims: no claims provided")
+	}
 	claimsArray := strings.Split(popClaims, ",")
 	claimsMap := make(map[string]string)
 	for _, claim := range claimsArray {

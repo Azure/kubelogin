@@ -182,7 +182,11 @@ func (p *servicePrincipalToken) getPoPTokenWithClientSecret(scopes []string) (st
 		return "", -1, fmt.Errorf("unable to create credential. Received: %w", err)
 	}
 
-	client, err := confidential.New(p.cloud.ActiveDirectoryAuthorityHost, p.clientID, cred)
+	client, err := confidential.New(
+		p.cloud.ActiveDirectoryAuthorityHost,
+		p.clientID,
+		cred,
+	)
 	if err != nil {
 		return "", -1, fmt.Errorf("unable to create client. Received: %w", err)
 	}
@@ -196,9 +200,20 @@ func (p *servicePrincipalToken) getPoPTokenWithClientSecret(scopes []string) (st
 				PoPKey: pop.GetSwPoPKey(),
 			},
 		),
+		confidential.WithTenantID(p.tenantID),
 	)
 	if err != nil {
-		result, err = client.AcquireTokenByCredential(context.Background(), scopes)
+		result, err = client.AcquireTokenByCredential(
+			context.Background(),
+			scopes,
+			confidential.WithAuthenticationScheme(
+				&pop.PopAuthenticationScheme{
+					Host:   p.popClaims["u"],
+					PoPKey: pop.GetSwPoPKey(),
+				},
+			),
+			confidential.WithTenantID(p.tenantID),
+		)
 		if err != nil {
 			return "", -1, fmt.Errorf("failed to create service principal PoP token using secret: %w", err)
 		}
