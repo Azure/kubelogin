@@ -31,11 +31,11 @@ func TestNewDeviceCodeTokenProviderEmpty(t *testing.T) {
 
 			switch {
 			case strings.Contains(name, "clientID"):
-				_, err = newDeviceCodeTokenProvider(adal.OAuthConfig{}, "", "", "", nil)
+				_, err = newDeviceCodeTokenProvider(adal.OAuthConfig{}, "", "", "")
 			case strings.Contains(name, "resourceID"):
-				_, err = newDeviceCodeTokenProvider(adal.OAuthConfig{}, "test", "", "", nil)
+				_, err = newDeviceCodeTokenProvider(adal.OAuthConfig{}, "test", "", "")
 			case strings.Contains(name, "tenantID"):
-				_, err = newDeviceCodeTokenProvider(adal.OAuthConfig{}, "test", "test", "", nil)
+				_, err = newDeviceCodeTokenProvider(adal.OAuthConfig{}, "test", "test", "")
 			default:
 				fmt.Println(false)
 			}
