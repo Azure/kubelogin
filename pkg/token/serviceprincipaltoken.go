@@ -85,43 +85,10 @@ func (p *servicePrincipalToken) TokenWithOptions(options *azcore.ClientOptions) 
 			return emptyToken, fmt.Errorf("failed to create service principal token using secret: %w", err)
 		}
 	} else if p.clientCert != "" {
-		clientOptions := &azidentity.ClientCertificateCredentialOptions{
-			ClientOptions: azcore.ClientOptions{
-				Cloud: p.cloud,
-			},
-			SendCertificateChain: true,
-		}
-		if options != nil {
-			clientOptions.ClientOptions = *options
-		}
-		certData, err := os.ReadFile(p.clientCert)
+		accessToken, expirationTimeUnix, err = p.getTokenWithClientCert(options, scopes)
 		if err != nil {
-			return emptyToken, fmt.Errorf("failed to read the certificate file (%s): %w", p.clientCert, err)
+			return emptyToken, fmt.Errorf("failed to create service principal token using certificate: %w", err)
 		}
-
-		// Get the certificate and private key from pfx file
-		cert, rsaPrivateKey, err := decodePkcs12(certData, p.clientCertPassword)
-		if err != nil {
-			return emptyToken, fmt.Errorf("failed to decode pkcs12 certificate while creating spt: %w", err)
-		}
-
-		cred, err := azidentity.NewClientCertificateCredential(
-			p.tenantID,
-			p.clientID,
-			[]*x509.Certificate{cert},
-			rsaPrivateKey,
-			clientOptions,
-		)
-		if err != nil {
-			return emptyToken, fmt.Errorf("unable to create credential. Received: %v", err)
-		}
-		spnAccessToken, err := cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: []string{p.resourceID + "/.default"}})
-		if err != nil {
-			return emptyToken, fmt.Errorf("failed to create service principal token using cert: %s", err)
-		}
-
-		accessToken = spnAccessToken.Token
-		expirationTimeUnix = spnAccessToken.ExpiresOn.Unix()
 	} else {
 		return emptyToken, errors.New("service principal token requires either client secret or certificate")
 	}
@@ -192,6 +159,76 @@ func (p *servicePrincipalToken) getPoPTokenWithClientSecret(scopes []string) (st
 	)
 	if err != nil {
 		return "", -1, fmt.Errorf("failed to create service principal PoP token using secret: %w", err)
+	}
+
+	return accessToken, expiresOn, nil
+}
+
+func (p *servicePrincipalToken) getTokenWithClientCert(options *azcore.ClientOptions, scopes []string) (string, int64, error) {
+	clientOptions := &azidentity.ClientCertificateCredentialOptions{
+		ClientOptions: azcore.ClientOptions{
+			Cloud: p.cloud,
+		},
+		SendCertificateChain: true,
+	}
+	if options != nil {
+		clientOptions.ClientOptions = *options
+	}
+	certData, err := os.ReadFile(p.clientCert)
+	if err != nil {
+		return "", -1, fmt.Errorf("failed to read the certificate file (%s): %w", p.clientCert, err)
+	}
+
+	// Get the certificate and private key from pfx file
+	cert, rsaPrivateKey, err := decodePkcs12(certData, p.clientCertPassword)
+	if err != nil {
+		return "", -1, fmt.Errorf("failed to decode pkcs12 certificate while creating spt: %w", err)
+	}
+
+	certArray := []*x509.Certificate{cert}
+	if p.popClaims != nil && len(p.popClaims) > 0 {
+		// if PoP token support is enabled, use the PoP token flow to request the token
+		return p.getPoPTokenWithClientCert(scopes, certArray, rsaPrivateKey)
+	}
+
+	cred, err := azidentity.NewClientCertificateCredential(
+		p.tenantID,
+		p.clientID,
+		certArray,
+		rsaPrivateKey,
+		clientOptions,
+	)
+	if err != nil {
+		return "", -1, fmt.Errorf("unable to create credential. Received: %v", err)
+	}
+	spnAccessToken, err := cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: []string{p.resourceID + "/.default"}})
+	if err != nil {
+		return "", -1, fmt.Errorf("failed to create service principal token using cert: %s", err)
+	}
+
+	return spnAccessToken.Token, spnAccessToken.ExpiresOn.Unix(), nil
+}
+
+func (p *servicePrincipalToken) getPoPTokenWithClientCert(
+	scopes []string,
+	certArray []*x509.Certificate,
+	rsaPrivateKey *rsa.PrivateKey,
+) (string, int64, error) {
+	cred, err := confidential.NewCredFromCert(certArray, rsaPrivateKey)
+	if err != nil {
+		return "", -1, fmt.Errorf("unable to create credential from certificate. Received: %w", err)
+	}
+
+	accessToken, expiresOn, err := pop.AcquirePoPTokenConfidential(
+		p.popClaims,
+		scopes,
+		cred,
+		p.cloud.ActiveDirectoryAuthorityHost,
+		p.clientID,
+		p.tenantID,
+	)
+	if err != nil {
+		return "", -1, fmt.Errorf("failed to create service principal PoP token using certificate: %w", err)
 	}
 
 	return accessToken, expiresOn, nil
