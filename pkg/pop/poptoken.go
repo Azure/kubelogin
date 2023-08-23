@@ -42,7 +42,7 @@ func (as *PopAuthenticationScheme) FormatAccessToken(accessToken string) (string
 	ts := time.Now().Unix()
 	nonce := uuid.New().String()
 	nonce = strings.ReplaceAll(nonce, "-", "")
-	header := fmt.Sprintf(`{"typ":"pop","alg":"%s","kid":"%s"}`, as.PoPKey.Alg(), as.PoPKey.KeyID())
+	header := fmt.Sprintf(`{"typ":"%s","alg":"%s","kid":"%s"}`, popTokenType, as.PoPKey.Alg(), as.PoPKey.KeyID())
 	headerB64 := base64.RawURLEncoding.EncodeToString([]byte(header))
 	payload := fmt.Sprintf(`{"at":"%s","ts":%d,"u":"%s","cnf":{"jwk":%s},"nonce":"%s"}`, accessToken, ts, as.Host, as.PoPKey.JWK(), nonce)
 	payloadB64 := base64.RawURLEncoding.EncodeToString([]byte(payload))

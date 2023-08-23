@@ -44,6 +44,22 @@ func TestOptions(t *testing.T) {
 			t.Fatalf("unsupported login method should return unsupported error. got: %s", err)
 		}
 	})
+
+	t.Run("pop-enabled flag should return error if pop-claims are not provided", func(t *testing.T) {
+		o := NewOptions()
+		o.IsPoPTokenEnabled = true
+		if err := o.Validate(); err == nil || !strings.Contains(err.Error(), "please provide the pop-claims flag") {
+			t.Fatalf("pop-enabled with no pop claims should return missing pop-claims error. got: %s", err)
+		}
+	})
+
+	t.Run("pop-claims flag should return error if pop-enabled is not provided", func(t *testing.T) {
+		o := NewOptions()
+		o.PoPTokenClaims = "u=testhost"
+		if err := o.Validate(); err == nil || !strings.Contains(err.Error(), "pop-enabled flag is required to use the PoP token feature") {
+			t.Fatalf("pop-claims provided with no pop-enabled flag should return missing pop-enabled error. got: %s", err)
+		}
+	})
 }
 
 func TestOptionsWithEnvVars(t *testing.T) {
@@ -155,4 +171,48 @@ func TestOptionsWithEnvVars(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestParsePoPClaims(t *testing.T) {
+	t.Run("pop-claim parsing should fail on empty string", func(t *testing.T) {
+		popClaims := ""
+		if _, err := parsePopClaims(popClaims); err == nil || !strings.Contains(err.Error(), "no claims provided") {
+			t.Fatalf("parsing pop claims should return error if claims is an empty string. got: %s", err)
+		}
+	})
+
+	t.Run("pop-claim parsing should fail on whitespace-only string", func(t *testing.T) {
+		popClaims := "	    "
+		if _, err := parsePopClaims(popClaims); err == nil || !strings.Contains(err.Error(), "no claims provided") {
+			t.Fatalf("parsing pop claims should return error if claims is whitespace-only. got: %s", err)
+		}
+	})
+
+	t.Run("pop-claim parsing should fail if claims are not provided in key=value format", func(t *testing.T) {
+		popClaims := "claim1=val1,claim2"
+		if _, err := parsePopClaims(popClaims); err == nil || !strings.Contains(err.Error(), "Ensure the claims are formatted as `key=value`") {
+			t.Fatalf("parsing pop claims should return error if claims are not provided in key=value format. got: %s", err)
+		}
+	})
+
+	t.Run("pop-claim parsing should fail if claims are malformed", func(t *testing.T) {
+		popClaims := "claim1=  "
+		if _, err := parsePopClaims(popClaims); err == nil || !strings.Contains(err.Error(), "Ensure the claims are formatted as `key=value`") {
+			t.Fatalf("parsing pop claims should return error if claims are malformed. got: %s", err)
+		}
+	})
+
+	t.Run("pop-claim parsing should fail if u-claim is not provided", func(t *testing.T) {
+		popClaims := "claim1=val1, claim2=val2"
+		if _, err := parsePopClaims(popClaims); err == nil || !strings.Contains(err.Error(), "required u-claim not provided") {
+			t.Fatalf("parsing pop claims should return error if u-claim is not provided. got: %s", err)
+		}
+	})
+
+	t.Run("pop-claim parsing should succeed with u-claim and additional claims", func(t *testing.T) {
+		popClaims := "u=val1, claim2=val2, claim3=val3"
+		if _, err := parsePopClaims(popClaims); err != nil {
+			t.Fatalf("parsing pop claims should return successfully on valid claims. got: %s", err)
+		}
+	})
 }
