@@ -1,4 +1,4 @@
-# covert-kubeconfig
+# convert-kubeconfig
 
 This subcommand converts kubeconfig to [Exec plugin](../concepts/exec-plugin.md) using `kubelogin get-token` with specified [login mode](../concepts/login-modes.md).
 
