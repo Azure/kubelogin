@@ -182,44 +182,19 @@ func (p *servicePrincipalToken) getPoPTokenWithClientSecret(scopes []string) (st
 		return "", -1, fmt.Errorf("unable to create credential. Received: %w", err)
 	}
 
-	client, err := confidential.New(
+	accessToken, expiresOn, err := pop.AcquirePoPTokenConfidential(
+		p.popClaims,
+		scopes,
+		cred,
 		p.cloud.ActiveDirectoryAuthorityHost,
 		p.clientID,
-		cred,
+		p.tenantID,
 	)
 	if err != nil {
-		return "", -1, fmt.Errorf("unable to create client. Received: %w", err)
+		return "", -1, fmt.Errorf("failed to create service principal PoP token using secret: %w", err)
 	}
 
-	result, err := client.AcquireTokenSilent(
-		context.Background(),
-		scopes,
-		confidential.WithAuthenticationScheme(
-			&pop.PopAuthenticationScheme{
-				Host:   p.popClaims["u"],
-				PoPKey: pop.GetSwPoPKey(),
-			},
-		),
-		confidential.WithTenantID(p.tenantID),
-	)
-	if err != nil {
-		result, err = client.AcquireTokenByCredential(
-			context.Background(),
-			scopes,
-			confidential.WithAuthenticationScheme(
-				&pop.PopAuthenticationScheme{
-					Host:   p.popClaims["u"],
-					PoPKey: pop.GetSwPoPKey(),
-				},
-			),
-			confidential.WithTenantID(p.tenantID),
-		)
-		if err != nil {
-			return "", -1, fmt.Errorf("failed to create service principal PoP token using secret: %w", err)
-		}
-	}
-
-	return result.AccessToken, result.ExpiresOn.Unix(), nil
+	return accessToken, expiresOn, nil
 }
 
 func isPublicKeyEqual(key1, key2 *rsa.PublicKey) bool {

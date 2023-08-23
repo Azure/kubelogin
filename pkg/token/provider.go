@@ -92,6 +92,9 @@ func parsePopClaims(popClaims string) (map[string]string, error) {
 	claimsMap := make(map[string]string)
 	for _, claim := range claimsArray {
 		claimPair := strings.Split(claim, "=")
+		if len(claimPair) < 2 {
+			return nil, fmt.Errorf("error parsing PoP token claims. Ensure the claims are formatted as `key=value` with no extra whitespace")
+		}
 		key := strings.TrimSpace(claimPair[0])
 		val := strings.TrimSpace(claimPair[1])
 		if key == "" || val == "" {
