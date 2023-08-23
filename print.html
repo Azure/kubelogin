@@ -510,7 +510,7 @@ Use &quot;kubelogin [command] --help&quot; for more information about a command.
 <li><a href="./cli/get-token.html"><code>kubelogin get-token</code></a> - gets the Azure AD token based on configured login mode. This subcommand is typically used in kubeconfig via <a href="./concepts/exec-plugin.html">exec plugin</a> and is invoked by kubectl or any command-line tool, such as helm, implementing exec plugin.</li>
 <li><a href="./cli/remove-tokens.html"><code>kubelogin remove-tokens</code></a> - removes the cached token on the filesystem</li>
 </ul>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="covert-kubeconfig"><a class="header" href="#covert-kubeconfig">covert-kubeconfig</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="convert-kubeconfig"><a class="header" href="#convert-kubeconfig">convert-kubeconfig</a></h1>
 <p>This subcommand converts kubeconfig to <a href="cli/../concepts/exec-plugin.html">Exec plugin</a> using <code>kubelogin get-token</code> with specified <a href="cli/../concepts/login-modes.html">login mode</a>.</p>
 <p>Note that when <code>--context</code> is specified, only the matching kubeconfig context will be converted. Otherwise, every kubeconfig context that uses azure auth or Exec plugin will be converted.</p>
 <h2 id="usage"><a class="header" href="#usage">Usage</a></h2>
