@@ -15,9 +15,9 @@ func AcquirePoPTokenInteractive(
 	popClaims map[string]string,
 	scopes []string,
 	authority,
-	clientId string,
+	clientID string,
 ) (string, int64, error) {
-	client, err := public.New(clientId, public.WithAuthority(authority))
+	client, err := public.New(clientID, public.WithAuthority(authority))
 	if err != nil {
 		return "", -1, fmt.Errorf("unable to create public client: %w", err)
 	}
@@ -43,26 +43,33 @@ func AcquirePoPTokenConfidential(
 	scopes []string,
 	cred confidential.Credential,
 	authority,
-	clientId,
-	tenantId string,
+	clientID,
+	tenantID string,
 ) (string, int64, error) {
 	authnScheme := &PopAuthenticationScheme{
 		Host:   popClaims["u"],
 		PoPKey: GetSwPoPKey(),
 	}
-	client, err := confidential.New(authority, clientId, cred)
+	client, err := confidential.New(
+		authority,
+		clientID,
+		cred,
+	)
+	if err != nil {
+		return "", -1, fmt.Errorf("unable to create confidential client: %w", err)
+	}
 	result, err := client.AcquireTokenSilent(
 		context.Background(),
 		scopes,
 		confidential.WithAuthenticationScheme(authnScheme),
-		confidential.WithTenantID(tenantId),
+		confidential.WithTenantID(tenantID),
 	)
 	if err != nil {
 		result, err = client.AcquireTokenByCredential(
 			context.Background(),
 			scopes,
 			confidential.WithAuthenticationScheme(authnScheme),
-			confidential.WithTenantID(tenantId),
+			confidential.WithTenantID(tenantID),
 		)
 		if err != nil {
 			return "", -1, fmt.Errorf("failed to create service principal PoP token using secret: %w", err)
