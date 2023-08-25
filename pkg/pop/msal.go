@@ -6,7 +6,9 @@ package pop
 import (
 	"context"
 	"fmt"
+	"net/http"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/confidential"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
 )
@@ -47,6 +49,7 @@ func AcquirePoPTokenConfidential(
 	authority,
 	clientID,
 	tenantID string,
+	options *azcore.ClientOptions,
 ) (string, int64, error) {
 	authnScheme := &PopAuthenticationScheme{
 		Host:   popClaims["u"],
@@ -56,6 +59,7 @@ func AcquirePoPTokenConfidential(
 		authority,
 		clientID,
 		cred,
+		confidential.WithHTTPClient(options.Transport.(*http.Client)),
 	)
 	if err != nil {
 		return "", -1, fmt.Errorf("unable to create confidential client: %w", err)

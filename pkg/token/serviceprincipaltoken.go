@@ -80,12 +80,12 @@ func (p *servicePrincipalToken) TokenWithOptions(options *azcore.ClientOptions) 
 
 	// Request a new Azure token provider for service principal
 	if p.clientSecret != "" {
-		accessToken, expirationTimeUnix, err = p.getTokenWithClientSecret(options, context.Background(), scopes)
+		accessToken, expirationTimeUnix, err = p.getTokenWithClientSecret(context.Background(), scopes, options)
 		if err != nil {
 			return emptyToken, fmt.Errorf("failed to create service principal token using secret: %w", err)
 		}
 	} else if p.clientCert != "" {
-		accessToken, expirationTimeUnix, err = p.getTokenWithClientCert(options, context.Background(), scopes)
+		accessToken, expirationTimeUnix, err = p.getTokenWithClientCert(context.Background(), scopes, options)
 		if err != nil {
 			return emptyToken, fmt.Errorf("failed to create service principal token using certificate: %w", err)
 		}
@@ -110,12 +110,7 @@ func (p *servicePrincipalToken) TokenWithOptions(options *azcore.ClientOptions) 
 	}, nil
 }
 
-func (p *servicePrincipalToken) getTokenWithClientSecret(options *azcore.ClientOptions, context context.Context, scopes []string) (string, int64, error) {
-	if p.popClaims != nil && len(p.popClaims) > 0 {
-		// if PoP token support is enabled, use the PoP token flow to request the token
-		return p.getPoPTokenWithClientSecret(context, scopes)
-	}
-
+func (p *servicePrincipalToken) getTokenWithClientSecret(context context.Context, scopes []string, options *azcore.ClientOptions) (string, int64, error) {
 	clientOptions := &azidentity.ClientSecretCredentialOptions{
 		ClientOptions: azcore.ClientOptions{
 			Cloud: p.cloud,
@@ -123,6 +118,10 @@ func (p *servicePrincipalToken) getTokenWithClientSecret(options *azcore.ClientO
 	}
 	if options != nil {
 		clientOptions.ClientOptions = *options
+	}
+	if p.popClaims != nil && len(p.popClaims) > 0 {
+		// if PoP token support is enabled, use the PoP token flow to request the token
+		return p.getPoPTokenWithClientSecret(context, scopes, options)
 	}
 	cred, err := azidentity.NewClientSecretCredential(
 		p.tenantID,
@@ -143,12 +142,11 @@ func (p *servicePrincipalToken) getTokenWithClientSecret(options *azcore.ClientO
 	return spnAccessToken.Token, spnAccessToken.ExpiresOn.Unix(), nil
 }
 
-func (p *servicePrincipalToken) getPoPTokenWithClientSecret(context context.Context, scopes []string) (string, int64, error) {
+func (p *servicePrincipalToken) getPoPTokenWithClientSecret(context context.Context, scopes []string, options *azcore.ClientOptions) (string, int64, error) {
 	cred, err := confidential.NewCredFromSecret(p.clientSecret)
 	if err != nil {
 		return "", -1, fmt.Errorf("unable to create credential. Received: %w", err)
 	}
-
 	accessToken, expiresOn, err := pop.AcquirePoPTokenConfidential(
 		context,
 		p.popClaims,
@@ -157,6 +155,7 @@ func (p *servicePrincipalToken) getPoPTokenWithClientSecret(context context.Cont
 		p.cloud.ActiveDirectoryAuthorityHost,
 		p.clientID,
 		p.tenantID,
+		options,
 	)
 	if err != nil {
 		return "", -1, fmt.Errorf("failed to create service principal PoP token using secret: %w", err)
@@ -165,7 +164,7 @@ func (p *servicePrincipalToken) getPoPTokenWithClientSecret(context context.Cont
 	return accessToken, expiresOn, nil
 }
 
-func (p *servicePrincipalToken) getTokenWithClientCert(options *azcore.ClientOptions, context context.Context, scopes []string) (string, int64, error) {
+func (p *servicePrincipalToken) getTokenWithClientCert(context context.Context, scopes []string, options *azcore.ClientOptions) (string, int64, error) {
 	clientOptions := &azidentity.ClientCertificateCredentialOptions{
 		ClientOptions: azcore.ClientOptions{
 			Cloud: p.cloud,
@@ -189,7 +188,7 @@ func (p *servicePrincipalToken) getTokenWithClientCert(options *azcore.ClientOpt
 	certArray := []*x509.Certificate{cert}
 	if p.popClaims != nil && len(p.popClaims) > 0 {
 		// if PoP token support is enabled, use the PoP token flow to request the token
-		return p.getPoPTokenWithClientCert(context, scopes, certArray, rsaPrivateKey)
+		return p.getPoPTokenWithClientCert(context, scopes, certArray, rsaPrivateKey, options)
 	}
 
 	cred, err := azidentity.NewClientCertificateCredential(
@@ -215,6 +214,7 @@ func (p *servicePrincipalToken) getPoPTokenWithClientCert(
 	scopes []string,
 	certArray []*x509.Certificate,
 	rsaPrivateKey *rsa.PrivateKey,
+	options *azcore.ClientOptions,
 ) (string, int64, error) {
 	cred, err := confidential.NewCredFromCert(certArray, rsaPrivateKey)
 	if err != nil {
@@ -229,6 +229,7 @@ func (p *servicePrincipalToken) getPoPTokenWithClientCert(
 		p.cloud.ActiveDirectoryAuthorityHost,
 		p.clientID,
 		p.tenantID,
+		options,
 	)
 	if err != nil {
 		return "", -1, fmt.Errorf("failed to create service principal PoP token using certificate: %w", err)
