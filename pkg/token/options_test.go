@@ -1,6 +1,7 @@
 package token
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -174,45 +175,75 @@ func TestOptionsWithEnvVars(t *testing.T) {
 }
 
 func TestParsePoPClaims(t *testing.T) {
-	t.Run("pop-claim parsing should fail on empty string", func(t *testing.T) {
-		popClaims := ""
-		if _, err := parsePopClaims(popClaims); err == nil || !strings.Contains(err.Error(), "no claims provided") {
-			t.Fatalf("parsing pop claims should return error if claims is an empty string. got: %s", err)
-		}
-	})
+	testCases := []struct {
+		name           string
+		popClaims      string
+		expectedError  error
+		expectedClaims map[string]string
+	}{
+		{
+			name:           "pop-claim parsing should fail on empty string",
+			popClaims:      "",
+			expectedError:  fmt.Errorf("error parsing PoP token claims: no claims provided"),
+			expectedClaims: nil,
+		},
+		{
+			name:           "pop-claim parsing should fail on whitespace-only string",
+			popClaims:      "	    ",
+			expectedError:  fmt.Errorf("error parsing PoP token claims: no claims provided"),
+			expectedClaims: nil,
+		},
+		{
+			name:           "pop-claim parsing should fail if claims are not provided in key=value format",
+			popClaims:      "claim1=val1,claim2",
+			expectedError:  fmt.Errorf("error parsing PoP token claims. Ensure the claims are formatted as `key=value` with no extra whitespace"),
+			expectedClaims: nil,
+		},
+		{
+			name:           "pop-claim parsing should fail if claims are malformed",
+			popClaims:      "claim1=  ",
+			expectedError:  fmt.Errorf("error parsing PoP token claims. Ensure the claims are formatted as `key=value` with no extra whitespace"),
+			expectedClaims: nil,
+		},
+		{
+			name:           "pop-claim parsing should fail if claims are malformed/commas only",
+			popClaims:      ",,,,,,,,",
+			expectedError:  fmt.Errorf("error parsing PoP token claims. Ensure the claims are formatted as `key=value` with no extra whitespace"),
+			expectedClaims: nil,
+		},
+		{
+			name:           "pop-claim parsing should fail if u-claim is not provided",
+			popClaims:      "1=2,3=4",
+			expectedError:  fmt.Errorf("required u-claim not provided for PoP token flow. Please provide the ARM ID of the cluster in the format `u=<ARM_ID>`"),
+			expectedClaims: nil,
+		},
+		{
+			name:          "pop-claim parsing should succeed with u-claim and additional claims",
+			popClaims:     "u=val1, claim2=val2, claim3=val3",
+			expectedError: nil,
+			expectedClaims: map[string]string{
+				"u":      "val1",
+				"claim2": "val2",
+				"claim3": "val3",
+			},
+		},
+	}
 
-	t.Run("pop-claim parsing should fail on whitespace-only string", func(t *testing.T) {
-		popClaims := "	    "
-		if _, err := parsePopClaims(popClaims); err == nil || !strings.Contains(err.Error(), "no claims provided") {
-			t.Fatalf("parsing pop claims should return error if claims is whitespace-only. got: %s", err)
-		}
-	})
-
-	t.Run("pop-claim parsing should fail if claims are not provided in key=value format", func(t *testing.T) {
-		popClaims := "claim1=val1,claim2"
-		if _, err := parsePopClaims(popClaims); err == nil || !strings.Contains(err.Error(), "Ensure the claims are formatted as `key=value`") {
-			t.Fatalf("parsing pop claims should return error if claims are not provided in key=value format. got: %s", err)
-		}
-	})
-
-	t.Run("pop-claim parsing should fail if claims are malformed", func(t *testing.T) {
-		popClaims := "claim1=  "
-		if _, err := parsePopClaims(popClaims); err == nil || !strings.Contains(err.Error(), "Ensure the claims are formatted as `key=value`") {
-			t.Fatalf("parsing pop claims should return error if claims are malformed. got: %s", err)
-		}
-	})
-
-	t.Run("pop-claim parsing should fail if u-claim is not provided", func(t *testing.T) {
-		popClaims := "claim1=val1, claim2=val2"
-		if _, err := parsePopClaims(popClaims); err == nil || !strings.Contains(err.Error(), "required u-claim not provided") {
-			t.Fatalf("parsing pop claims should return error if u-claim is not provided. got: %s", err)
-		}
-	})
-
-	t.Run("pop-claim parsing should succeed with u-claim and additional claims", func(t *testing.T) {
-		popClaims := "u=val1, claim2=val2, claim3=val3"
-		if _, err := parsePopClaims(popClaims); err != nil {
-			t.Fatalf("parsing pop claims should return successfully on valid claims. got: %s", err)
-		}
-	})
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			claimsMap, err := parsePopClaims(tc.popClaims)
+			if err != nil {
+				if !ErrorContains(err, tc.expectedError.Error()) {
+					t.Fatalf("expected error: %+v, got error: %+v", tc.expectedError, err)
+				}
+			} else {
+				if err != tc.expectedError {
+					t.Fatalf("expected error: %+v, got error: %+v", tc.expectedError, err)
+				}
+			}
+			if !cmp.Equal(claimsMap, tc.expectedClaims) {
+				t.Fatalf("expected claims map to be %s, got map: %s", tc.expectedClaims, claimsMap)
+			}
+		})
+	}
 }

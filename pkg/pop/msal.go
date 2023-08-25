@@ -12,6 +12,7 @@ import (
 )
 
 func AcquirePoPTokenInteractive(
+	context context.Context,
 	popClaims map[string]string,
 	scopes []string,
 	authority,
@@ -22,7 +23,7 @@ func AcquirePoPTokenInteractive(
 		return "", -1, fmt.Errorf("unable to create public client: %w", err)
 	}
 	result, err := client.AcquireTokenInteractive(
-		context.Background(),
+		context,
 		scopes,
 		public.WithAuthenticationScheme(
 			&PopAuthenticationScheme{
@@ -39,6 +40,7 @@ func AcquirePoPTokenInteractive(
 }
 
 func AcquirePoPTokenConfidential(
+	context context.Context,
 	popClaims map[string]string,
 	scopes []string,
 	cred confidential.Credential,
@@ -59,14 +61,14 @@ func AcquirePoPTokenConfidential(
 		return "", -1, fmt.Errorf("unable to create confidential client: %w", err)
 	}
 	result, err := client.AcquireTokenSilent(
-		context.Background(),
+		context,
 		scopes,
 		confidential.WithAuthenticationScheme(authnScheme),
 		confidential.WithTenantID(tenantID),
 	)
 	if err != nil {
 		result, err = client.AcquireTokenByCredential(
-			context.Background(),
+			context,
 			scopes,
 			confidential.WithAuthenticationScheme(authnScheme),
 			confidential.WithTenantID(tenantID),

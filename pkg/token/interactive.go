@@ -84,6 +84,7 @@ func (p *InteractiveToken) Token() (adal.Token, error) {
 		// If PoP token support is enabled and the correct u-claim is provided, use the MSAL
 		// token provider to acquire a new token
 		token, expirationTimeUnix, err = pop.AcquirePoPTokenInteractive(
+			context.Background(),
 			p.popClaims,
 			scopes,
 			p.oAuthConfig.AuthorityEndpoint.Host,
