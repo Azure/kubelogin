@@ -87,7 +87,7 @@ func (p *InteractiveToken) Token() (adal.Token, error) {
 			context.Background(),
 			p.popClaims,
 			scopes,
-			p.oAuthConfig.AuthorityEndpoint.Host,
+			authorityFromConfig.String(),
 			p.clientID,
 		)
 		if err != nil {
