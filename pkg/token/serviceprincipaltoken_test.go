@@ -7,6 +7,8 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
+	"github.com/Azure/go-autorest/autorest/adal"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"gopkg.in/dnaeon/go-vcr.v3/recorder"
 )
@@ -84,7 +86,6 @@ func TestServicePrincipalTokenVCR(t *testing.T) {
 		pEnv.tenantID = "00000000-0000-0000-0000-000000000000"
 	}
 	var expectedToken string
-
 	testCase := []struct {
 		cassetteName      string
 		p                 *servicePrincipalToken
@@ -92,72 +93,42 @@ func TestServicePrincipalTokenVCR(t *testing.T) {
 		useSecret         bool
 		expectedTokenType string
 	}{
-		// {
-		// 	// Test using incorrect secret value
-		// 	cassetteName: "ServicePrincipalTokenFromBadSecretVCR",
-		// 	p: &servicePrincipalToken{
-		// 		clientID:     pEnv.clientID,
-		// 		clientSecret: badSecret,
-		// 		resourceID:   pEnv.resourceID,
-		// 		tenantID:     pEnv.tenantID,
-		// 	},
-		// 	expectedError: fmt.Errorf("ClientSecretCredential authentication failed"),
-		// 	useSecret:     true,
-		// },
-		// popClaims:    map[string]string{"u": "testhost"},
-		// {
-		// 	// Test using service principal secret value to get token
-		// 	cassetteName: "ServicePrincipalTokenFromSecretVCR",
-		// 	p: &servicePrincipalToken{
-		// 		clientID:     pEnv.clientID,
-		// 		clientSecret: pEnv.clientSecret,
-		// 		resourceID:   pEnv.resourceID,
-		// 		tenantID:     pEnv.tenantID,
-		// 	},
-		// 	expectedError: nil,
-		// 	useSecret:     true,
-		// },
-		// {
-		// 	// Test using service principal certificate to get token
-		// 	cassetteName: "ServicePrincipalTokenFromCertVCR",
-		// 	p: &servicePrincipalToken{
-		// 		clientID:           pEnv.clientID,
-		// 		clientCert:         pEnv.clientCert,
-		// 		clientCertPassword: pEnv.clientCertPassword,
-		// 		resourceID:         pEnv.resourceID,
-		// 		tenantID:           pEnv.tenantID,
-		// 	},
-		// 	expectedError: nil,
-		// 	useSecret:     false,
-		// },
-		// {
-		// 	// Test using service principal secret value to get PoP token
-		// 	cassetteName: "ServicePrincipalPoPTokenFromSecretVCR",
-		// 	p: &servicePrincipalToken{
-		// 		clientID:     pEnv.clientID,
-		// 		clientSecret: pEnv.clientSecret,
-		// 		resourceID:   pEnv.resourceID,
-		// 		tenantID:     pEnv.tenantID,
-		// 	},
-		// 	expectedError: nil,
-		// 	useSecret:     true,
-		// },
+		{
+			// Test using incorrect secret value
+			cassetteName: "ServicePrincipalTokenFromBadSecretVCR",
+			p: &servicePrincipalToken{
+				clientID:     pEnv.clientID,
+				clientSecret: badSecret,
+				resourceID:   pEnv.resourceID,
+				tenantID:     pEnv.tenantID,
+			},
+			expectedError: fmt.Errorf("ClientSecretCredential authentication failed"),
+			useSecret:     true,
+		},
 		{
 			// Test using service principal secret value to get token
-			cassetteName: "ServicePrincipalPoPTokenFromSecretVCR",
+			cassetteName: "ServicePrincipalTokenFromSecretVCR",
 			p: &servicePrincipalToken{
 				clientID:     pEnv.clientID,
 				clientSecret: pEnv.clientSecret,
 				resourceID:   pEnv.resourceID,
 				tenantID:     pEnv.tenantID,
-				popClaims:    map[string]string{"u": "testhost"},
-				cloud: cloud.Configuration{
-					ActiveDirectoryAuthorityHost: "https://login.microsoftonline.com/TENANT_ID",
-				},
 			},
-			expectedError:     nil,
-			useSecret:         true,
-			expectedTokenType: "pop",
+			expectedError: nil,
+			useSecret:     true,
+		},
+		{
+			// Test using service principal certificate to get token
+			cassetteName: "ServicePrincipalTokenFromCertVCR",
+			p: &servicePrincipalToken{
+				clientID:           pEnv.clientID,
+				clientCert:         pEnv.clientCert,
+				clientCertPassword: pEnv.clientCertPassword,
+				resourceID:         pEnv.resourceID,
+				tenantID:           pEnv.tenantID,
+			},
+			expectedError: nil,
+			useSecret:     false,
 		},
 	}
 
@@ -183,12 +154,98 @@ func TestServicePrincipalTokenVCR(t *testing.T) {
 				if token.AccessToken == "" {
 					t.Error("expected valid token, but received empty token.")
 				}
-				if token.Type != tc.expectedTokenType {
-					t.Errorf("expected token of type %q but received token of type %q", tc.expectedTokenType, token.Type)
-				}
 				if vcrRecorder.Mode() == recorder.ModeReplayOnly {
 					if token.AccessToken != expectedToken {
 						t.Errorf("unexpected token returned (expected %s, but got %s)", expectedToken, token.AccessToken)
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestServicePrincipalPoPTokenVCR(t *testing.T) {
+	pEnv := &servicePrincipalToken{
+		clientID:           os.Getenv(clientID),
+		clientSecret:       os.Getenv(clientSecret),
+		clientCert:         os.Getenv(clientCert),
+		clientCertPassword: os.Getenv(clientCertPass),
+		resourceID:         os.Getenv(resourceID),
+		tenantID:           os.Getenv(tenantID),
+	}
+	// Use defaults if environmental variables are empty
+	if pEnv.clientID == "" {
+		pEnv.clientID = clientID
+	}
+	if pEnv.clientSecret == "" {
+		pEnv.clientSecret = clientSecret
+	}
+	if pEnv.clientCert == "" {
+		pEnv.clientCert = "testdata/testCert.pfx"
+	}
+	if pEnv.clientCertPassword == "" {
+		pEnv.clientCertPassword = "TestPassword"
+	}
+	if pEnv.resourceID == "" {
+		pEnv.resourceID = resourceID
+	}
+	if pEnv.tenantID == "" {
+		pEnv.tenantID = "00000000-0000-0000-0000-000000000000"
+	}
+	var expectedToken string
+	var err error
+	var token adal.Token
+	testCase := []struct {
+		cassetteName  string
+		p             *servicePrincipalToken
+		expectedError error
+		useSecret     bool
+	}{
+		{
+			// Test using service principal secret value to get PoP token
+			cassetteName: "ServicePrincipalTokenFromSecretVCR",
+			p: &servicePrincipalToken{
+				clientID:     pEnv.clientID,
+				clientSecret: pEnv.clientSecret,
+				resourceID:   pEnv.resourceID,
+				tenantID:     pEnv.tenantID,
+				popClaims:    map[string]string{"u": "testhost"},
+				cloud: cloud.Configuration{
+					ActiveDirectoryAuthorityHost: "https://login.microsoftonline.com/AZURE_TENANT_ID",
+				},
+			},
+			expectedError: nil,
+			useSecret:     true,
+		},
+	}
+
+	for _, tc := range testCase {
+		t.Run(tc.cassetteName, func(t *testing.T) {
+			if tc.expectedError == nil {
+				expectedToken = uuid.New().String()
+			}
+			vcrRecorder, httpClient := GetVCRHttpClient(fmt.Sprintf("testdata/%s", tc.cassetteName), expectedToken)
+
+			clientOpts := azcore.ClientOptions{
+				Cloud:     cloud.AzurePublic,
+				Transport: httpClient,
+			}
+
+			token, err = tc.p.TokenWithOptions(&clientOpts)
+			defer vcrRecorder.Stop()
+			if err != nil {
+				if !ErrorContains(err, tc.expectedError.Error()) {
+					t.Errorf("expected error %s, but got %s", tc.expectedError.Error(), err)
+				}
+			} else {
+				if token.AccessToken == "" {
+					t.Error("expected valid token, but received empty token.")
+				}
+				claims := jwt.MapClaims{}
+				jwt.ParseWithClaims(token.AccessToken, &claims, nil)
+				if vcrRecorder.Mode() == recorder.ModeReplayOnly {
+					if claims["at"] != expectedToken {
+						t.Errorf("unexpected token returned (expected %s, but got %s)", expectedToken, claims["at"])
 					}
 				}
 			}
