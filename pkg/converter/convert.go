@@ -225,7 +225,7 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 
 		klog.V(5).Info("converting...")
 
-		argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal, argTokenCacheDirVal, argPoPTokenClaimsVal, isLegacyConfigMode, isPopTokenEnabled := getArgValues(o, authInfo)
+		argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal, argTokenCacheDirVal, argPoPTokenClaimsVal, isLegacyConfigMode, isPoPTokenEnabled := getArgValues(o, authInfo)
 		exec := &api.ExecConfig{
 			Command: execName,
 			Args: []string{
@@ -309,8 +309,8 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 				exec.Args = append(exec.Args, argEnvironment, argEnvironmentVal)
 			}
 
-			// poP token flags are optional but must be provided together
-			exec.Args, err = validatePoPClaims(exec.Args, isPopTokenEnabled, argPoPTokenClaims, argPoPTokenClaimsVal)
+			// PoP token flags are optional but must be provided together
+			exec.Args, err = validatePoPClaims(exec.Args, isPoPTokenEnabled, argPoPTokenClaims, argPoPTokenClaimsVal)
 			if err != nil {
 				return err
 			}
@@ -350,8 +350,8 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 				exec.Args = append(exec.Args, argIsLegacy)
 			}
 
-			// poP token flags are optional but must be provided together
-			exec.Args, err = validatePoPClaims(exec.Args, isPopTokenEnabled, argPoPTokenClaims, argPoPTokenClaimsVal)
+			// PoP token flags are optional but must be provided together
+			exec.Args, err = validatePoPClaims(exec.Args, isPoPTokenEnabled, argPoPTokenClaims, argPoPTokenClaimsVal)
 			if err != nil {
 				return err
 			}
@@ -466,12 +466,12 @@ func getExecBoolArg(authInfoPtr *api.AuthInfo, someArg string) bool {
 func validatePoPClaims(args []string, isPopTokenEnabled bool, popTokenClaimsFlag, popTokenClaimsVal string) ([]string, error) {
 	if isPopTokenEnabled && popTokenClaimsVal == "" {
 		// pop-enabled and pop-claims must be provided together
-		return nil, fmt.Errorf("%s is required when specifying %s", argPoPTokenClaims, argIsPoPTokenEnabled)
+		return args, fmt.Errorf("%s is required when specifying %s", argPoPTokenClaims, argIsPoPTokenEnabled)
 	}
 
 	if popTokenClaimsVal != "" && !isPopTokenEnabled {
 		// pop-enabled and pop-claims must be provided together
-		return nil, fmt.Errorf("%s is required when specifying %s", argIsPoPTokenEnabled, argPoPTokenClaims)
+		return args, fmt.Errorf("%s is required when specifying %s", argIsPoPTokenEnabled, argPoPTokenClaims)
 	}
 
 	if isPopTokenEnabled && popTokenClaimsVal != "" {
