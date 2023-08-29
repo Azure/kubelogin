@@ -16,8 +16,6 @@ import (
 	"time"
 )
 
-const popTokenType = "pop"
-
 // PoPKey - generic interface for PoP key properties and methods
 type PoPKey interface {
 	// encryption/signature algo

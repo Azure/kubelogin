@@ -13,41 +13,136 @@ import (
 	"github.com/google/uuid"
 )
 
-type PopAuthenticationScheme struct {
+// type of a PoP token, as opposed to "JWT" for a regular bearer token
+const popTokenType = "pop"
+
+// type representing the header of a PoP access token
+type header struct {
+	typ string
+	alg string
+	kid string
+}
+
+// returns a string representation of a header object
+func (h *header) ToString() string {
+	return fmt.Sprintf(`{"typ":"%s","alg":"%s","kid":"%s"}`, h.typ, h.alg, h.kid)
+}
+
+// returns a base-64 encoded string representation of a header object
+func (h *header) ToBase64() string {
+	return base64.RawURLEncoding.EncodeToString([]byte(h.ToString()))
+}
+
+// type representing the payload of a PoP token
+type payload struct {
+	at    string
+	ts    int64
+	host  string
+	jwk   string
+	nonce string
+}
+
+// returns a string representation of a payload object
+func (p *payload) ToString() string {
+	return fmt.Sprintf(`{"at":"%s","ts":%d,"u":"%s","cnf":{"jwk":%s},"nonce":"%s"}`, p.at, p.ts, p.host, p.jwk, p.nonce)
+}
+
+// returns a base-64 encoded representation of a payload object
+func (p *payload) ToBase64() string {
+	return base64.RawURLEncoding.EncodeToString([]byte(p.ToString()))
+}
+
+// type representing the signature of a PoP token
+type signature struct {
+	sig []byte
+}
+
+// returns a base-64 encoded representation of a signature object
+func (s *signature) ToBase64() string {
+	return base64.RawURLEncoding.EncodeToString(s.sig)
+}
+
+// type representing a PoP access token
+type PoPAccessToken struct {
+	Header    header
+	Payload   payload
+	Signature signature
+}
+
+// given a header, payload, and PoP key, creates the signature for the token and returns
+// a PoPAccessToken object representing the signed token
+func CreatePoPAccessToken(h header, p payload, popKey PoPKey) (*PoPAccessToken, error) {
+	token := &PoPAccessToken{
+		Header:  h,
+		Payload: p,
+	}
+	h256 := sha256.Sum256([]byte(h.ToBase64() + "." + p.ToBase64()))
+	sig, err := popKey.Sign(h256[:])
+	if err != nil {
+		return nil, err
+	}
+	token.Signature = signature{
+		sig: sig,
+	}
+	return token, nil
+}
+
+// returns a base-64 encoded representation of a PoP access token
+func (p *PoPAccessToken) ToBase64() string {
+	return fmt.Sprintf("%s.%s.%s", p.Header.ToBase64(), p.Payload.ToBase64(), p.Signature.ToBase64())
+}
+
+// PoP token implementation of the MSAL AuthenticationScheme interface
+type PoPAuthenticationScheme struct {
 	// host is the u claim we will add on the pop token
 	Host   string
 	PoPKey PoPKey
 }
 
-func (as *PopAuthenticationScheme) TokenRequestParams() map[string]string {
+// returns the params to use when sending a request for a PoP token
+func (as *PoPAuthenticationScheme) TokenRequestParams() map[string]string {
 	return map[string]string{
 		"token_type": popTokenType,
 		"req_cnf":    as.PoPKey.ReqCnf(),
 	}
 }
 
-func (as *PopAuthenticationScheme) KeyID() string {
+// returns the key used to sign the PoP token
+func (as *PoPAuthenticationScheme) KeyID() string {
 	return as.PoPKey.KeyID()
 }
 
-func (as *PopAuthenticationScheme) FormatAccessToken(accessToken string) (string, error) {
-	ts := time.Now().Unix()
-	nonce := uuid.New().String()
-	nonce = strings.ReplaceAll(nonce, "-", "")
-	header := fmt.Sprintf(`{"typ":"%s","alg":"%s","kid":"%s"}`, popTokenType, as.PoPKey.Alg(), as.PoPKey.KeyID())
-	headerB64 := base64.RawURLEncoding.EncodeToString([]byte(header))
-	payload := fmt.Sprintf(`{"at":"%s","ts":%d,"u":"%s","cnf":{"jwk":%s},"nonce":"%s"}`, accessToken, ts, as.Host, as.PoPKey.JWK(), nonce)
-	payloadB64 := base64.RawURLEncoding.EncodeToString([]byte(payload))
-	h256 := sha256.Sum256([]byte(headerB64 + "." + payloadB64))
-	signature, err := as.PoPKey.Sign(h256[:])
-	if err != nil {
-		return "", err
+func (as *PoPAuthenticationScheme) FormatAccessTokenWithOptions(accessToken, nonce string, timestamp int64) (string, error) {
+	header := header{
+		typ: popTokenType,
+		alg: as.PoPKey.Alg(),
+		kid: as.PoPKey.KeyID(),
 	}
-	signatureB64 := base64.RawURLEncoding.EncodeToString(signature)
+	payload := payload{
+		at:    accessToken,
+		ts:    timestamp,
+		host:  as.Host,
+		jwk:   as.PoPKey.JWK(),
+		nonce: nonce,
+	}
 
-	return headerB64 + "." + payloadB64 + "." + signatureB64, nil
+	popAccessToken, err := CreatePoPAccessToken(header, payload, as.PoPKey)
+	if err != nil {
+		return "", fmt.Errorf("error formatting PoP token: %w", err)
+	}
+	return popAccessToken.ToBase64(), nil
 }
 
-func (as *PopAuthenticationScheme) AccessTokenType() string {
+// given an access token, formats it as a PoP token and returns it as a base-64 encoded string
+func (as *PoPAuthenticationScheme) FormatAccessToken(accessToken string) (string, error) {
+	timestamp := time.Now().Unix()
+	nonce := uuid.NewString()
+	nonce = strings.ReplaceAll(nonce, "-", "")
+
+	return as.FormatAccessTokenWithOptions(accessToken, nonce, timestamp)
+}
+
+// returns the PoP access token type
+func (as *PoPAuthenticationScheme) AccessTokenType() string {
 	return popTokenType
 }

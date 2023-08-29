@@ -28,7 +28,7 @@ func AcquirePoPTokenInteractive(
 		context,
 		scopes,
 		public.WithAuthenticationScheme(
-			&PopAuthenticationScheme{
+			&PoPAuthenticationScheme{
 				Host:   popClaims["u"],
 				PoPKey: GetSwPoPKey(),
 			},
@@ -51,7 +51,7 @@ func AcquirePoPTokenConfidential(
 	tenantID string,
 	options *azcore.ClientOptions,
 ) (string, int64, error) {
-	authnScheme := &PopAuthenticationScheme{
+	authnScheme := &PoPAuthenticationScheme{
 		Host:   popClaims["u"],
 		PoPKey: GetSwPoPKey(),
 	}
