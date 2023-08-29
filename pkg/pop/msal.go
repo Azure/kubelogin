@@ -13,6 +13,7 @@ import (
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
 )
 
+// acquires a PoP token using MSAL's interactive login flow. Requires user to authenticate via browser
 func AcquirePoPTokenInteractive(
 	context context.Context,
 	popClaims map[string]string,
@@ -41,6 +42,8 @@ func AcquirePoPTokenInteractive(
 	return result.AccessToken, result.ExpiresOn.Unix(), nil
 }
 
+// acquires a PoP token using MSAL's confidential login flow. This flow does not require user interaction
+// as the credentials for the request have already been provided
 func AcquirePoPTokenConfidential(
 	context context.Context,
 	popClaims map[string]string,

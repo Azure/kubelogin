@@ -60,7 +60,20 @@ func (p *InteractiveToken) Token() (adal.Token, error) {
 	var expirationTimeUnix int64
 	var err error
 
-	if p.popClaims == nil || len(p.popClaims) == 0 {
+	if len(p.popClaims) > 0 {
+		// If PoP token support is enabled and the correct u-claim is provided, use the MSAL
+		// token provider to acquire a new token
+		token, expirationTimeUnix, err = pop.AcquirePoPTokenInteractive(
+			context.Background(),
+			p.popClaims,
+			scopes,
+			authorityFromConfig.String(),
+			p.clientID,
+		)
+		if err != nil {
+			return emptyToken, fmt.Errorf("failed to create PoP token using interactive login: %w", err)
+		}
+	} else {
 		cred, err := azidentity.NewInteractiveBrowserCredential(&azidentity.InteractiveBrowserCredentialOptions{
 			ClientOptions: clientOpts,
 			TenantID:      p.tenantID,
@@ -80,19 +93,6 @@ func (p *InteractiveToken) Token() (adal.Token, error) {
 			return emptyToken, errors.New("did not receive a token")
 		}
 		expirationTimeUnix = interactiveToken.ExpiresOn.Unix()
-	} else {
-		// If PoP token support is enabled and the correct u-claim is provided, use the MSAL
-		// token provider to acquire a new token
-		token, expirationTimeUnix, err = pop.AcquirePoPTokenInteractive(
-			context.Background(),
-			p.popClaims,
-			scopes,
-			authorityFromConfig.String(),
-			p.clientID,
-		)
-		if err != nil {
-			return emptyToken, fmt.Errorf("failed to create PoP token using interactive login: %w", err)
-		}
 	}
 
 	// azurecore.AccessTokens have ExpiresOn as Time.Time. We need to convert it to JSON.Number

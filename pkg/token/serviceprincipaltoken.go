@@ -110,6 +110,8 @@ func (p *servicePrincipalToken) TokenWithOptions(options *azcore.ClientOptions) 
 	}, nil
 }
 
+// requests a token using the configured client ID/secret and returns a PoP token if PoP claims are provided,
+// otherwise returns a regular bearer token
 func (p *servicePrincipalToken) getTokenWithClientSecret(context context.Context, scopes []string, options *azcore.ClientOptions) (string, int64, error) {
 	clientOptions := &azidentity.ClientSecretCredentialOptions{
 		ClientOptions: azcore.ClientOptions{
@@ -119,7 +121,7 @@ func (p *servicePrincipalToken) getTokenWithClientSecret(context context.Context
 	if options != nil {
 		clientOptions.ClientOptions = *options
 	}
-	if p.popClaims != nil && len(p.popClaims) > 0 {
+	if len(p.popClaims) > 0 {
 		// if PoP token support is enabled, use the PoP token flow to request the token
 		return p.getPoPTokenWithClientSecret(context, scopes, options)
 	}
@@ -142,6 +144,7 @@ func (p *servicePrincipalToken) getTokenWithClientSecret(context context.Context
 	return spnAccessToken.Token, spnAccessToken.ExpiresOn.Unix(), nil
 }
 
+// requests a PoP token using the given client ID/secret and returns it
 func (p *servicePrincipalToken) getPoPTokenWithClientSecret(context context.Context, scopes []string, options *azcore.ClientOptions) (string, int64, error) {
 	cred, err := confidential.NewCredFromSecret(p.clientSecret)
 	if err != nil {
@@ -164,6 +167,8 @@ func (p *servicePrincipalToken) getPoPTokenWithClientSecret(context context.Cont
 	return accessToken, expiresOn, nil
 }
 
+// requests a token using the configured client ID/certificate and returns a PoP token if PoP claims are provided,
+// otherwise returns a regular bearer token
 func (p *servicePrincipalToken) getTokenWithClientCert(context context.Context, scopes []string, options *azcore.ClientOptions) (string, int64, error) {
 	clientOptions := &azidentity.ClientCertificateCredentialOptions{
 		ClientOptions: azcore.ClientOptions{
@@ -186,7 +191,7 @@ func (p *servicePrincipalToken) getTokenWithClientCert(context context.Context, 
 	}
 
 	certArray := []*x509.Certificate{cert}
-	if p.popClaims != nil && len(p.popClaims) > 0 {
+	if len(p.popClaims) > 0 {
 		// if PoP token support is enabled, use the PoP token flow to request the token
 		return p.getPoPTokenWithClientCert(context, scopes, certArray, rsaPrivateKey, options)
 	}
@@ -209,6 +214,7 @@ func (p *servicePrincipalToken) getTokenWithClientCert(context context.Context, 
 	return spnAccessToken.Token, spnAccessToken.ExpiresOn.Unix(), nil
 }
 
+// requests a PoP token using the given client ID/certificate and returns it
 func (p *servicePrincipalToken) getPoPTokenWithClientCert(
 	context context.Context,
 	scopes []string,
