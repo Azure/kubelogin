@@ -195,6 +195,7 @@ func TestServicePrincipalPoPTokenVCR(t *testing.T) {
 	var expectedToken string
 	var err error
 	var token adal.Token
+	expectedTokenType := "pop"
 	testCase := []struct {
 		cassetteName  string
 		p             *servicePrincipalToken
@@ -202,8 +203,21 @@ func TestServicePrincipalPoPTokenVCR(t *testing.T) {
 		useSecret     bool
 	}{
 		{
+			// Test using malformed pop claims
+			cassetteName: "ServicePrincipalPoPTokenFromBadPoPClaimsVCR",
+			p: &servicePrincipalToken{
+				clientID:     pEnv.clientID,
+				clientSecret: badSecret,
+				resourceID:   pEnv.resourceID,
+				tenantID:     pEnv.tenantID,
+				popClaims:    map[string]string{"1": "2"},
+			},
+			expectedError: fmt.Errorf("failed to create service principal PoP token using secret"),
+			useSecret:     true,
+		},
+		{
 			// Test using service principal secret value to get PoP token
-			cassetteName: "ServicePrincipalTokenFromSecretVCR",
+			cassetteName: "ServicePrincipalPoPTokenFromSecretVCR",
 			p: &servicePrincipalToken{
 				clientID:     pEnv.clientID,
 				clientSecret: pEnv.clientSecret,
@@ -216,6 +230,23 @@ func TestServicePrincipalPoPTokenVCR(t *testing.T) {
 			},
 			expectedError: nil,
 			useSecret:     true,
+		},
+		{
+			// Test using service principal secret value to get PoP token
+			cassetteName: "ServicePrincipalPoPTokenFromCertVCR",
+			p: &servicePrincipalToken{
+				clientID:           pEnv.clientID,
+				clientCert:         pEnv.clientCert,
+				clientCertPassword: pEnv.clientCertPassword,
+				resourceID:         pEnv.resourceID,
+				tenantID:           pEnv.tenantID,
+				popClaims:          map[string]string{"u": "testhost"},
+				cloud: cloud.Configuration{
+					ActiveDirectoryAuthorityHost: "https://login.microsoftonline.com/AZURE_TENANT_ID",
+				},
+			},
+			expectedError: nil,
+			useSecret:     false,
 		},
 	}
 
@@ -242,10 +273,13 @@ func TestServicePrincipalPoPTokenVCR(t *testing.T) {
 					t.Error("expected valid token, but received empty token.")
 				}
 				claims := jwt.MapClaims{}
-				jwt.ParseWithClaims(token.AccessToken, &claims, nil)
+				parsed, _ := jwt.ParseWithClaims(token.AccessToken, &claims, nil)
 				if vcrRecorder.Mode() == recorder.ModeReplayOnly {
 					if claims["at"] != expectedToken {
 						t.Errorf("unexpected token returned (expected %s, but got %s)", expectedToken, claims["at"])
+					}
+					if parsed.Header["typ"] != expectedTokenType {
+						t.Errorf("unexpected token returned (expected %s, but got %s)", expectedTokenType, parsed.Header["typ"])
 					}
 				}
 			}
