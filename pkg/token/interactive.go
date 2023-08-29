@@ -47,6 +47,7 @@ func newInteractiveTokenProvider(oAuthConfig adal.OAuthConfig, clientID, resourc
 
 // Token fetches an azcore.AccessToken from the interactive browser SDK and converts it to an adal.Token for use with kubelogin.
 func (p *InteractiveToken) Token() (adal.Token, error) {
+	ctx := context.Background()
 	emptyToken := adal.Token{}
 
 	// Request a new Interactive token provider
@@ -64,7 +65,7 @@ func (p *InteractiveToken) Token() (adal.Token, error) {
 		// If PoP token support is enabled and the correct u-claim is provided, use the MSAL
 		// token provider to acquire a new token
 		token, expirationTimeUnix, err = pop.AcquirePoPTokenInteractive(
-			context.Background(),
+			ctx,
 			p.popClaims,
 			scopes,
 			authorityFromConfig.String(),
@@ -84,7 +85,7 @@ func (p *InteractiveToken) Token() (adal.Token, error) {
 		}
 
 		// Use the token provider to get a new token
-		interactiveToken, err := cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: scopes})
+		interactiveToken, err := cred.GetToken(ctx, policy.TokenRequestOptions{Scopes: scopes})
 		if err != nil {
 			return emptyToken, fmt.Errorf("expected an empty error but received: %w", err)
 		}

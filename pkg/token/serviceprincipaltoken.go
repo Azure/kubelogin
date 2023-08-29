@@ -72,6 +72,7 @@ func (p *servicePrincipalToken) Token() (adal.Token, error) {
 }
 
 func (p *servicePrincipalToken) TokenWithOptions(options *azcore.ClientOptions) (adal.Token, error) {
+	ctx := context.Background()
 	emptyToken := adal.Token{}
 	var accessToken string
 	var expirationTimeUnix int64
@@ -80,12 +81,12 @@ func (p *servicePrincipalToken) TokenWithOptions(options *azcore.ClientOptions) 
 
 	// Request a new Azure token provider for service principal
 	if p.clientSecret != "" {
-		accessToken, expirationTimeUnix, err = p.getTokenWithClientSecret(context.Background(), scopes, options)
+		accessToken, expirationTimeUnix, err = p.getTokenWithClientSecret(ctx, scopes, options)
 		if err != nil {
 			return emptyToken, fmt.Errorf("failed to create service principal token using secret: %w", err)
 		}
 	} else if p.clientCert != "" {
-		accessToken, expirationTimeUnix, err = p.getTokenWithClientCert(context.Background(), scopes, options)
+		accessToken, expirationTimeUnix, err = p.getTokenWithClientCert(ctx, scopes, options)
 		if err != nil {
 			return emptyToken, fmt.Errorf("failed to create service principal token using certificate: %w", err)
 		}

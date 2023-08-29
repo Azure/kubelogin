@@ -65,7 +65,7 @@ func TestAuthnScheme(t *testing.T) {
 			jwk:   authnScheme.PoPKey.JWK(),
 			nonce: nonce,
 		}
-		popAccessToken, err := CreatePoPAccessToken(header, payload, authnScheme.PoPKey)
+		popAccessToken, err := createPoPAccessToken(header, payload, authnScheme.PoPKey)
 		if err != nil {
 			t.Errorf("expected no error but got: %s", err)
 		}

@@ -26,7 +26,7 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 	}
 	popClaimsMap, err := parsePopClaims(o.PoPTokenClaims)
 	if o.IsPoPTokenEnabled && err != nil {
-		return nil, fmt.Errorf("failed to parse pop token claims. err: %w", err)
+		return nil, err
 	}
 	switch o.LoginMethod {
 	case DeviceCodeLogin:

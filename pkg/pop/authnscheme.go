@@ -63,7 +63,7 @@ func (s *signature) ToBase64() string {
 }
 
 // type representing a PoP access token
-type PoPAccessToken struct {
+type popAccessToken struct {
 	Header    header
 	Payload   payload
 	Signature signature
@@ -71,8 +71,8 @@ type PoPAccessToken struct {
 
 // given a header, payload, and PoP key, creates the signature for the token and returns
 // a PoPAccessToken object representing the signed token
-func CreatePoPAccessToken(h header, p payload, popKey PoPKey) (*PoPAccessToken, error) {
-	token := &PoPAccessToken{
+func createPoPAccessToken(h header, p payload, popKey PoPKey) (*popAccessToken, error) {
+	token := &popAccessToken{
 		Header:  h,
 		Payload: p,
 	}
@@ -88,7 +88,7 @@ func CreatePoPAccessToken(h header, p payload, popKey PoPKey) (*PoPAccessToken, 
 }
 
 // returns a base-64 encoded representation of a PoP access token
-func (p *PoPAccessToken) ToBase64() string {
+func (p *popAccessToken) ToBase64() string {
 	return fmt.Sprintf("%s.%s.%s", p.Header.ToBase64(), p.Payload.ToBase64(), p.Signature.ToBase64())
 }
 
@@ -126,7 +126,7 @@ func (as *PoPAuthenticationScheme) FormatAccessTokenWithOptions(accessToken, non
 		nonce: nonce,
 	}
 
-	popAccessToken, err := CreatePoPAccessToken(header, payload, as.PoPKey)
+	popAccessToken, err := createPoPAccessToken(header, payload, as.PoPKey)
 	if err != nil {
 		return "", fmt.Errorf("error formatting PoP token: %w", err)
 	}
