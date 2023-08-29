@@ -184,31 +184,31 @@ func TestParsePoPClaims(t *testing.T) {
 		{
 			name:           "pop-claim parsing should fail on empty string",
 			popClaims:      "",
-			expectedError:  fmt.Errorf("error parsing PoP token claims: no claims provided"),
+			expectedError:  fmt.Errorf("failed to parse PoP token claims: no claims provided"),
 			expectedClaims: nil,
 		},
 		{
 			name:           "pop-claim parsing should fail on whitespace-only string",
 			popClaims:      "	    ",
-			expectedError:  fmt.Errorf("error parsing PoP token claims: no claims provided"),
+			expectedError:  fmt.Errorf("failed to parse PoP token claims: no claims provided"),
 			expectedClaims: nil,
 		},
 		{
 			name:           "pop-claim parsing should fail if claims are not provided in key=value format",
 			popClaims:      "claim1=val1,claim2",
-			expectedError:  fmt.Errorf("error parsing PoP token claims. Ensure the claims are formatted as `key=value` with no extra whitespace"),
+			expectedError:  fmt.Errorf("failed to parse PoP token claims. Ensure the claims are formatted as `key=value` with no extra whitespace"),
 			expectedClaims: nil,
 		},
 		{
 			name:           "pop-claim parsing should fail if claims are malformed",
 			popClaims:      "claim1=  ",
-			expectedError:  fmt.Errorf("error parsing PoP token claims. Ensure the claims are formatted as `key=value` with no extra whitespace"),
+			expectedError:  fmt.Errorf("failed to parse PoP token claims. Ensure the claims are formatted as `key=value` with no extra whitespace"),
 			expectedClaims: nil,
 		},
 		{
 			name:           "pop-claim parsing should fail if claims are malformed/commas only",
 			popClaims:      ",,,,,,,,",
-			expectedError:  fmt.Errorf("error parsing PoP token claims. Ensure the claims are formatted as `key=value` with no extra whitespace"),
+			expectedError:  fmt.Errorf("failed to parse PoP token claims. Ensure the claims are formatted as `key=value` with no extra whitespace"),
 			expectedClaims: nil,
 		},
 		{
@@ -231,7 +231,7 @@ func TestParsePoPClaims(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			claimsMap, err := parsePopClaims(tc.popClaims)
+			claimsMap, err := parsePoPClaims(tc.popClaims)
 			if err != nil {
 				if !ErrorContains(err, tc.expectedError.Error()) {
 					t.Fatalf("expected error: %+v, got error: %+v", tc.expectedError, err)
