@@ -28,7 +28,7 @@ type servicePrincipalToken struct {
 	popClaims          map[string]string
 }
 
-func newServicePrincipalToken(
+func newServicePrincipalTokenProvider(
 	cloud cloud.Configuration,
 	clientID,
 	clientSecret,

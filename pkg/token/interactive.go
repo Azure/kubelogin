@@ -47,16 +47,22 @@ func newInteractiveTokenProvider(oAuthConfig adal.OAuthConfig, clientID, resourc
 
 // Token fetches an azcore.AccessToken from the interactive browser SDK and converts it to an adal.Token for use with kubelogin.
 func (p *InteractiveToken) Token() (adal.Token, error) {
+	return p.TokenWithOptions(nil)
+}
+
+func (p *InteractiveToken) TokenWithOptions(options *azcore.ClientOptions) (adal.Token, error) {
 	ctx := context.Background()
 	emptyToken := adal.Token{}
 
 	// Request a new Interactive token provider
 	authorityFromConfig := p.oAuthConfig.AuthorityEndpoint
+	scopes := []string{p.resourceID + "/.default"}
 	clientOpts := azcore.ClientOptions{Cloud: cloud.Configuration{
 		ActiveDirectoryAuthorityHost: authorityFromConfig.String(),
 	}}
-	scopes := []string{p.resourceID + "/.default"}
-
+	if options != nil {
+		clientOpts = *options
+	}
 	var token string
 	var expirationTimeUnix int64
 	var err error
@@ -70,6 +76,7 @@ func (p *InteractiveToken) Token() (adal.Token, error) {
 			scopes,
 			authorityFromConfig.String(),
 			p.clientID,
+			&clientOpts,
 		)
 		if err != nil {
 			return emptyToken, fmt.Errorf("failed to create PoP token using interactive login: %w", err)

@@ -13,15 +13,21 @@ import (
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
 )
 
-// acquires a PoP token using MSAL's interactive login flow. Requires user to authenticate via browser
+// AcquirePoPTokenInteractive acquires a PoP token using MSAL's interactive login flow.
+// Requires user to authenticate via browser
 func AcquirePoPTokenInteractive(
 	context context.Context,
 	popClaims map[string]string,
 	scopes []string,
 	authority,
 	clientID string,
+	options *azcore.ClientOptions,
 ) (string, int64, error) {
-	client, err := public.New(clientID, public.WithAuthority(authority))
+	client, err := public.New(
+		clientID,
+		public.WithAuthority(authority),
+		public.WithHTTPClient(options.Transport.(*http.Client)),
+	)
 	if err != nil {
 		return "", -1, fmt.Errorf("unable to create public client: %w", err)
 	}

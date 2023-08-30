@@ -23,7 +23,7 @@ const (
 	tenantID       = "AZURE_TENANT_ID"
 )
 
-func TestNewServicePrincipalToken(t *testing.T) {
+func TestNewServicePrincipalTokenProvider(t *testing.T) {
 	testCases := []struct {
 		name               string
 		clientID           string
@@ -91,7 +91,7 @@ func TestNewServicePrincipalToken(t *testing.T) {
 	var err error
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			tokenProvider, err = newServicePrincipalToken(
+			tokenProvider, err = newServicePrincipalTokenProvider(
 				cloudConfig,
 				tc.clientID,
 				tc.clientSecret,
