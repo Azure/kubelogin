@@ -17,12 +17,16 @@ func TestAuthnScheme(t *testing.T) {
 		nonce := uuid.NewString()
 		nonce = strings.ReplaceAll(nonce, "-", "")
 		host := "testresource"
+		popKey, err := GetSwPoPKey()
+		if err != nil {
+			t.Errorf("expected no error but got: %s", err)
+		}
 		authnScheme := &PoPAuthenticationScheme{
 			Host:   host,
-			PoPKey: GetSwPoPKey(),
+			PoPKey: popKey,
 		}
-		formatted, err := authnScheme.FormatAccessTokenWithOptions(accessToken, nonce, timestamp)
 
+		formatted, err := authnScheme.FormatAccessTokenWithOptions(accessToken, nonce, timestamp)
 		if err != nil {
 			t.Errorf("expected no error but got: %s", err)
 		}

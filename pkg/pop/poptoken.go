@@ -10,7 +10,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
-	"log"
 	"math/big"
 	"sync"
 	"time"
@@ -117,33 +116,36 @@ var pswKey *swKey
 var pwsKeyMutex sync.Mutex
 
 // generates a new PoP key that rotates every 8 hours and returns it
-func GetSwPoPKey() *swKey {
+func GetSwPoPKey() (*swKey, error) {
 	pwsKeyMutex.Lock()
 	defer pwsKeyMutex.Unlock()
 	if pswKey != nil {
-		return pswKey
+		return pswKey, nil
 	}
 
 	key, err := generateSwKey()
 	if err != nil {
-		log.Panicf("unable to generate popkey. err: %v", err)
+		return nil, fmt.Errorf("unable to generate popkey. err: %w", err)
 	}
 	pswKey = key
 
 	// rotate key every 8 hours
 	ticker := time.NewTicker(8 * time.Hour)
-	go func() {
+	go func() error {
 		for {
 			<-ticker.C
 			key, err := generateSwKey()
 			if err != nil {
-				log.Panicf("unable to generate popkey. err: %v", err)
+				return fmt.Errorf("unable to generate popkey. err: %w", err)
 			}
 			pwsKeyMutex.Lock()
 			pswKey = key
 			pwsKeyMutex.Unlock()
 		}
 	}()
+	if err != nil {
+		return nil, err
+	}
 
-	return pswKey
+	return pswKey, nil
 }

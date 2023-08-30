@@ -25,13 +25,17 @@ func AcquirePoPTokenInteractive(
 	if err != nil {
 		return "", -1, fmt.Errorf("unable to create public client: %w", err)
 	}
+	popKey, err := GetSwPoPKey()
+	if err != nil {
+		return "", -1, err
+	}
 	result, err := client.AcquireTokenInteractive(
 		context,
 		scopes,
 		public.WithAuthenticationScheme(
 			&PoPAuthenticationScheme{
 				Host:   popClaims["u"],
-				PoPKey: GetSwPoPKey(),
+				PoPKey: popKey,
 			},
 		),
 	)
@@ -54,9 +58,13 @@ func AcquirePoPTokenConfidential(
 	tenantID string,
 	options *azcore.ClientOptions,
 ) (string, int64, error) {
+	popKey, err := GetSwPoPKey()
+	if err != nil {
+		return "", -1, err
+	}
 	authnScheme := &PoPAuthenticationScheme{
 		Host:   popClaims["u"],
-		PoPKey: GetSwPoPKey(),
+		PoPKey: popKey,
 	}
 	client, err := confidential.New(
 		authority,
