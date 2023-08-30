@@ -251,8 +251,8 @@ func getCacheFileName(o *Options) string {
 	return filepath.Join(o.TokenCacheDir, fmt.Sprintf(cacheFileNameFormat, o.Environment, o.ServerID, o.ClientID, o.TenantID))
 }
 
-// Parses the pop token claims. Pop token claims are passed in as a comma-separated string
-// in the format "key1=val1,key2=val2".
+// parsePoPClaims parses the pop token claims. Pop token claims are passed in as a
+// comma-separated string in the format "key1=val1,key2=val2"
 func parsePoPClaims(popClaims string) (map[string]string, error) {
 	if strings.TrimSpace(popClaims) == "" {
 		return nil, fmt.Errorf("failed to parse PoP token claims: no claims provided")

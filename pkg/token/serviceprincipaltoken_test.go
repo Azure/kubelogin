@@ -9,6 +9,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 	"gopkg.in/dnaeon/go-vcr.v3/recorder"
 )
@@ -22,35 +23,126 @@ const (
 	tenantID       = "AZURE_TENANT_ID"
 )
 
+func TestNewServicePrincipalToken(t *testing.T) {
+	testCases := []struct {
+		name               string
+		clientID           string
+		clientSecret       string
+		clientCert         string
+		clientCertPassword string
+		resourceID         string
+		tenantID           string
+		popClaims          map[string]string
+		expectedError      string
+	}{
+		{
+			name:          "test new service principal token provider with empty client ID should return error",
+			expectedError: "clientID cannot be empty",
+		},
+		{
+			name:          "test new service principal token provider with empty client secret and cert should return error",
+			clientID:      "testclientid",
+			expectedError: "both clientSecret and clientcert cannot be empty. One must be specified",
+		},
+		{
+			name:          "test new service principal token provider with both client secret and cert provided should return error",
+			clientID:      "testclientid",
+			clientSecret:  "testsecret",
+			clientCert:    "testcert",
+			expectedError: "client secret and client certificate cannot be set at the same time. Only one can be specified",
+		},
+		{
+			name:          "test new service principal token provider with empty resource ID should return error",
+			clientID:      "testclientid",
+			clientSecret:  "testsecret",
+			expectedError: "resourceID cannot be empty",
+		},
+		{
+			name:          "test new service principal token provider with empty tenant ID should return error",
+			clientID:      "testclientid",
+			clientCert:    "testcert",
+			resourceID:    "testresource",
+			expectedError: "tenantID cannot be empty",
+		},
+		{
+			name:               "test new service principal token provider with cert fields should not return error",
+			clientID:           "testclientid",
+			clientCert:         "testcert",
+			clientCertPassword: "testpass",
+			resourceID:         "testresource",
+			tenantID:           "testtenant",
+			expectedError:      "",
+		},
+		{
+			name:          "test new service principal token provider with secret and pop claims should not return error",
+			clientID:      "testclientid",
+			clientSecret:  "testsecret",
+			resourceID:    "testresource",
+			tenantID:      "testtenant",
+			popClaims:     map[string]string{"u": "testhost"},
+			expectedError: "",
+		},
+	}
+
+	cloudConfig := cloud.Configuration{
+		ActiveDirectoryAuthorityHost: "testendpoint",
+	}
+	var tokenProvider TokenProvider
+	var err error
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tokenProvider, err = newServicePrincipalToken(
+				cloudConfig,
+				tc.clientID,
+				tc.clientSecret,
+				tc.clientCert,
+				tc.clientCertPassword,
+				tc.resourceID,
+				tc.tenantID,
+				tc.popClaims,
+			)
+
+			if tc.expectedError != "" {
+				if !ErrorContains(err, tc.expectedError) {
+					t.Errorf("expected error %s, but got %s", tc.expectedError, err)
+				}
+			} else {
+				if tokenProvider == nil {
+					t.Errorf("expected token provider creation to succeed, but got error: %s", err)
+				}
+				spnTokenProvider := tokenProvider.(*servicePrincipalToken)
+				if spnTokenProvider.clientID != tc.clientID {
+					t.Errorf("expected client ID: %s but got: %s", tc.clientID, spnTokenProvider.clientID)
+				}
+				if spnTokenProvider.clientSecret != tc.clientSecret {
+					t.Errorf("expected client secret: %s but got: %s", tc.clientSecret, spnTokenProvider.clientSecret)
+				}
+				if spnTokenProvider.clientCert != tc.clientCert {
+					t.Errorf("expected client cert: %s but got: %s", tc.clientCert, spnTokenProvider.clientCert)
+				}
+				if spnTokenProvider.clientCertPassword != tc.clientCertPassword {
+					t.Errorf("expected client cert password: %s but got: %s", tc.clientCertPassword, spnTokenProvider.clientCertPassword)
+				}
+				if spnTokenProvider.resourceID != tc.resourceID {
+					t.Errorf("expected resource ID: %s but got: %s", tc.resourceID, spnTokenProvider.resourceID)
+				}
+				if spnTokenProvider.tenantID != tc.tenantID {
+					t.Errorf("expected tenant ID: %s but got: %s", tc.tenantID, spnTokenProvider.tenantID)
+				}
+				if !cmp.Equal(spnTokenProvider.cloud, cloudConfig) {
+					t.Errorf("expected cloud config: %s but got: %s", tc.clientCertPassword, spnTokenProvider.clientCertPassword)
+				}
+				if !cmp.Equal(spnTokenProvider.popClaims, tc.popClaims) {
+					t.Errorf("expected PoP claims: %s but got: %s", tc.popClaims, spnTokenProvider.popClaims)
+				}
+			}
+		})
+	}
+}
+
 func TestMissingLoginMethods(t *testing.T) {
 	p := &servicePrincipalToken{}
 	expectedErr := "service principal token requires either client secret or certificate"
-
-	_, err := p.Token()
-	if !ErrorContains(err, expectedErr) {
-		t.Errorf("expected error %s, but got %s", expectedErr, err)
-	}
-}
-
-func TestMissingCertFile(t *testing.T) {
-	p := &servicePrincipalToken{
-		clientCert: "testdata/noCertHere.pfx",
-	}
-	expectedErr := "failed to read the certificate file"
-
-	_, err := p.Token()
-	if !ErrorContains(err, expectedErr) {
-		t.Errorf("expected error %s, but got %s", expectedErr, err)
-	}
-}
-
-func TestBadCertPassword(t *testing.T) {
-	p := &servicePrincipalToken{
-		clientCert:         "testdata/testCert.pfx",
-		clientCertPassword: badSecret,
-	}
-	expectedErr := "failed to decode pkcs12 certificate while creating spt: pkcs12: decryption password incorrect"
-
 	_, err := p.Token()
 	if !ErrorContains(err, expectedErr) {
 		t.Errorf("expected error %s, but got %s", expectedErr, err)

@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-// PoPKey - generic interface for PoP key properties and methods
+// PoPKey is a generic interface for PoP key properties and methods
 type PoPKey interface {
 	// encryption/signature algo
 	Alg() string
@@ -40,37 +40,37 @@ type swKey struct {
 	reqCnf string
 }
 
-// returns the algorithm used to encrypt/sign the swKey
+// Alg returns the algorithm used to encrypt/sign the swKey
 func (swk *swKey) Alg() string {
 	return "RS256"
 }
 
-// returns the keyID of the swKey, representing the key used to sign the swKey
+// KeyID returns the keyID of the swKey, representing the key used to sign the swKey
 func (swk *swKey) KeyID() string {
 	return swk.keyID
 }
 
-// returns the JSON Web Key of the given swKey
+// JWK returns the JSON Web Key of the given swKey
 func (swk *swKey) JWK() string {
 	return swk.jwk
 }
 
-// returns the JWK thumbprint of the given swKey
+// JWKThumbprint returns the JWK thumbprint of the given swKey
 func (swk *swKey) JWKThumbprint() string {
 	return swk.jwkTP
 }
 
-// returns the req_cnf claim to send to AAD for the given swKey
+// ReqCnf returns the req_cnf claim to send to AAD for the given swKey
 func (swk *swKey) ReqCnf() string {
 	return swk.reqCnf
 }
 
-// uses the given swKey to sign the given payload and returns the signed payload
+// Sign uses the given swKey to sign the given payload and returns the signed payload
 func (swk *swKey) Sign(payload []byte) ([]byte, error) {
 	return swk.key.Sign(rand.Reader, payload, crypto.SHA256)
 }
 
-// initializes the given swKey using the given private key
+// init initializes the given swKey using the given private key
 func (swk *swKey) init(key *rsa.PrivateKey) {
 	swk.key = key
 
@@ -100,7 +100,7 @@ func (swk *swKey) init(key *rsa.PrivateKey) {
 	swk.jwk = fmt.Sprintf(`{"e":"%s","kty":"RSA","n":"%s","alg":"RS256","kid":"%s"}`, eB64, nB64, swk.keyID)
 }
 
-// generates a new swkey and initializes it with required fields before returning it
+// generateSwKey generates a new swkey and initializes it with required fields before returning it
 func generateSwKey() (*swKey, error) {
 	swk := &swKey{}
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -115,7 +115,7 @@ func generateSwKey() (*swKey, error) {
 var pswKey *swKey
 var pwsKeyMutex sync.Mutex
 
-// generates a new PoP key that rotates every 8 hours and returns it
+// GetSwPoPKey generates a new PoP key that rotates every 8 hours and returns it
 func GetSwPoPKey() (*swKey, error) {
 	pwsKeyMutex.Lock()
 	defer pwsKeyMutex.Unlock()

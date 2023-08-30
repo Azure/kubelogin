@@ -23,12 +23,12 @@ type header struct {
 	kid string
 }
 
-// returns a string representation of a header object
+// ToString returns a string representation of a header object
 func (h *header) ToString() string {
 	return fmt.Sprintf(`{"typ":"%s","alg":"%s","kid":"%s"}`, h.typ, h.alg, h.kid)
 }
 
-// returns a base-64 encoded string representation of a header object
+// ToBase64 returns a base-64 encoded string representation of a header object
 func (h *header) ToBase64() string {
 	return base64.RawURLEncoding.EncodeToString([]byte(h.ToString()))
 }
@@ -42,12 +42,12 @@ type payload struct {
 	nonce string
 }
 
-// returns a string representation of a payload object
+// ToString returns a string representation of a payload object
 func (p *payload) ToString() string {
 	return fmt.Sprintf(`{"at":"%s","ts":%d,"u":"%s","cnf":{"jwk":%s},"nonce":"%s"}`, p.at, p.ts, p.host, p.jwk, p.nonce)
 }
 
-// returns a base-64 encoded representation of a payload object
+// ToBase64 returns a base-64 encoded representation of a payload object
 func (p *payload) ToBase64() string {
 	return base64.RawURLEncoding.EncodeToString([]byte(p.ToString()))
 }
@@ -57,7 +57,7 @@ type signature struct {
 	sig []byte
 }
 
-// returns a base-64 encoded representation of a signature object
+// ToBase64 returns a base-64 encoded representation of a signature object
 func (s *signature) ToBase64() string {
 	return base64.RawURLEncoding.EncodeToString(s.sig)
 }
@@ -87,19 +87,19 @@ func createPoPAccessToken(h header, p payload, popKey PoPKey) (*popAccessToken, 
 	return token, nil
 }
 
-// returns a base-64 encoded representation of a PoP access token
+// ToBase64 returns a base-64 encoded representation of a PoP access token
 func (p *popAccessToken) ToBase64() string {
 	return fmt.Sprintf("%s.%s.%s", p.Header.ToBase64(), p.Payload.ToBase64(), p.Signature.ToBase64())
 }
 
-// PoP token implementation of the MSAL AuthenticationScheme interface
+// PoPAuthenticationScheme is a PoP token implementation of the MSAL AuthenticationScheme interface
 type PoPAuthenticationScheme struct {
 	// host is the u claim we will add on the pop token
 	Host   string
 	PoPKey PoPKey
 }
 
-// returns the params to use when sending a request for a PoP token
+// TokenRequestParams returns the params to use when sending a request for a PoP token
 func (as *PoPAuthenticationScheme) TokenRequestParams() map[string]string {
 	return map[string]string{
 		"token_type": popTokenType,
@@ -107,11 +107,24 @@ func (as *PoPAuthenticationScheme) TokenRequestParams() map[string]string {
 	}
 }
 
-// returns the key used to sign the PoP token
+// KeyID returns the key used to sign the PoP token
 func (as *PoPAuthenticationScheme) KeyID() string {
 	return as.PoPKey.KeyID()
 }
 
+// FormatAccessToken takes an access token, formats it as a PoP token,
+// and returns it as a base-64 encoded string
+func (as *PoPAuthenticationScheme) FormatAccessToken(accessToken string) (string, error) {
+	timestamp := time.Now().Unix()
+	nonce := uuid.NewString()
+	nonce = strings.ReplaceAll(nonce, "-", "")
+
+	return as.FormatAccessTokenWithOptions(accessToken, nonce, timestamp)
+}
+
+// FormatAccessTokenWithOptions takes an access token, nonce, and timestamp, formats
+// the token as a PoP token containing the given fields, and returns it as a
+// base-64 encoded string
 func (as *PoPAuthenticationScheme) FormatAccessTokenWithOptions(accessToken, nonce string, timestamp int64) (string, error) {
 	header := header{
 		typ: popTokenType,
@@ -133,16 +146,7 @@ func (as *PoPAuthenticationScheme) FormatAccessTokenWithOptions(accessToken, non
 	return popAccessToken.ToBase64(), nil
 }
 
-// given an access token, formats it as a PoP token and returns it as a base-64 encoded string
-func (as *PoPAuthenticationScheme) FormatAccessToken(accessToken string) (string, error) {
-	timestamp := time.Now().Unix()
-	nonce := uuid.NewString()
-	nonce = strings.ReplaceAll(nonce, "-", "")
-
-	return as.FormatAccessTokenWithOptions(accessToken, nonce, timestamp)
-}
-
-// returns the PoP access token type
+// AccessTokenType returns the PoP access token type
 func (as *PoPAuthenticationScheme) AccessTokenType() string {
 	return popTokenType
 }
