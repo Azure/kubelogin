@@ -23,14 +23,24 @@ func AcquirePoPTokenInteractive(
 	clientID string,
 	options *azcore.ClientOptions,
 ) (string, int64, error) {
-	client, err := public.New(
-		clientID,
-		public.WithAuthority(authority),
-		public.WithHTTPClient(options.Transport.(*http.Client)),
-	)
+	var client public.Client
+	var err error
+	if options != nil && options.Transport != nil {
+		client, err = public.New(
+			clientID,
+			public.WithAuthority(authority),
+			public.WithHTTPClient(options.Transport.(*http.Client)),
+		)
+	} else {
+		client, err = public.New(
+			clientID,
+			public.WithAuthority(authority),
+		)
+	}
 	if err != nil {
 		return "", -1, fmt.Errorf("unable to create public client: %w", err)
 	}
+
 	popKey, err := GetSwPoPKey()
 	if err != nil {
 		return "", -1, err
@@ -73,12 +83,21 @@ func AcquirePoPTokenConfidential(
 		Host:   popClaims["u"],
 		PoPKey: popKey,
 	}
-	client, err := confidential.New(
-		authority,
-		clientID,
-		cred,
-		confidential.WithHTTPClient(options.Transport.(*http.Client)),
-	)
+	var client confidential.Client
+	if options != nil && options.Transport != nil {
+		client, err = confidential.New(
+			authority,
+			clientID,
+			cred,
+			confidential.WithHTTPClient(options.Transport.(*http.Client)),
+		)
+	} else {
+		client, err = confidential.New(
+			authority,
+			clientID,
+			cred,
+		)
+	}
 	if err != nil {
 		return "", -1, fmt.Errorf("unable to create confidential client: %w", err)
 	}
