@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/Azure/kubelogin/pkg/testutils"
 )
 
 func TestNewWorkloadIdentityTokenProviderEmpty(t *testing.T) {
@@ -48,7 +50,7 @@ func TestNewWorkloadIdentityTokenProviderEmpty(t *testing.T) {
 				fmt.Println(false)
 			}
 
-			if !ErrorContains(err, data.name) {
+			if !testutils.ErrorContains(err, data.name) {
 				t.Errorf("unexpected error: %v", err)
 			}
 		})
@@ -59,21 +61,21 @@ func TestNewWorkloadIdentityToken(t *testing.T) {
 	workloadIdentityToken := workloadIdentityToken{}
 	_, err := workloadIdentityToken.Token()
 
-	if !ErrorContains(err, "failed to read signed assertion from token file:") {
+	if !testutils.ErrorContains(err, "failed to read signed assertion from token file:") {
 		t.Errorf("unexpected error: %v", err)
 	}
 }
 
 func TestNewCredentialEmptyString(t *testing.T) {
 	_, err := newCredential("")
-	if !ErrorContains(err, "failed to read signed assertion from token file:") {
+	if !testutils.ErrorContains(err, "failed to read signed assertion from token file:") {
 		t.Errorf("unexpected error: %v", err)
 	}
 }
 
 func TestReadJWTFromFSEmptyString(t *testing.T) {
 	_, err := readJWTFromFS("")
-	if !ErrorContains(err, "no such file or directory") {
+	if !testutils.ErrorContains(err, "no such file or directory") {
 		t.Errorf("unexpected error: %v", err)
 	}
 }

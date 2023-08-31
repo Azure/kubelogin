@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/Azure/go-autorest/autorest/adal"
+	"github.com/Azure/kubelogin/pkg/testutils"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -61,7 +62,7 @@ func TestNewInteractiveToken(t *testing.T) {
 			)
 
 			if tc.expectedError != "" {
-				if !ErrorContains(err, tc.expectedError) {
+				if !testutils.ErrorContains(err, tc.expectedError) {
 					t.Errorf("expected error %s, but got %s", tc.expectedError, err)
 				}
 			} else {

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Azure/go-autorest/autorest/adal"
+	"github.com/Azure/kubelogin/pkg/testutils"
 )
 
 func TestNewDeviceCodeTokenProviderEmpty(t *testing.T) {
@@ -40,7 +41,7 @@ func TestNewDeviceCodeTokenProviderEmpty(t *testing.T) {
 				fmt.Println(false)
 			}
 
-			if !ErrorContains(err, data.name) {
+			if !testutils.ErrorContains(err, data.name) {
 				t.Errorf("unexpected error: %v", err)
 			}
 		})
@@ -51,7 +52,7 @@ func TestNewDeviceCodeToken(t *testing.T) {
 	deviceCode := deviceCodeTokenProvider{}
 	_, err := deviceCode.Token()
 
-	if !ErrorContains(err, "initialing the device code authentication:") {
+	if !testutils.ErrorContains(err, "initialing the device code authentication:") {
 		t.Errorf("unexpected error: %v", err)
 	}
 }

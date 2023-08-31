@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Azure/kubelogin/pkg/testutils"
 	"github.com/google/go-cmp/cmp"
 	"github.com/spf13/pflag"
 )
@@ -233,7 +234,7 @@ func TestParsePoPClaims(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			claimsMap, err := parsePoPClaims(tc.popClaims)
 			if err != nil {
-				if !ErrorContains(err, tc.expectedError.Error()) {
+				if !testutils.ErrorContains(err, tc.expectedError.Error()) {
 					t.Fatalf("expected error: %+v, got error: %+v", tc.expectedError, err)
 				}
 			} else {

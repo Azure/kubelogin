@@ -8,6 +8,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/go-autorest/autorest/adal"
+	"github.com/Azure/kubelogin/pkg/testutils"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
@@ -103,7 +104,7 @@ func TestNewServicePrincipalTokenProvider(t *testing.T) {
 			)
 
 			if tc.expectedError != "" {
-				if !ErrorContains(err, tc.expectedError) {
+				if !testutils.ErrorContains(err, tc.expectedError) {
 					t.Errorf("expected error %s, but got %s", tc.expectedError, err)
 				}
 			} else {
@@ -144,7 +145,7 @@ func TestMissingLoginMethods(t *testing.T) {
 	p := &servicePrincipalToken{}
 	expectedErr := "service principal token requires either client secret or certificate"
 	_, err := p.Token()
-	if !ErrorContains(err, expectedErr) {
+	if !testutils.ErrorContains(err, expectedErr) {
 		t.Errorf("expected error %s, but got %s", expectedErr, err)
 	}
 }
@@ -190,7 +191,7 @@ func TestServicePrincipalTokenVCR(t *testing.T) {
 			cassetteName: "ServicePrincipalTokenFromBadSecretVCR",
 			p: &servicePrincipalToken{
 				clientID:     pEnv.clientID,
-				clientSecret: badSecret,
+				clientSecret: testutils.BadSecret,
 				resourceID:   pEnv.resourceID,
 				tenantID:     pEnv.tenantID,
 			},
@@ -229,7 +230,7 @@ func TestServicePrincipalTokenVCR(t *testing.T) {
 			if tc.expectedError == nil {
 				expectedToken = uuid.New().String()
 			}
-			vcrRecorder, httpClient := GetVCRHttpClient(fmt.Sprintf("testdata/%s", tc.cassetteName), expectedToken)
+			vcrRecorder, httpClient := testutils.GetVCRHttpClient(fmt.Sprintf("testdata/%s", tc.cassetteName), expectedToken)
 
 			clientOpts := azcore.ClientOptions{
 				Cloud:     cloud.AzurePublic,
@@ -239,7 +240,7 @@ func TestServicePrincipalTokenVCR(t *testing.T) {
 			token, err := tc.p.TokenWithOptions(&clientOpts)
 			defer vcrRecorder.Stop()
 			if err != nil {
-				if !ErrorContains(err, tc.expectedError.Error()) {
+				if !testutils.ErrorContains(err, tc.expectedError.Error()) {
 					t.Errorf("expected error %s, but got %s", tc.expectedError.Error(), err)
 				}
 			} else {
@@ -299,7 +300,7 @@ func TestServicePrincipalPoPTokenVCR(t *testing.T) {
 			cassetteName: "ServicePrincipalPoPTokenFromBadSecretVCR",
 			p: &servicePrincipalToken{
 				clientID:     pEnv.clientID,
-				clientSecret: badSecret,
+				clientSecret: testutils.BadSecret,
 				resourceID:   pEnv.resourceID,
 				tenantID:     pEnv.tenantID,
 				popClaims:    map[string]string{"u": "testhost"},
@@ -350,7 +351,7 @@ func TestServicePrincipalPoPTokenVCR(t *testing.T) {
 			if tc.expectedError == nil {
 				expectedToken = uuid.New().String()
 			}
-			vcrRecorder, httpClient := GetVCRHttpClient(fmt.Sprintf("testdata/%s", tc.cassetteName), expectedToken)
+			vcrRecorder, httpClient := testutils.GetVCRHttpClient(fmt.Sprintf("testdata/%s", tc.cassetteName), expectedToken)
 
 			clientOpts := azcore.ClientOptions{
 				Cloud:     cloud.AzurePublic,
@@ -360,7 +361,7 @@ func TestServicePrincipalPoPTokenVCR(t *testing.T) {
 			token, err = tc.p.TokenWithOptions(&clientOpts)
 			defer vcrRecorder.Stop()
 			if err != nil {
-				if !ErrorContains(err, tc.expectedError.Error()) {
+				if !testutils.ErrorContains(err, tc.expectedError.Error()) {
 					t.Errorf("expected error %s, but got %s", tc.expectedError.Error(), err)
 				}
 			} else {

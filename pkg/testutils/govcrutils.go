@@ -1,4 +1,4 @@
-package token
+package testutils
 
 import (
 	"net/http"
@@ -13,7 +13,6 @@ const (
 	tenantUUID        = "AZURE_TENANT_ID"
 	vcrMode           = "VCR_MODE"
 	vcrModeRecordOnly = "RecordOnly"
-	badSecret         = "Bad_Secret"
 	redactionToken    = "[REDACTED]"
 	testToken         = "TEST_ACCESS_TOKEN"
 )
@@ -39,7 +38,7 @@ func GetVCRHttpClient(path string, token string) (*recorder.Recorder, *http.Clie
 			detectedClientID = i.Request.Form["client_id"][0]
 			i.Request.Form["client_id"] = []string{redactionToken}
 		}
-		if i.Request.Form["client_secret"] != nil && i.Request.Form["client_secret"][0] != badSecret {
+		if i.Request.Form["client_secret"] != nil && i.Request.Form["client_secret"][0] != BadSecret {
 			detectedClientSecret = i.Request.Form["client_secret"][0]
 			i.Request.Form["client_secret"] = []string{redactionToken}
 		}
