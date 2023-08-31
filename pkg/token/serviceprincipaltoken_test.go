@@ -295,14 +295,17 @@ func TestServicePrincipalPoPTokenVCR(t *testing.T) {
 		useSecret     bool
 	}{
 		{
-			// Test using malformed pop claims
-			cassetteName: "ServicePrincipalPoPTokenFromBadPoPClaimsVCR",
+			// Test using bad client secret
+			cassetteName: "ServicePrincipalPoPTokenFromBadSecretVCR",
 			p: &servicePrincipalToken{
 				clientID:     pEnv.clientID,
 				clientSecret: badSecret,
 				resourceID:   pEnv.resourceID,
 				tenantID:     pEnv.tenantID,
-				popClaims:    map[string]string{"1": "2"},
+				popClaims:    map[string]string{"u": "testhost"},
+				cloud: cloud.Configuration{
+					ActiveDirectoryAuthorityHost: "https://login.microsoftonline.com/AZURE_TENANT_ID",
+				},
 			},
 			expectedError: fmt.Errorf("failed to create service principal PoP token using secret"),
 			useSecret:     true,
@@ -324,7 +327,7 @@ func TestServicePrincipalPoPTokenVCR(t *testing.T) {
 			useSecret:     true,
 		},
 		{
-			// Test using service principal secret value to get PoP token
+			// Test using service principal certificate to get PoP token
 			cassetteName: "ServicePrincipalPoPTokenFromCertVCR",
 			p: &servicePrincipalToken{
 				clientID:           pEnv.clientID,
