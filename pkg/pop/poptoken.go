@@ -74,40 +74,21 @@ func (swk *swKey) Sign(payload []byte) ([]byte, error) {
 func (swk *swKey) init(key *rsa.PrivateKey) {
 	swk.key = key
 
-	pubKey := &swk.key.PublicKey
-	e := big.NewInt(int64(pubKey.E))
-	eB64 := base64.RawURLEncoding.EncodeToString(e.Bytes())
-	n := pubKey.N
-	nB64 := base64.RawURLEncoding.EncodeToString(n.Bytes())
-
-	// compute JWK thumbprint
-	// jwk format - e, kty, n - in lexicographic order
-	// - https://tools.ietf.org/html/rfc7638#section-3.3
-	// - https://tools.ietf.org/html/rfc7638#section-3.1
-	jwk := fmt.Sprintf(`{"e":"%s","kty":"RSA","n":"%s"}`, eB64, nB64)
-	jwkS256 := sha256.Sum256([]byte(jwk))
-	swk.jwkTP = base64.RawURLEncoding.EncodeToString(jwkS256[:])
-
-	// req_cnf - base64URL("{"kid":"jwkTP","xms_ksl":"sw"}")
-	reqCnfJSON := fmt.Sprintf(`{"kid":"%s","xms_ksl":"sw"}`, swk.jwkTP)
-	swk.reqCnf = base64.RawURLEncoding.EncodeToString([]byte(reqCnfJSON))
+	eB64, nB64 := getRSAKeyExponentAndModulus(key)
+	swk.jwkTP = computeJWKThumbprint(eB64, nB64)
+	swk.reqCnf = getReqCnf(swk.jwkTP)
 
 	// set keyID to jwkTP
 	swk.keyID = swk.jwkTP
 
 	// compute JWK to be included in JWT w/ PoP token's cnf claim
 	// - https://tools.ietf.org/html/rfc7800#section-3.2
-	swk.jwk = fmt.Sprintf(`{"e":"%s","kty":"RSA","n":"%s","alg":"RS256","kid":"%s"}`, eB64, nB64, swk.keyID)
+	swk.jwk = getJWK(eB64, nB64, swk.keyID)
 }
 
 // generateSwKey generates a new swkey and initializes it with required fields before returning it
-func generateSwKey() (*swKey, error) {
+func generateSwKey(key *rsa.PrivateKey) (*swKey, error) {
 	swk := &swKey{}
-	key, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		return nil, err
-	}
-
 	swk.init(key)
 	return swk, nil
 }
@@ -117,13 +98,21 @@ var pwsKeyMutex sync.Mutex
 
 // GetSwPoPKey generates a new PoP key that rotates every 8 hours and returns it
 func GetSwPoPKey() (*swKey, error) {
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return nil, fmt.Errorf("error generating RSA private key: %w", err)
+	}
+	return GetSwPoPKeyWithRSAKey(key)
+}
+
+func GetSwPoPKeyWithRSAKey(rsaKey *rsa.PrivateKey) (*swKey, error) {
 	pwsKeyMutex.Lock()
 	defer pwsKeyMutex.Unlock()
 	if pswKey != nil {
 		return pswKey, nil
 	}
 
-	key, err := generateSwKey()
+	key, err := generateSwKey(rsaKey)
 	if err != nil {
 		return nil, fmt.Errorf("unable to generate popkey. err: %w", err)
 	}
@@ -134,7 +123,7 @@ func GetSwPoPKey() (*swKey, error) {
 	go func() error {
 		for {
 			<-ticker.C
-			key, err := generateSwKey()
+			key, err := generateSwKey(rsaKey)
 			if err != nil {
 				return fmt.Errorf("unable to generate popkey. err: %w", err)
 			}
@@ -148,4 +137,42 @@ func GetSwPoPKey() (*swKey, error) {
 	}
 
 	return pswKey, nil
+}
+
+// getRSAKeyExponentAndModulus returns the exponent and modulus from the given RSA key
+// as base-64 encoded strings
+func getRSAKeyExponentAndModulus(rsaKey *rsa.PrivateKey) (string, string) {
+	pubKey := rsaKey.PublicKey
+	e := big.NewInt(int64(pubKey.E))
+	eB64 := base64.RawURLEncoding.EncodeToString(e.Bytes())
+	n := pubKey.N
+	nB64 := base64.RawURLEncoding.EncodeToString(n.Bytes())
+	return eB64, nB64
+}
+
+// computeJWKThumbprint returns a computed JWK thumbprint using the given base-64 encoded
+// exponent and modulus
+func computeJWKThumbprint(eB64 string, nB64 string) string {
+	// compute JWK thumbprint
+	// jwk format - e, kty, n - in lexicographic order
+	// - https://tools.ietf.org/html/rfc7638#section-3.3
+	// - https://tools.ietf.org/html/rfc7638#section-3.1
+	jwk := fmt.Sprintf(`{"e":"%s","kty":"RSA","n":"%s"}`, eB64, nB64)
+	jwkS256 := sha256.Sum256([]byte(jwk))
+	return base64.RawURLEncoding.EncodeToString(jwkS256[:])
+}
+
+// getReqCnf computes and returns the value for the req_cnf claim to include when sending
+// a request for the token
+func getReqCnf(jwkTP string) string {
+	// req_cnf - base64URL("{"kid":"jwkTP","xms_ksl":"sw"}")
+	reqCnfJSON := fmt.Sprintf(`{"kid":"%s","xms_ksl":"sw"}`, jwkTP)
+	return base64.RawURLEncoding.EncodeToString([]byte(reqCnfJSON))
+}
+
+// getJWK computes the JWK to be included in the PoP token's enclosed cnf claim and returns it
+func getJWK(eB64 string, nB64 string, keyID string) string {
+	// compute JWK to be included in JWT w/ PoP token's cnf claim
+	// - https://tools.ietf.org/html/rfc7800#section-3.2
+	return fmt.Sprintf(`{"e":"%s","kty":"RSA","n":"%s","alg":"RS256","kid":"%s"}`, eB64, nB64, keyID)
 }

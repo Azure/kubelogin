@@ -1,6 +1,8 @@
 package pop
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
 	"math"
 	"strings"
 	"testing"
@@ -53,7 +55,7 @@ func TestAuthnScheme(t *testing.T) {
 		if parsed.Header["alg"] != authnScheme.PoPKey.Alg() {
 			t.Errorf("expected token alg: %s but got: %s", authnScheme.PoPKey.Alg(), parsed.Header["alg"])
 		}
-		if parsed.Header["kid"] != authnScheme.PoPKey.KeyID() {
+		if parsed.Header["kid"] != authnScheme.KeyID() {
 			t.Errorf("expected token kid: %s but got: %s", authnScheme.PoPKey.KeyID(), parsed.Header["kid"])
 		}
 
@@ -75,6 +77,52 @@ func TestAuthnScheme(t *testing.T) {
 		}
 		if parsed.Signature != popAccessToken.Signature.ToBase64() {
 			t.Errorf("expected token signature: %s but got: %s", popAccessToken.Signature.ToBase64(), parsed.Signature)
+		}
+	})
+
+	t.Run("TokenRequestParams should return correct token_type and req_cnf claims", func(t *testing.T) {
+		host := "testresource"
+		rsaKey, err := rsa.GenerateKey(rand.Reader, 2048)
+		if err != nil {
+			t.Errorf("expected no error generating RSA key but got: %s", err)
+		}
+		popKey, err := GetSwPoPKeyWithRSAKey(rsaKey)
+		if err != nil {
+			t.Errorf("expected no error but got: %s", err)
+		}
+		authnScheme := &PoPAuthenticationScheme{
+			Host:   host,
+			PoPKey: popKey,
+		}
+		tokenRequestParams := authnScheme.TokenRequestParams()
+
+		// validate token type
+		if tokenRequestParams["token_type"] != "pop" {
+			t.Errorf("expected req_cnf: %s but got: %s", "pop", tokenRequestParams["token_type"])
+		}
+
+		// validate req_cnf
+		eB64, nB64 := getRSAKeyExponentAndModulus(popKey.key)
+		jwktp := computeJWKThumbprint(eB64, nB64)
+		expectedReqCnf := getReqCnf(jwktp)
+		if tokenRequestParams["req_cnf"] != expectedReqCnf {
+			t.Errorf("expected req_cnf: %s but got: %s", expectedReqCnf, tokenRequestParams["req_cnf"])
+		}
+	})
+
+	t.Run("AccessTokenType should return correct type", func(t *testing.T) {
+		host := "testresource"
+		popKey, err := GetSwPoPKey()
+		if err != nil {
+			t.Errorf("expected no error but got: %s", err)
+		}
+		authnScheme := &PoPAuthenticationScheme{
+			Host:   host,
+			PoPKey: popKey,
+		}
+
+		if authnScheme.AccessTokenType() != "pop" {
+			t.Errorf("expected req_cnf: %s but got: %s", "pop", authnScheme.AccessTokenType())
 		}
 	})
 }
