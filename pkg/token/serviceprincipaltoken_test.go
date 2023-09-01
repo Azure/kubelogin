@@ -15,15 +15,6 @@ import (
 	"gopkg.in/dnaeon/go-vcr.v3/recorder"
 )
 
-const (
-	clientID       = "AZURE_CLIENT_ID"
-	clientSecret   = "AAD_SERVICE_PRINCIPAL_CLIENT_SECRET"
-	clientCert     = "AZURE_CLIENT_CER"
-	clientCertPass = "AZURE_CLIENT_CERTIFICATE_PASSWORD"
-	resourceID     = "AZURE_RESOURCE_ID"
-	tenantID       = "AZURE_TENANT_ID"
-)
-
 func TestNewServicePrincipalTokenProvider(t *testing.T) {
 	testCases := []struct {
 		name               string
@@ -152,19 +143,19 @@ func TestMissingLoginMethods(t *testing.T) {
 
 func TestServicePrincipalTokenVCR(t *testing.T) {
 	pEnv := &servicePrincipalToken{
-		clientID:           os.Getenv(clientID),
-		clientSecret:       os.Getenv(clientSecret),
-		clientCert:         os.Getenv(clientCert),
-		clientCertPassword: os.Getenv(clientCertPass),
-		resourceID:         os.Getenv(resourceID),
-		tenantID:           os.Getenv(tenantID),
+		clientID:           os.Getenv(testutils.ClientID),
+		clientSecret:       os.Getenv(testutils.ClientSecret),
+		clientCert:         os.Getenv(testutils.ClientCert),
+		clientCertPassword: os.Getenv(testutils.ClientCertPass),
+		resourceID:         os.Getenv(testutils.ResourceID),
+		tenantID:           os.Getenv(testutils.TenantID),
 	}
 	// Use defaults if environmental variables are empty
 	if pEnv.clientID == "" {
-		pEnv.clientID = clientID
+		pEnv.clientID = testutils.ClientID
 	}
 	if pEnv.clientSecret == "" {
-		pEnv.clientSecret = clientSecret
+		pEnv.clientSecret = testutils.ClientSecret
 	}
 	if pEnv.clientCert == "" {
 		pEnv.clientCert = "testdata/testCert.pfx"
@@ -173,7 +164,7 @@ func TestServicePrincipalTokenVCR(t *testing.T) {
 		pEnv.clientCertPassword = "TestPassword"
 	}
 	if pEnv.resourceID == "" {
-		pEnv.resourceID = resourceID
+		pEnv.resourceID = testutils.ResourceID
 	}
 	if pEnv.tenantID == "" {
 		pEnv.tenantID = "00000000-0000-0000-0000-000000000000"
@@ -259,19 +250,19 @@ func TestServicePrincipalTokenVCR(t *testing.T) {
 
 func TestServicePrincipalPoPTokenVCR(t *testing.T) {
 	pEnv := &servicePrincipalToken{
-		clientID:           os.Getenv(clientID),
-		clientSecret:       os.Getenv(clientSecret),
-		clientCert:         os.Getenv(clientCert),
-		clientCertPassword: os.Getenv(clientCertPass),
-		resourceID:         os.Getenv(resourceID),
-		tenantID:           os.Getenv(tenantID),
+		clientID:           os.Getenv(testutils.ClientID),
+		clientSecret:       os.Getenv(testutils.ClientSecret),
+		clientCert:         os.Getenv(testutils.ClientCert),
+		clientCertPassword: os.Getenv(testutils.ClientCertPass),
+		resourceID:         os.Getenv(testutils.ResourceID),
+		tenantID:           os.Getenv(testutils.TenantID),
 	}
 	// Use defaults if environmental variables are empty
 	if pEnv.clientID == "" {
-		pEnv.clientID = clientID
+		pEnv.clientID = testutils.ClientID
 	}
 	if pEnv.clientSecret == "" {
-		pEnv.clientSecret = clientSecret
+		pEnv.clientSecret = testutils.ClientSecret
 	}
 	if pEnv.clientCert == "" {
 		pEnv.clientCert = "testdata/testCert.pfx"
@@ -280,7 +271,7 @@ func TestServicePrincipalPoPTokenVCR(t *testing.T) {
 		pEnv.clientCertPassword = "TestPassword"
 	}
 	if pEnv.resourceID == "" {
-		pEnv.resourceID = resourceID
+		pEnv.resourceID = testutils.ResourceID
 	}
 	if pEnv.tenantID == "" {
 		pEnv.tenantID = "00000000-0000-0000-0000-000000000000"

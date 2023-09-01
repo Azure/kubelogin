@@ -30,7 +30,7 @@ func GetVCRHttpClient(path string, token string) (*recorder.Recorder, *http.Clie
 	rec, _ := recorder.NewWithOptions(opts)
 
 	hook := func(i *cassette.Interaction) error {
-		var detectedClientID, detectedClientSecret, detectedClientAssertion, detectedScope string
+		var detectedClientID, detectedClientSecret, detectedClientAssertion, detectedScope, detectedReqCnf string
 		// Delete sensitive content
 		delete(i.Response.Headers, "Set-Cookie")
 		delete(i.Response.Headers, "X-Ms-Request-Id")
@@ -50,23 +50,30 @@ func GetVCRHttpClient(path string, token string) (*recorder.Recorder, *http.Clie
 			detectedScope = i.Request.Form["scope"][0][:strings.IndexByte(i.Request.Form["scope"][0], '/')]
 			i.Request.Form["scope"] = []string{redactionToken + "/.default openid offline_access profile"}
 		}
-		i.Request.URL = strings.ReplaceAll(i.Request.URL, os.Getenv(tenantUUID), tenantUUID)
-		i.Response.Body = strings.ReplaceAll(i.Response.Body, os.Getenv(tenantUUID), tenantUUID)
+		if i.Request.Form["req_cnf"] != nil {
+			detectedScope = i.Request.Form["req_cnf"][0]
+			i.Request.Form["req_cnf"] = []string{redactionToken}
+		}
+
+		if os.Getenv(tenantUUID) != "" {
+			i.Request.URL = strings.ReplaceAll(i.Request.URL, os.Getenv(tenantUUID), tenantUUID)
+			i.Response.Body = strings.ReplaceAll(i.Response.Body, os.Getenv(tenantUUID), tenantUUID)
+		}
 
 		if detectedClientID != "" {
 			i.Request.Body = strings.ReplaceAll(i.Request.Body, detectedClientID, redactionToken)
 		}
-
 		if detectedClientSecret != "" {
 			i.Request.Body = strings.ReplaceAll(i.Request.Body, detectedClientSecret, redactionToken)
 		}
-
 		if detectedClientAssertion != "" {
 			i.Request.Body = strings.ReplaceAll(i.Request.Body, detectedClientAssertion, redactionToken)
 		}
-
 		if detectedScope != "" {
 			i.Request.Body = strings.ReplaceAll(i.Request.Body, detectedScope, redactionToken)
+		}
+		if detectedReqCnf != "" {
+			i.Request.Body = strings.ReplaceAll(i.Request.Body, detectedReqCnf, redactionToken)
 		}
 
 		if strings.Contains(i.Response.Body, "access_token") {
