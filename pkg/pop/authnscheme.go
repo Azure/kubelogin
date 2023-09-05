@@ -1,5 +1,3 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
 // Disclaimer: The PoPAuthenticationScheme implementation of the MSAL AuthenticationScheme
 // interface is intended for the usage of Azure Arc.
 
