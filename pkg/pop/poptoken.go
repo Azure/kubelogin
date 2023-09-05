@@ -11,7 +11,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"math/big"
-	"sync"
 )
 
 // PoPKey is a generic interface for PoP key properties and methods
@@ -92,9 +91,6 @@ func generateSwKey(key *rsa.PrivateKey) (*swKey, error) {
 	return swk, nil
 }
 
-var pswKey *swKey
-var pwsKeyMutex sync.Mutex
-
 // GetSwPoPKey generates a new PoP key that rotates every 8 hours and returns it
 func GetSwPoPKey() (*swKey, error) {
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -105,19 +101,11 @@ func GetSwPoPKey() (*swKey, error) {
 }
 
 func GetSwPoPKeyWithRSAKey(rsaKey *rsa.PrivateKey) (*swKey, error) {
-	pwsKeyMutex.Lock()
-	defer pwsKeyMutex.Unlock()
-	if pswKey != nil {
-		return pswKey, nil
-	}
-
 	key, err := generateSwKey(rsaKey)
 	if err != nil {
-		return nil, fmt.Errorf("unable to generate popkey. err: %w", err)
+		return nil, fmt.Errorf("unable to generate PoP key. err: %w", err)
 	}
-	pswKey = key
-
-	return pswKey, nil
+	return key, nil
 }
 
 // getRSAKeyExponentAndModulus returns the exponent and modulus from the given RSA key

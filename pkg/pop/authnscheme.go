@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-// Disclaimer: This interface has been implemented for the usage of Azure Arc.
+// Disclaimer: The PoPAuthenticationScheme implementation of the MSAL AuthenticationScheme
+// interface is intended for the usage of Azure Arc.
 
 package pop
 
@@ -17,7 +18,8 @@ import (
 // type of a PoP token, as opposed to "JWT" for a regular bearer token
 const popTokenType = "pop"
 
-// PoPAuthenticationScheme is a PoP token implementation of the MSAL AuthenticationScheme interface.
+// PoPAuthenticationScheme is a PoP token implementation of the MSAL AuthenticationScheme interface
+// used by the Azure Arc Platform team.
 // This implementation will only use the passed-in u-claim (representing the ARM ID of the
 // cluster/host); other claims passed in during a PoP token request will be disregarded
 type PoPAuthenticationScheme struct {
