@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+// Disclaimer: This interface has been implemented for the usage of Azure Arc.
 
 package pop
 
@@ -15,6 +16,67 @@ import (
 
 // type of a PoP token, as opposed to "JWT" for a regular bearer token
 const popTokenType = "pop"
+
+// PoPAuthenticationScheme is a PoP token implementation of the MSAL AuthenticationScheme interface.
+// This implementation will only use the passed-in u-claim (representing the ARM ID of the
+// cluster/host); other claims passed in during a PoP token request will be disregarded
+type PoPAuthenticationScheme struct {
+	// host is the u claim we will add on the pop token
+	Host   string
+	PoPKey PoPKey
+}
+
+// TokenRequestParams returns the params to use when sending a request for a PoP token
+func (as *PoPAuthenticationScheme) TokenRequestParams() map[string]string {
+	return map[string]string{
+		"token_type": popTokenType,
+		"req_cnf":    as.PoPKey.ReqCnf(),
+	}
+}
+
+// KeyID returns the key used to sign the PoP token
+func (as *PoPAuthenticationScheme) KeyID() string {
+	return as.PoPKey.KeyID()
+}
+
+// FormatAccessToken takes an access token, formats it as a PoP token,
+// and returns it as a base-64 encoded string
+func (as *PoPAuthenticationScheme) FormatAccessToken(accessToken string) (string, error) {
+	timestamp := time.Now().Unix()
+	nonce := uuid.NewString()
+	nonce = strings.ReplaceAll(nonce, "-", "")
+
+	return as.FormatAccessTokenWithOptions(accessToken, nonce, timestamp)
+}
+
+// FormatAccessTokenWithOptions takes an access token, nonce, and timestamp, formats
+// the token as a PoP token containing the given fields, and returns it as a
+// base-64 encoded string
+func (as *PoPAuthenticationScheme) FormatAccessTokenWithOptions(accessToken, nonce string, timestamp int64) (string, error) {
+	header := header{
+		typ: popTokenType,
+		alg: as.PoPKey.Alg(),
+		kid: as.PoPKey.KeyID(),
+	}
+	payload := payload{
+		at:    accessToken,
+		ts:    timestamp,
+		host:  as.Host,
+		jwk:   as.PoPKey.JWK(),
+		nonce: nonce,
+	}
+
+	popAccessToken, err := createPoPAccessToken(header, payload, as.PoPKey)
+	if err != nil {
+		return "", fmt.Errorf("error formatting PoP token: %w", err)
+	}
+	return popAccessToken.ToBase64(), nil
+}
+
+// AccessTokenType returns the PoP access token type
+func (as *PoPAuthenticationScheme) AccessTokenType() string {
+	return popTokenType
+}
 
 // type representing the header of a PoP access token
 type header struct {
@@ -90,63 +152,4 @@ func createPoPAccessToken(h header, p payload, popKey PoPKey) (*popAccessToken, 
 // ToBase64 returns a base-64 encoded representation of a PoP access token
 func (p *popAccessToken) ToBase64() string {
 	return fmt.Sprintf("%s.%s.%s", p.Header.ToBase64(), p.Payload.ToBase64(), p.Signature.ToBase64())
-}
-
-// PoPAuthenticationScheme is a PoP token implementation of the MSAL AuthenticationScheme interface
-type PoPAuthenticationScheme struct {
-	// host is the u claim we will add on the pop token
-	Host   string
-	PoPKey PoPKey
-}
-
-// TokenRequestParams returns the params to use when sending a request for a PoP token
-func (as *PoPAuthenticationScheme) TokenRequestParams() map[string]string {
-	return map[string]string{
-		"token_type": popTokenType,
-		"req_cnf":    as.PoPKey.ReqCnf(),
-	}
-}
-
-// KeyID returns the key used to sign the PoP token
-func (as *PoPAuthenticationScheme) KeyID() string {
-	return as.PoPKey.KeyID()
-}
-
-// FormatAccessToken takes an access token, formats it as a PoP token,
-// and returns it as a base-64 encoded string
-func (as *PoPAuthenticationScheme) FormatAccessToken(accessToken string) (string, error) {
-	timestamp := time.Now().Unix()
-	nonce := uuid.NewString()
-	nonce = strings.ReplaceAll(nonce, "-", "")
-
-	return as.FormatAccessTokenWithOptions(accessToken, nonce, timestamp)
-}
-
-// FormatAccessTokenWithOptions takes an access token, nonce, and timestamp, formats
-// the token as a PoP token containing the given fields, and returns it as a
-// base-64 encoded string
-func (as *PoPAuthenticationScheme) FormatAccessTokenWithOptions(accessToken, nonce string, timestamp int64) (string, error) {
-	header := header{
-		typ: popTokenType,
-		alg: as.PoPKey.Alg(),
-		kid: as.PoPKey.KeyID(),
-	}
-	payload := payload{
-		at:    accessToken,
-		ts:    timestamp,
-		host:  as.Host,
-		jwk:   as.PoPKey.JWK(),
-		nonce: nonce,
-	}
-
-	popAccessToken, err := createPoPAccessToken(header, payload, as.PoPKey)
-	if err != nil {
-		return "", fmt.Errorf("error formatting PoP token: %w", err)
-	}
-	return popAccessToken.ToBase64(), nil
-}
-
-// AccessTokenType returns the PoP access token type
-func (as *PoPAuthenticationScheme) AccessTokenType() string {
-	return popTokenType
 }

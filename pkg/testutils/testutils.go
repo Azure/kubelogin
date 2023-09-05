@@ -12,12 +12,15 @@ const (
 	BadSecret      = "Bad_Secret"
 )
 
+// ErrorContains takes an input error and a desired substring, checks if the string is present
+// in the error message, and returns the boolean result
 func ErrorContains(out error, want string) bool {
+	substring := strings.TrimSpace(want)
 	if out == nil {
-		return want == ""
+		return substring == ""
 	}
-	if want == "" {
+	if substring == "" {
 		return false
 	}
-	return strings.Contains(out.Error(), want)
+	return strings.Contains(out.Error(), substring)
 }

@@ -12,7 +12,6 @@ import (
 	"fmt"
 	"math/big"
 	"sync"
-	"time"
 )
 
 // PoPKey is a generic interface for PoP key properties and methods
@@ -117,24 +116,6 @@ func GetSwPoPKeyWithRSAKey(rsaKey *rsa.PrivateKey) (*swKey, error) {
 		return nil, fmt.Errorf("unable to generate popkey. err: %w", err)
 	}
 	pswKey = key
-
-	// rotate key every 8 hours
-	ticker := time.NewTicker(8 * time.Hour)
-	go func() error {
-		for {
-			<-ticker.C
-			key, err := generateSwKey(rsaKey)
-			if err != nil {
-				return fmt.Errorf("unable to generate popkey. err: %w", err)
-			}
-			pwsKeyMutex.Lock()
-			pswKey = key
-			pwsKeyMutex.Unlock()
-		}
-	}()
-	if err != nil {
-		return nil, err
-	}
 
 	return pswKey, nil
 }
