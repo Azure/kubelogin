@@ -14,6 +14,7 @@
     - [Workload Identity](./concepts/login-modes/workloadidentity.md)
     - [Resource Owner Password Credential](./concepts/login-modes/ropc.md)
   - [Using kubelogin with AKS](./concepts/aks.md)
+  - [Using kubelogin to get Proof-of-Possession (PoP) tokens for Azure Arc](./concepts/azure-arc.md)
 - [Command-Line Tool](./cli-reference.md)
   - [convert-kubeconfig](./cli/convert-kubeconfig.md)
   - [get-token](./cli/get-token.md)

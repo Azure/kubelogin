@@ -1186,6 +1186,117 @@ func TestConvert(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "with exec format kubeconfig, convert from devicecode to interactive with only pop-enabled specified, Convert should return error",
+			execArgItems: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argEnvironment, envName,
+				argLoginMethod, token.DeviceCodeLogin,
+				argIsPoPTokenEnabled,
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.InteractiveLogin,
+			},
+			command:       execName,
+			expectedError: "--pop-claims is required when specifying --pop-enabled",
+		},
+		{
+			name: "with exec format kubeconfig, convert from devicecode to interactive with only pop-claims specified, Convert should return error",
+			execArgItems: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argEnvironment, envName,
+				argLoginMethod, token.DeviceCodeLogin,
+				argPoPTokenClaims, "u=testhost",
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.InteractiveLogin,
+			},
+			command:       execName,
+			expectedError: "--pop-enabled is required when specifying --pop-claims",
+		},
+		{
+			name: "with exec format kubeconfig, convert from devicecode to interactive with pop-enabled and pop-claims",
+			execArgItems: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argEnvironment, envName,
+				argLoginMethod, token.DeviceCodeLogin,
+				argIsPoPTokenEnabled,
+				argPoPTokenClaims, "u=testhost, 1=2",
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.InteractiveLogin,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argEnvironment, envName,
+				argLoginMethod, token.InteractiveLogin,
+				argIsPoPTokenEnabled,
+				argPoPTokenClaims, "u=testhost, 1=2",
+			},
+			command: execName,
+		},
+		{
+			name: "with exec format kubeconfig, convert from devicecode to spn with pop-enabled and pop-claims as flags",
+			execArgItems: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argEnvironment, envName,
+				argLoginMethod, token.DeviceCodeLogin,
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod:       token.ServicePrincipalLogin,
+				flagIsPoPTokenEnabled: "true",
+				flagPoPTokenClaims:    "u=testhost, 1=2",
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argEnvironment, envName,
+				argServerID, serverID,
+				argTenantID, tenantID,
+				argClientID, clientID,
+				argLoginMethod, token.ServicePrincipalLogin,
+				argIsPoPTokenEnabled,
+				argPoPTokenClaims, "u=testhost, 1=2",
+			},
+			command: execName,
+		},
+		{
+			name: "with exec format kubeconfig, convert from azurecli to devicecode with pop-enabled and pop-claims, expect pop args to be ignored",
+			execArgItems: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argLoginMethod, token.AzureCLILogin,
+				argIsPoPTokenEnabled,
+				argPoPTokenClaims, "u=testhost, 1=2",
+			},
+			overrideFlags: map[string]string{
+				flagClientID:    clientID,
+				flagTenantID:    tenantID,
+				flagLoginMethod: token.DeviceCodeLogin,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argLoginMethod, token.DeviceCodeLogin,
+			},
+			command: execName,
+		},
 	}
 	rootTmpDir, err := os.MkdirTemp("", "kubelogin-test")
 	if err != nil {
@@ -1236,20 +1347,23 @@ func TestConvert(t *testing.T) {
 			err = Convert(o, &pathOptions)
 			if data.expectedError == "" && err != nil {
 				t.Fatalf("Unexpected error from Convert: %v", err)
-			} else if data.expectedError != "" && (err == nil || err.Error() != data.expectedError) {
-				t.Fatalf("Expected error: %q, but got: %q", data.expectedError, err)
-			}
-
-			if o.context != "" {
-				// when --context is specified, convert-kubeconfig will convert only the targeted context
-				// hence, we expect the second auth info not to change
-				validate(t, clusterName1, config.AuthInfos[clusterName1], data.authProviderConfig, data.expectedArgs, data.expectedExecName, data.expectedInstallHint, data.expectedEnv)
-				validateAuthInfoThatShouldNotChange(t, clusterName2, config.AuthInfos[clusterName2], data.authProviderConfig)
+			} else if data.expectedError != "" {
+				if err == nil || err.Error() != data.expectedError {
+					t.Fatalf("Expected error: %q, but got: %q", data.expectedError, err)
+				}
 			} else {
-				// when --context is not specified, convert-kubeconfig will convert every auth info in the kubeconfig
-				// hence, we expect the second auth info to be converted in the same way as the first one
-				validate(t, clusterName1, config.AuthInfos[clusterName1], data.authProviderConfig, data.expectedArgs, data.expectedExecName, data.expectedInstallHint, data.expectedEnv)
-				validate(t, clusterName2, config.AuthInfos[clusterName2], data.authProviderConfig, data.expectedArgs, data.expectedExecName, data.expectedInstallHint, data.expectedEnv)
+				// only need to validate fields if we're not expecting an error
+				if o.context != "" {
+					// when --context is specified, convert-kubeconfig will convert only the targeted context
+					// hence, we expect the second auth info not to change
+					validate(t, clusterName1, config.AuthInfos[clusterName1], data.authProviderConfig, data.expectedArgs, data.expectedExecName, data.expectedInstallHint, data.expectedEnv)
+					validateAuthInfoThatShouldNotChange(t, clusterName2, config.AuthInfos[clusterName2], data.authProviderConfig)
+				} else {
+					// when --context is not specified, convert-kubeconfig will convert every auth info in the kubeconfig
+					// hence, we expect the second auth info to be converted in the same way as the first one
+					validate(t, clusterName1, config.AuthInfos[clusterName1], data.authProviderConfig, data.expectedArgs, data.expectedExecName, data.expectedInstallHint, data.expectedEnv)
+					validate(t, clusterName2, config.AuthInfos[clusterName2], data.authProviderConfig, data.expectedArgs, data.expectedExecName, data.expectedInstallHint, data.expectedEnv)
+				}
 			}
 		})
 	}
@@ -1333,7 +1447,7 @@ func validate(
 		t.Fatalf("[context:%s]: expected exec command: %s, actual: %s", clusterName, expectedExecName, exec.Command)
 	}
 
-	// defautl to the kubelogin install hint
+	// default to the kubelogin install hint
 	if expectedInstallHint == "" {
 		expectedInstallHint = execInstallHint
 	}

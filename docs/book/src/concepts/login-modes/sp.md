@@ -74,6 +74,18 @@ export AZURE_CLIENT_CERTIFICATE_PASSWORD=<pfx password>
 kubectl get nodes
 ```
 
+### Proof-of-possession (PoP) token with client secret from environment variables
+```sh
+export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l spn --pop-enabled --pop-claims "u=/ARM/ID/OF/CLUSTER"
+
+export AAD_SERVICE_PRINCIPAL_CLIENT_ID=<spn client id>
+export AAD_SERVICE_PRINCIPAL_CLIENT_SECRET=<spn secret>
+
+kubectl get nodes
+```
+
 ## Restrictions
 
 - on AKS, it will only work with managed AAD

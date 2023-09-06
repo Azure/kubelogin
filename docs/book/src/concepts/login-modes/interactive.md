@@ -8,10 +8,20 @@ In this login mode, the access token will be cached at `${HOME}/.kube/cache/kube
 
 ## Usage Examples
 
+### Bearer token with interactive flow
 ```sh
 export KUBECONFIG=/path/to/kubeconfig
 
 kubelogin convert-kubeconfig -l interactive
+
+kubectl get nodes
+```
+
+### Proof-of-possession (PoP) token with interactive flow
+```sh
+export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l interactive --pop-enabled --pop-claims "u=/ARM/ID/OF/CLUSTER"
 
 kubectl get nodes
 ```

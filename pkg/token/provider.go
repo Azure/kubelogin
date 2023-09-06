@@ -24,13 +24,17 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get cloud.Configuration. err: %s", err)
 	}
+	popClaimsMap, err := parsePoPClaims(o.PoPTokenClaims)
+	if o.IsPoPTokenEnabled && err != nil {
+		return nil, err
+	}
 	switch o.LoginMethod {
 	case DeviceCodeLogin:
 		return newDeviceCodeTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID)
 	case InteractiveLogin:
-		return newInteractiveTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID)
+		return newInteractiveTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID, popClaimsMap)
 	case ServicePrincipalLogin:
-		return newServicePrincipalToken(cloudConfiguration, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID)
+		return newServicePrincipalTokenProvider(cloudConfiguration, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID, popClaimsMap)
 	case ROPCLogin:
 		return newResourceOwnerToken(*oAuthConfig, o.ClientID, o.Username, o.Password, o.ServerID, o.TenantID)
 	case MSILogin:

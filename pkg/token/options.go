@@ -28,6 +28,8 @@ type Options struct {
 	FederatedTokenFile     string
 	AuthorityHost          string
 	UseAzureRMTerraformEnv bool
+	IsPoPTokenEnabled      bool
+	PoPTokenClaims         string
 }
 
 const (
@@ -118,6 +120,8 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.BoolVar(&o.IsLegacy, "legacy", o.IsLegacy, "set to true to get token with 'spn:' prefix in audience claim")
 	fs.BoolVar(&o.UseAzureRMTerraformEnv, "use-azurerm-env-vars", o.UseAzureRMTerraformEnv,
 		"Use environment variable names of Terraform Azure Provider (ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_CLIENT_CERTIFICATE_PATH, ARM_CLIENT_CERTIFICATE_PASSWORD, ARM_TENANT_ID)")
+	fs.BoolVar(&o.IsPoPTokenEnabled, "pop-enabled", o.IsPoPTokenEnabled, "set to true to use a PoP token for authentication or false to use a regular bearer token")
+	fs.StringVar(&o.PoPTokenClaims, "pop-claims", o.PoPTokenClaims, "contains a comma-separated list of claims to attach to the pop token in the format `key=val,key2=val2`. At minimum, specify the ARM ID of the cluster as `u=ARM_ID`")
 }
 
 func (o *Options) Validate() error {
@@ -131,6 +135,16 @@ func (o *Options) Validate() error {
 	if !foundValidLoginMethod {
 		return fmt.Errorf("'%s' is not a supported login method. Supported method is one of %s", o.LoginMethod, GetSupportedLogins())
 	}
+
+	// both of the following checks ensure that --pop-enabled and --pop-claims flags are provided together
+	if o.IsPoPTokenEnabled && o.PoPTokenClaims == "" {
+		return fmt.Errorf("if enabling pop token mode, please provide the pop-claims flag containing the PoP token claims as a comma-separated string: `u=popClaimHost,key1=val1`")
+	}
+
+	if o.PoPTokenClaims != "" && !o.IsPoPTokenEnabled {
+		return fmt.Errorf("pop-enabled flag is required to use the PoP token feature. Please provide both pop-enabled and pop-claims flags")
+	}
+
 	return nil
 }
 
@@ -235,4 +249,30 @@ func getCacheFileName(o *Options) string {
 		cacheFileNameFormat = "%s-%s-%s-%s_legacy.json"
 	}
 	return filepath.Join(o.TokenCacheDir, fmt.Sprintf(cacheFileNameFormat, o.Environment, o.ServerID, o.ClientID, o.TenantID))
+}
+
+// parsePoPClaims parses the pop token claims. Pop token claims are passed in as a
+// comma-separated string in the format "key1=val1,key2=val2"
+func parsePoPClaims(popClaims string) (map[string]string, error) {
+	if strings.TrimSpace(popClaims) == "" {
+		return nil, fmt.Errorf("failed to parse PoP token claims: no claims provided")
+	}
+	claimsArray := strings.Split(popClaims, ",")
+	claimsMap := make(map[string]string)
+	for _, claim := range claimsArray {
+		claimPair := strings.Split(claim, "=")
+		if len(claimPair) < 2 {
+			return nil, fmt.Errorf("failed to parse PoP token claims. Ensure the claims are formatted as `key=value` with no extra whitespace")
+		}
+		key := strings.TrimSpace(claimPair[0])
+		val := strings.TrimSpace(claimPair[1])
+		if key == "" || val == "" {
+			return nil, fmt.Errorf("failed to parse PoP token claims. Ensure the claims are formatted as `key=value` with no extra whitespace")
+		}
+		claimsMap[key] = val
+	}
+	if claimsMap["u"] == "" {
+		return nil, fmt.Errorf("required u-claim not provided for PoP token flow. Please provide the ARM ID of the cluster in the format `u=<ARM_ID>`")
+	}
+	return claimsMap, nil
 }

@@ -2,21 +2,14 @@ package token
 
 import (
 	"context"
-	"crypto/rsa"
-	"crypto/x509"
 	"encoding/json"
-	"encoding/pem"
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/go-autorest/autorest/adal"
-	"golang.org/x/crypto/pkcs12"
 )
 
 const (
@@ -32,17 +25,27 @@ type servicePrincipalToken struct {
 	resourceID         string
 	tenantID           string
 	cloud              cloud.Configuration
+	popClaims          map[string]string
 }
 
-func newServicePrincipalToken(cloud cloud.Configuration, clientID, clientSecret, clientCert, clientCertPassword, resourceID, tenantID string) (TokenProvider, error) {
+func newServicePrincipalTokenProvider(
+	cloud cloud.Configuration,
+	clientID,
+	clientSecret,
+	clientCert,
+	clientCertPassword,
+	resourceID,
+	tenantID string,
+	popClaims map[string]string,
+) (TokenProvider, error) {
 	if clientID == "" {
 		return nil, errors.New("clientID cannot be empty")
 	}
 	if clientSecret == "" && clientCert == "" {
-		return nil, errors.New("both clientSecret and clientcert cannot be empty")
+		return nil, errors.New("both clientSecret and clientcert cannot be empty. One must be specified")
 	}
 	if clientSecret != "" && clientCert != "" {
-		return nil, errors.New("client secret and client certificate cannot be set at the same time. Only one has to be specified")
+		return nil, errors.New("client secret and client certificate cannot be set at the same time. Only one can be specified")
 	}
 	if resourceID == "" {
 		return nil, errors.New("resourceID cannot be empty")
@@ -59,6 +62,7 @@ func newServicePrincipalToken(cloud cloud.Configuration, clientID, clientSecret,
 		resourceID:         resourceID,
 		tenantID:           tenantID,
 		cloud:              cloud,
+		popClaims:          popClaims,
 	}, nil
 }
 
@@ -68,191 +72,41 @@ func (p *servicePrincipalToken) Token() (adal.Token, error) {
 }
 
 func (p *servicePrincipalToken) TokenWithOptions(options *azcore.ClientOptions) (adal.Token, error) {
+	ctx := context.Background()
 	emptyToken := adal.Token{}
-	var spnAccessToken azcore.AccessToken
+	var accessToken string
+	var expirationTimeUnix int64
+	var err error
+	scopes := []string{p.resourceID + "/.default"}
 
 	// Request a new Azure token provider for service principal
 	if p.clientSecret != "" {
-		clientOptions := &azidentity.ClientSecretCredentialOptions{
-			ClientOptions: azcore.ClientOptions{
-				Cloud: p.cloud,
-			},
-		}
-		if options != nil {
-			clientOptions.ClientOptions = *options
-		}
-		cred, err := azidentity.NewClientSecretCredential(
-			p.tenantID,
-			p.clientID,
-			p.clientSecret,
-			clientOptions,
-		)
-		if err != nil {
-			return emptyToken, fmt.Errorf("unable to create credential. Received: %w", err)
-		}
-
-		// Use the token provider to get a new token
-		spnAccessToken, err = cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: []string{p.resourceID + "/.default"}})
+		accessToken, expirationTimeUnix, err = p.getTokenWithClientSecret(ctx, scopes, options)
 		if err != nil {
 			return emptyToken, fmt.Errorf("failed to create service principal token using secret: %w", err)
 		}
-
 	} else if p.clientCert != "" {
-		clientOptions := &azidentity.ClientCertificateCredentialOptions{
-			ClientOptions: azcore.ClientOptions{
-				Cloud: p.cloud,
-			},
-			SendCertificateChain: true,
-		}
-		if options != nil {
-			clientOptions.ClientOptions = *options
-		}
-		certData, err := os.ReadFile(p.clientCert)
+		accessToken, expirationTimeUnix, err = p.getTokenWithClientCert(ctx, scopes, options)
 		if err != nil {
-			return emptyToken, fmt.Errorf("failed to read the certificate file (%s): %w", p.clientCert, err)
+			return emptyToken, fmt.Errorf("failed to create service principal token using certificate: %w", err)
 		}
-
-		// Get the certificate and private key from pfx file
-		cert, rsaPrivateKey, err := decodePkcs12(certData, p.clientCertPassword)
-		if err != nil {
-			return emptyToken, fmt.Errorf("failed to decode pkcs12 certificate while creating spt: %w", err)
-		}
-
-		cred, err := azidentity.NewClientCertificateCredential(
-			p.tenantID,
-			p.clientID,
-			[]*x509.Certificate{cert},
-			rsaPrivateKey,
-			clientOptions,
-		)
-		if err != nil {
-			return emptyToken, fmt.Errorf("unable to create credential. Received: %v", err)
-		}
-		spnAccessToken, err = cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: []string{p.resourceID + "/.default"}})
-		if err != nil {
-			return emptyToken, fmt.Errorf("failed to create service principal token using cert: %s", err)
-		}
-
 	} else {
 		return emptyToken, errors.New("service principal token requires either client secret or certificate")
 	}
 
-	if spnAccessToken.Token == "" {
+	if accessToken == "" {
 		return emptyToken, errors.New("unexpectedly got empty access token")
 	}
 
 	// azurecore.AccessTokens have ExpiresOn as Time.Time. We need to convert it to JSON.Number
 	// by fetching the time in seconds since the Unix epoch via Unix() and then converting to a
 	// JSON.Number via formatting as a string using a base-10 int64 conversion.
-	expiresOn := json.Number(strconv.FormatInt(spnAccessToken.ExpiresOn.Unix(), 10))
+	expiresOn := json.Number(strconv.FormatInt(expirationTimeUnix, 10))
 
 	// Re-wrap the azurecore.AccessToken into an adal.Token
 	return adal.Token{
-		AccessToken: spnAccessToken.Token,
+		AccessToken: accessToken,
 		ExpiresOn:   expiresOn,
 		Resource:    p.resourceID,
 	}, nil
-}
-
-func isPublicKeyEqual(key1, key2 *rsa.PublicKey) bool {
-	if key1.N == nil || key2.N == nil {
-		return false
-	}
-	return key1.E == key2.E && key1.N.Cmp(key2.N) == 0
-}
-
-func splitPEMBlock(pemBlock []byte) (certPEM []byte, keyPEM []byte) {
-	for {
-		var derBlock *pem.Block
-		derBlock, pemBlock = pem.Decode(pemBlock)
-		if derBlock == nil {
-			break
-		}
-		if derBlock.Type == certificate {
-			certPEM = append(certPEM, pem.EncodeToMemory(derBlock)...)
-		} else if derBlock.Type == privateKey {
-			keyPEM = append(keyPEM, pem.EncodeToMemory(derBlock)...)
-		}
-	}
-
-	return certPEM, keyPEM
-}
-
-func parseRsaPrivateKey(privateKeyPEM []byte) (*rsa.PrivateKey, error) {
-	block, _ := pem.Decode(privateKeyPEM)
-	if block == nil {
-		return nil, fmt.Errorf("failed to decode a pem block from private key")
-	}
-
-	privatePkcs1Key, errPkcs1 := x509.ParsePKCS1PrivateKey(block.Bytes)
-	if errPkcs1 == nil {
-		return privatePkcs1Key, nil
-	}
-
-	privatePkcs8Key, errPkcs8 := x509.ParsePKCS8PrivateKey(block.Bytes)
-	if errPkcs8 == nil {
-		privatePkcs8RsaKey, ok := privatePkcs8Key.(*rsa.PrivateKey)
-		if !ok {
-			return nil, fmt.Errorf("pkcs8 contained non-RSA key. Expected RSA key")
-		}
-		return privatePkcs8RsaKey, nil
-	}
-
-	return nil, fmt.Errorf("failed to parse private key as Pkcs#1 or Pkcs#8. (%s). (%s)", errPkcs1, errPkcs8)
-}
-
-func parseKeyPairFromPEMBlock(pemBlock []byte) (*x509.Certificate, *rsa.PrivateKey, error) {
-	certPEM, keyPEM := splitPEMBlock(pemBlock)
-
-	privateKey, err := parseRsaPrivateKey(keyPEM)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	found := false
-	var cert *x509.Certificate
-	for {
-		var certBlock *pem.Block
-		var err error
-		certBlock, certPEM = pem.Decode(certPEM)
-		if certBlock == nil {
-			break
-		}
-
-		cert, err = x509.ParseCertificate(certBlock.Bytes)
-		if err != nil {
-			return nil, nil, fmt.Errorf("unable to parse certificate. %w", err)
-		}
-
-		certPublicKey, ok := cert.PublicKey.(*rsa.PublicKey)
-		if ok {
-			if isPublicKeyEqual(certPublicKey, &privateKey.PublicKey) {
-				found = true
-				break
-			}
-		}
-	}
-
-	if !found {
-		return nil, nil, fmt.Errorf("unable to find a matching public certificate")
-	}
-
-	return cert, privateKey, nil
-}
-
-func decodePkcs12(pkcs []byte, password string) (*x509.Certificate, *rsa.PrivateKey, error) {
-	blocks, err := pkcs12.ToPEM(pkcs, password)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	var (
-		pemData []byte
-	)
-
-	for _, b := range blocks {
-		pemData = append(pemData, pem.EncodeToMemory(b)...)
-	}
-
-	return parseKeyPairFromPEMBlock(pemData)
 }
