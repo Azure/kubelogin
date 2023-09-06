@@ -1,5 +1,24 @@
 # Change Log
 
+## [0.0.32]
+
+### Enhancements
+
+* Add PoP token support to interactive+spn get-token/convert-kubeconfig flows by @rharpavat in https://github.com/Azure/kubelogin/pull/319
+
+### Maintenance
+
+* Fixed typo in top header for convert-kubeconfig documentation by @byk0t in https://github.com/Azure/kubelogin/pull/323
+* Bump golang.org/x/crypto from 0.11.0 to 0.12.0 by @dependabot in https://github.com/Azure/kubelogin/pull/315
+* Bump k8s.io/apimachinery from 0.27.3 to 0.27.4 by @dependabot in https://github.com/Azure/kubelogin/pull/310
+
+## New Contributors
+
+* @byk0t made their first contribution in https://github.com/Azure/kubelogin/pull/323
+* @rharpavat made their first contribution in https://github.com/Azure/kubelogin/pull/319
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.0.31...v0.0.32
+
 ## [0.0.31]
 
 ### Enhancements
