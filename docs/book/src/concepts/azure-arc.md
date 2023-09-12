@@ -17,7 +17,7 @@ applicationID: 6256c85f-0aad-4d50-b960-e6e9b21efe35
 
 This is the application used by the server side. The access token needs to be issued for this app to access a 1P Arc-enabled cluster.
 
-This server app ID is a required parameter for [`interactive`](./login-modes/interactive.md) and [`spn`](./login-modes/sp.md) login modes supporting PoP token authentication.
+This server app ID is a required parameter for [`web browser interactive`](./login-modes/interactive.md) login mode supporting PoP token authentication.
 
 ## AAD Client App
 
@@ -25,4 +25,4 @@ This server app ID is a required parameter for [`interactive`](./login-modes/int
 applicationID: 3f4439ff-e698-4d6d-84fe-09c9d574f06b
 ```
 
-This is a 1P client application used by `kubelogin` to perform login on behalf of the user. It should be used for [web browser interactive](./login-modes/interactive.md), and [spn](./login-modes/sp.md) login modes when using PoP token authentication.
+This is a 1P client application used by `kubelogin` to perform login on behalf of the user. It should be used for [`web browser interactive`](./login-modes/interactive.md) login mode when using PoP token authentication.
