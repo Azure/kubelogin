@@ -8,3 +8,21 @@ kubelogin can be used to authenticate with Azure Arc-enabled clusters by request
 These flags can be provided to either `kubelogin get-token` directly to get a PoP token, or to `kubelogin convert-kubeconfig` for `kubectl` to request the token internally. 
 
 PoP token requests only work with `interactive` and `spn` login modes; these flags will be ignored if provided for other login modes.
+
+## AAD Server App
+
+```
+applicationID: 6256c85f-0aad-4d50-b960-e6e9b21efe35
+```
+
+This is the application used by the server side. The access token needs to be issued for this app to access a 1P Arc-enabled cluster.
+
+This server app ID is a required parameter for [`web browser interactive`](./login-modes/interactive.md) login mode supporting PoP token authentication.
+
+## AAD Client App
+
+```
+applicationID: 3f4439ff-e698-4d6d-84fe-09c9d574f06b
+```
+
+This is a 1P client application used by `kubelogin` to perform login on behalf of the user. It should be used for [`web browser interactive`](./login-modes/interactive.md) login mode when using PoP token authentication.
