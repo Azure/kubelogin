@@ -8,6 +8,8 @@ import (
 	"github.com/Azure/go-autorest/autorest/adal"
 )
 
+var errOAuthConfig = errors.New("OAuthConfig needs to be configured with api-version=1.0")
+
 type legacyServicePrincipalToken struct {
 	clientID           string
 	clientSecret       string
@@ -18,9 +20,9 @@ type legacyServicePrincipalToken struct {
 	oAuthConfig        adal.OAuthConfig
 }
 
-func newLegacyServicePrincipalToken(oAuthConfig adal.OAuthConfig, clientID, clientSecret, clientCert, clientCertPassword, resourceID, tenantID string, isLegacy bool) (TokenProvider, error) {
-	if !isLegacy {
-		return nil, errors.New("legacy service principal token requires isLegacy being true")
+func newLegacyServicePrincipalToken(oAuthConfig adal.OAuthConfig, clientID, clientSecret, clientCert, clientCertPassword, resourceID, tenantID string) (TokenProvider, error) {
+	if err := validateOAuthConfig(oAuthConfig); err != nil {
+		return nil, err
 	}
 	if clientID == "" {
 		return nil, errors.New("clientID cannot be empty")
@@ -99,4 +101,18 @@ func (p *legacyServicePrincipalToken) Token() (adal.Token, error) {
 		return emptyToken, err
 	}
 	return spt.Token(), nil
+}
+
+func validateOAuthConfig(config adal.OAuthConfig) error {
+	v := config.AuthorizeEndpoint.Query().Get("api-version")
+	if v != "1.0" {
+		return errOAuthConfig
+	}
+
+	v = config.TokenEndpoint.Query().Get("api-version")
+	if v != "1.0" {
+		return errOAuthConfig
+	}
+
+	return nil
 }

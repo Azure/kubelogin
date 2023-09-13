@@ -35,7 +35,7 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 		return newInteractiveTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID, popClaimsMap)
 	case ServicePrincipalLogin:
 		if o.IsLegacy {
-			return newLegacyServicePrincipalToken(*oAuthConfig, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID, o.IsLegacy)
+			return newLegacyServicePrincipalToken(*oAuthConfig, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID)
 		}
 		return newServicePrincipalTokenProvider(cloudConfiguration, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID, popClaimsMap)
 	case ROPCLogin:
