@@ -153,6 +153,15 @@
 </ol>
 <p>These flags can be provided to either <code>kubelogin get-token</code> directly to get a PoP token, or to <code>kubelogin convert-kubeconfig</code> for <code>kubectl</code> to request the token internally. </p>
 <p>PoP token requests only work with <code>interactive</code> and <code>spn</code> login modes; these flags will be ignored if provided for other login modes.</p>
+<h2 id="aad-server-app"><a class="header" href="#aad-server-app">AAD Server App</a></h2>
+<pre><code>applicationID: 6256c85f-0aad-4d50-b960-e6e9b21efe35
+</code></pre>
+<p>This is the application used by the server side. The access token needs to be issued for this app to access a 1P Arc-enabled cluster.</p>
+<p>This server app ID is a required parameter for <a href="./login-modes/interactive.html"><code>web browser interactive</code></a> login mode supporting PoP token authentication.</p>
+<h2 id="aad-client-app"><a class="header" href="#aad-client-app">AAD Client App</a></h2>
+<pre><code>applicationID: 3f4439ff-e698-4d6d-84fe-09c9d574f06b
+</code></pre>
+<p>This is a 1P client application used by <code>kubelogin</code> to perform login on behalf of the user. It should be used for <a href="./login-modes/interactive.html"><code>web browser interactive</code></a> login mode when using PoP token authentication.</p>
 
                     </main>
 
