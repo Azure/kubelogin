@@ -15,6 +15,7 @@ require (
 	github.com/google/uuid v1.3.1
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
+	github.com/stretchr/testify v1.8.2
 	golang.org/x/crypto v0.12.0
 	gopkg.in/dnaeon/go-vcr.v3 v3.1.2
 	gopkg.in/retry.v1 v1.0.3
@@ -59,6 +60,7 @@ require (
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/xlab/treeprint v1.1.0 // indirect
 	go.starlark.net v0.0.0-20220328144851-d1966c6b9fcd // indirect
 	golang.org/x/net v0.10.0 // indirect

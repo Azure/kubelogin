@@ -8,7 +8,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/adal"
 )
 
-var errOAuthConfig = errors.New("OAuthConfig needs to be configured with api-version=1.0")
+var errInvalidOAuthConfig = errors.New("OAuthConfig needs to be configured with api-version=1.0")
 
 type legacyServicePrincipalToken struct {
 	clientID           string
@@ -101,12 +101,12 @@ func (p *legacyServicePrincipalToken) Token() (adal.Token, error) {
 func validateOAuthConfig(config adal.OAuthConfig) error {
 	v := config.AuthorizeEndpoint.Query().Get("api-version")
 	if v != "1.0" {
-		return errOAuthConfig
+		return errInvalidOAuthConfig
 	}
 
 	v = config.TokenEndpoint.Query().Get("api-version")
 	if v != "1.0" {
-		return errOAuthConfig
+		return errInvalidOAuthConfig
 	}
 
 	return nil
