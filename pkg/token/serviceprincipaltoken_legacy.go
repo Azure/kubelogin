@@ -53,9 +53,6 @@ func newLegacyServicePrincipalToken(oAuthConfig adal.OAuthConfig, clientID, clie
 
 func (p *legacyServicePrincipalToken) Token() (adal.Token, error) {
 	emptyToken := adal.Token{}
-	callback := func(t adal.Token) error {
-		return nil
-	}
 
 	var (
 		spt *adal.ServicePrincipalToken
@@ -67,8 +64,7 @@ func (p *legacyServicePrincipalToken) Token() (adal.Token, error) {
 			p.oAuthConfig,
 			p.clientID,
 			p.clientSecret,
-			p.resourceID,
-			callback)
+			p.resourceID)
 		if err != nil {
 			return emptyToken, fmt.Errorf("failed to create service principal token using secret: %s", err)
 		}
@@ -89,14 +85,13 @@ func (p *legacyServicePrincipalToken) Token() (adal.Token, error) {
 			p.clientID,
 			cert,
 			rsaPrivateKey,
-			p.resourceID,
-			callback)
+			p.resourceID)
 		if err != nil {
 			return emptyToken, fmt.Errorf("failed to create service principal token using cert: %s", err)
 		}
 	}
 
-	err = spt.Refresh()
+	err = spt.EnsureFresh()
 	if err != nil {
 		return emptyToken, err
 	}
