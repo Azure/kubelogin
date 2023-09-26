@@ -170,6 +170,11 @@ asdf plugin update kubelogin
 asdf install kubelogin latest
 asdf global kubelogin latest
 </code></pre>
+<h3 id="using-azure-cli"><a class="header" href="#using-azure-cli">Using azure cli</a></h3>
+<p>There is another option to install Kubectl and Kubectl login. Documentation on this is here: https://learn.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest#az-aks-install-cli()</p>
+<pre><code># install (May require using the command ‘sudo’)
+az aks install-cli
+</code></pre>
 <h2 id="windows"><a class="header" href="#windows">Windows</a></h2>
 <h3 id="using-winget"><a class="header" href="#using-winget">Using winget</a></h3>
 <p>From Powershell:</p>
@@ -186,7 +191,7 @@ winget install --id=Microsoft.Azure.Kubelogin  -e
 <p>From Powershell:</p>
 <pre><code class="language-powershell">choco install kubernetes-cli azure-kubelogin
 </code></pre>
-<h3 id="using-azure-cli"><a class="header" href="#using-azure-cli">Using azure cli</a></h3>
+<h3 id="using-azure-cli-1"><a class="header" href="#using-azure-cli-1">Using azure cli</a></h3>
 <p>From Powershell:</p>
 <pre><code class="language-powershell">az aks install-cli
 $targetDir=&quot;$env:USERPROFILE\.azure-kubelogin&quot;
