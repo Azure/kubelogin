@@ -33,6 +33,13 @@ asdf plugin update kubelogin
 asdf install kubelogin latest
 asdf global kubelogin latest
 ```
+### Using azure cli
+There is another option to install Kubectl and Kubectl login. Documentation on this is here: https://learn.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest#az-aks-install-cli()
+
+```
+# install (May require using the command ‘sudo’)
+az aks install-cli
+```
 
 ## Windows
 
