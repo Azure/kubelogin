@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/spf13/pflag"
 	"k8s.io/client-go/util/homedir"
@@ -22,6 +23,7 @@ type Options struct {
 	TenantID               string
 	Environment            string
 	IsLegacy               bool
+	Timeout                time.Duration
 	TokenCacheDir          string
 	tokenCacheFile         string
 	IdentityResourceID     string
@@ -121,6 +123,8 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.BoolVar(&o.UseAzureRMTerraformEnv, "use-azurerm-env-vars", o.UseAzureRMTerraformEnv,
 		"Use environment variable names of Terraform Azure Provider (ARM_CLIENT_ID, ARM_CLIENT_SECRET, ARM_CLIENT_CERTIFICATE_PATH, ARM_CLIENT_CERTIFICATE_PASSWORD, ARM_TENANT_ID)")
 	fs.BoolVar(&o.IsPoPTokenEnabled, "pop-enabled", o.IsPoPTokenEnabled, "set to true to use a PoP token for authentication or false to use a regular bearer token")
+	fs.DurationVar(&o.Timeout, "timeout", 30*time.Second,
+		fmt.Sprintf("Timeout duration for Azure CLI token requests. It may be specified in %s environment variable", "AZURE_CLI_TIMEOUT"))
 	fs.StringVar(&o.PoPTokenClaims, "pop-claims", o.PoPTokenClaims, "contains a comma-separated list of claims to attach to the pop token in the format `key=val,key2=val2`. At minimum, specify the ARM ID of the cluster as `u=ARM_ID`")
 }
 
@@ -143,6 +147,10 @@ func (o *Options) Validate() error {
 
 	if o.PoPTokenClaims != "" && !o.IsPoPTokenEnabled {
 		return fmt.Errorf("pop-enabled flag is required to use the PoP token feature. Please provide both pop-enabled and pop-claims flags")
+	}
+
+	if o.Timeout <= 0 {
+		return fmt.Errorf("timeout must be greater than 0")
 	}
 
 	return nil
@@ -224,11 +232,16 @@ func (o *Options) UpdateFromEnv() {
 			o.AuthorityHost = v
 		}
 	}
+	if v, ok := os.LookupEnv("AZURE_CLI_TIMEOUT"); ok {
+		if timeout, err := time.ParseDuration(v); err == nil {
+			o.Timeout = timeout
+		}
+	}
 }
 
 func (o *Options) ToString() string {
 	azureConfigDir := os.Getenv("AZURE_CONFIG_DIR")
-	return fmt.Sprintf("Login Method: %s, Environment: %s, TenantID: %s, ServerID: %s, ClientID: %s, IsLegacy: %t, msiResourceID: %s, tokenCacheDir: %s, tokenCacheFile: %s, AZURE_CONFIG_DIR: %s",
+	return fmt.Sprintf("Login Method: %s, Environment: %s, TenantID: %s, ServerID: %s, ClientID: %s, IsLegacy: %t, msiResourceID: %s, Timeout: %v, tokenCacheDir: %s, tokenCacheFile: %s, AZURE_CONFIG_DIR: %s",
 		o.LoginMethod,
 		o.Environment,
 		o.TenantID,
@@ -236,6 +249,7 @@ func (o *Options) ToString() string {
 		o.ClientID,
 		o.IsLegacy,
 		o.IdentityResourceID,
+		o.Timeout,
 		o.TokenCacheDir,
 		o.tokenCacheFile,
 		azureConfigDir,

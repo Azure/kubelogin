@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Azure/kubelogin/pkg/testutils"
 	"github.com/google/go-cmp/cmp"
@@ -104,6 +105,7 @@ func TestOptionsWithEnvVars(t *testing.T) {
 				TenantID:           tenantID,
 				LoginMethod:        DeviceCodeLogin,
 				tokenCacheFile:     "---.json",
+				Timeout:            30 * time.Second,
 			},
 		},
 		{
@@ -126,6 +128,7 @@ func TestOptionsWithEnvVars(t *testing.T) {
 				TenantID:               tenantID,
 				LoginMethod:            DeviceCodeLogin,
 				tokenCacheFile:         "---.json",
+				Timeout:                30 * time.Second,
 			},
 		},
 		{
@@ -154,6 +157,7 @@ func TestOptionsWithEnvVars(t *testing.T) {
 				AuthorityHost:      authorityHost,
 				FederatedTokenFile: tokenFile,
 				tokenCacheFile:     "---.json",
+				Timeout:            30 * time.Second,
 			},
 		},
 	}
