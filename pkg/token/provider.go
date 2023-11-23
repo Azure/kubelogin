@@ -43,7 +43,7 @@ func newTokenProvider(o *Options) (TokenProvider, error) {
 	case MSILogin:
 		return newManagedIdentityToken(o.ClientID, o.IdentityResourceID, o.ServerID)
 	case AzureCLILogin:
-		return newAzureCLIToken(o.ServerID, o.TenantID)
+		return newAzureCLIToken(o.ServerID, o.TenantID, o.Timeout)
 	case WorkloadIdentityLogin:
 		return newWorkloadIdentityToken(o.ClientID, o.FederatedTokenFile, o.AuthorityHost, o.ServerID, o.TenantID)
 	}

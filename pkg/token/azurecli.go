@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
@@ -15,18 +16,26 @@ import (
 type AzureCLIToken struct {
 	resourceID string
 	tenantID   string
+	timeout    time.Duration
 }
+
+const defaultTimeout = 30 * time.Second
 
 // newAzureCLIToken returns a TokenProvider that will fetch a token for the user currently logged into the Azure CLI.
 // Required arguments include an oAuthConfiguration object and the resourceID (which is used as the scope)
-func newAzureCLIToken(resourceID string, tenantID string) (TokenProvider, error) {
+func newAzureCLIToken(resourceID string, tenantID string, timeout time.Duration) (TokenProvider, error) {
 	if resourceID == "" {
 		return nil, errors.New("resourceID cannot be empty")
+	}
+
+	if timeout <= 0 {
+		timeout = defaultTimeout
 	}
 
 	return &AzureCLIToken{
 		resourceID: resourceID,
 		tenantID:   tenantID,
+		timeout:    timeout,
 	}, nil
 }
 
@@ -42,11 +51,15 @@ func (p *AzureCLIToken) Token() (adal.Token, error) {
 		return emptyToken, fmt.Errorf("unable to create credential. Received: %v", err)
 	}
 
-	// Use the token provider to get a new token
-	cliAccessToken, err := cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: []string{p.resourceID}})
+	ctx, cancel := context.WithTimeout(context.Background(), p.timeout)
+	defer cancel()
+
+	// Use the token provider to get a new token with the new context
+	cliAccessToken, err := cred.GetToken(ctx, policy.TokenRequestOptions{Scopes: []string{p.resourceID}})
 	if err != nil {
 		return emptyToken, fmt.Errorf("expected an empty error but received: %v", err)
 	}
+
 	if cliAccessToken.Token == "" {
 		return emptyToken, errors.New("did not receive a token")
 	}
