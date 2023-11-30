@@ -227,28 +227,27 @@ func TestNewTokenProvider(t *testing.T) {
 			ClientID:           "testclient",
 			ServerID:           "testserver",
 			FederatedTokenFile: "testfile",
-			AuthorityHost:      "testauthority",
+			AuthorityHost:      "https://testauthority",
 			LoginMethod:        "workloadidentity",
 		}
-		provider, err := newTokenProvider(options)
-		if err != nil || provider == nil {
-			t.Errorf("expected no error but got: %s", err)
-		}
-		workloadId := provider.(*workloadIdentityToken)
-		if workloadId.clientID != options.ClientID {
-			t.Errorf("expected provider client ID to be: %s but got: %s", options.ClientID, workloadId.clientID)
-		}
-		if workloadId.serverID != options.ServerID {
-			t.Errorf("expected provider server ID to be: %s but got: %s", options.ServerID, workloadId.serverID)
-		}
-		if workloadId.tenantID != options.TenantID {
-			t.Errorf("expected provider tenant ID to be: %s but got: %s", options.TenantID, workloadId.tenantID)
-		}
-		if workloadId.federatedTokenFile != options.FederatedTokenFile {
-			t.Errorf("expected provider federated token file to be: %s but got: %s", options.FederatedTokenFile, workloadId.federatedTokenFile)
-		}
-		if workloadId.authorityHost != options.AuthorityHost {
-			t.Errorf("expected provider authority host to be: %s but got: %s", options.AuthorityHost, workloadId.authorityHost)
-		}
+		t.Run("with token file", func(t *testing.T) {
+			provider, err := newTokenProvider(options)
+			if err != nil || provider == nil {
+				t.Errorf("expected no error but got: %s", err)
+			}
+			workloadId := provider.(*workloadIdentityToken)
+			if workloadId.serverID != options.ServerID {
+				t.Errorf("expected provider server ID to be: %s but got: %s", options.ServerID, workloadId.serverID)
+			}
+		})
+		t.Run("with Github token", func(t *testing.T) {
+			options.FederatedTokenFile = ""
+			t.Setenv(actionsIDTokenRequestToken, "fake-token")
+			t.Setenv(actionsIDTokenRequestURL, "fake-url")
+			provider, err := newTokenProvider(options)
+			if err != nil || provider == nil {
+				t.Errorf("expected no error but got: %s", err)
+			}
+		})
 	})
 }

@@ -56,7 +56,7 @@ func (p *InteractiveToken) TokenWithOptions(options *azcore.ClientOptions) (adal
 
 	// Request a new Interactive token provider
 	authorityFromConfig := p.oAuthConfig.AuthorityEndpoint
-	scopes := []string{p.resourceID + "/.default"}
+	scopes := []string{p.resourceID + defaultScope}
 	clientOpts := azcore.ClientOptions{Cloud: cloud.Configuration{
 		ActiveDirectoryAuthorityHost: authorityFromConfig.String(),
 	}}
