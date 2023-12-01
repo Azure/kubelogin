@@ -1,6 +1,7 @@
 package token
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -107,7 +108,7 @@ func TestUseGitHubToken(t *testing.T) {
 	t.Setenv(actionsIDTokenRequestURL, ts.URL)
 	t.Setenv(actionsIDTokenRequestToken, ghToken)
 
-	token, err := getGitHubToken()
+	token, err := getGitHubToken(context.Background())
 	if err != nil {
 		t.Fatalf("getGitHubToken returned unexpected error: %s", err)
 	}

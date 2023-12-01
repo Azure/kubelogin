@@ -38,8 +38,9 @@ func newWorkloadIdentityToken(clientID, federatedTokenFile, authorityHost, serve
 	if tenantID == "" {
 		return nil, errors.New("tenantID cannot be empty")
 	}
-	if federatedTokenFile == "" && (os.Getenv(actionsIDTokenRequestToken) == "" || os.Getenv(actionsIDTokenRequestURL) == "") {
-		return nil, fmt.Errorf("either %s and %s environment variables have to be set or federated token file has to be provided", actionsIDTokenRequestToken, actionsIDTokenRequestURL)
+	hasActionsIDToken := os.Getenv(actionsIDTokenRequestToken) != "" && os.Getenv(actionsIDTokenRequestURL) != ""
+	if federatedTokenFile == "" && !hasActionsIDToken {
+		return nil, errors.New("either ACTIONS_ID_TOKEN_REQUEST_TOKEN and ACTIONS_ID_TOKEN_REQUEST_URL environment variables have to be set or federated token file has to be provided")
 	}
 	if authorityHost == "" {
 		return nil, errors.New("authorityHost cannot be empty")
@@ -97,8 +98,8 @@ func newCredentialFromTokenFile(federatedTokenFile string) confidential.Credenti
 
 // newCredentialFromGithub creates a confidential.Credential from github id token
 func newCredentialFromGithub() confidential.Credential {
-	cb := func(_ context.Context, _ confidential.AssertionRequestOptions) (string, error) {
-		return getGitHubToken()
+	cb := func(ctx context.Context, _ confidential.AssertionRequestOptions) (string, error) {
+		return getGitHubToken(ctx)
 	}
 	return confidential.NewCredFromAssertionCallback(cb)
 }
@@ -112,7 +113,7 @@ func readJWTFromFS(tokenFilePath string) (string, error) {
 	return string(token), nil
 }
 
-func getGitHubToken() (string, error) {
+func getGitHubToken(ctx context.Context) (string, error) {
 	reqToken := os.Getenv(actionsIDTokenRequestToken)
 	reqURL := os.Getenv(actionsIDTokenRequestURL)
 
@@ -128,7 +129,7 @@ func getGitHubToken() (string, error) {
 	q.Set("audience", azureADAudience)
 	u.RawQuery = q.Encode()
 
-	req, err := http.NewRequest("GET", u.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
 	if err != nil {
 		return "", err
 	}
@@ -147,7 +148,14 @@ func getGitHubToken() (string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
+		var body string
+		b, err := io.ReadAll(resp.Body)
+		if err != nil {
+			body = err.Error()
+		} else {
+			body = string(b)
+		}
+
 		return "", fmt.Errorf("github actions ID token request failed with status code: %d, response body: %s", resp.StatusCode, body)
 	}
 
