@@ -77,7 +77,7 @@ func (p *servicePrincipalToken) TokenWithOptions(options *azcore.ClientOptions) 
 	var accessToken string
 	var expirationTimeUnix int64
 	var err error
-	scopes := []string{p.resourceID + "/.default"}
+	scopes := []string{p.resourceID + defaultScope}
 
 	// Request a new Azure token provider for service principal
 	if p.clientSecret != "" {
