@@ -1,5 +1,23 @@
 # Change Log
 
+## [0.0.34]
+
+### Enhancements
+
+* feat(timeout): Implement customizable timeout for Azure CLI token ret… by @Aricg in https://github.com/Azure/kubelogin/pull/362
+* added github token support by @weinong in https://github.com/Azure/kubelogin/pull/366
+
+### Maintenance
+
+* bump golang to 1.21 by @weinong in https://github.com/Azure/kubelogin/pull/356
+* Bump k8s.io/klog/v2 from 2.100.1 to 2.110.1 by @dependabot in https://github.com/Azure/kubelogin/pull/357
+* Bump github.com/google/uuid from 1.3.1 to 1.4.0 by @dependabot in https://github.com/Azure/kubelogin/pull/355
+
+## New Contributors
+* @Aricg made their first contribution in https://github.com/Azure/kubelogin/pull/362
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.0.33...v0.0.34
+
 ## [0.0.33]
 
 ### Enhancements
