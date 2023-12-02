@@ -1,16 +1,17 @@
 TARGET     := kubelogin
 OS         := $(if $(GOOS),$(GOOS),$(shell go env GOOS))
 ARCH       := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
-BIN         = bin/$(OS)_$(ARCH)/$(TARGET)
+GOARM      := $(if $(GOARM),$(GOARM),)
+BIN         = bin/$(OS)_$(ARCH)$(if $(GOARM),v$(GOARM),)/$(TARGET)
 ifeq ($(OS),windows)
-  BIN = bin/$(OS)_$(ARCH)/$(TARGET).exe
+  BIN = bin/$(OS)_$(ARCH)$(if $(GOARM),v$(GOARM),)/$(TARGET).exe
 endif
 
 GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 GIT_HASH   := $(shell git rev-parse --verify HEAD)
 GIT_TAG    := $(shell git describe --tags --exact-match --abbrev=0 2>/dev/null || echo "")
 BUILD_TIME ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
-PLATFORM   := $(OS)/$(ARCH)
+PLATFORM   := $(OS)/$(ARCH)$(if $(GOARM),v$(GOARM),)
 
 ifdef GIT_TAG
 	VERSION := $(GIT_TAG)/$(GIT_HASH)
