@@ -6,6 +6,7 @@
 
 * feat(timeout): Implement customizable timeout for Azure CLI token ret… by @Aricg in https://github.com/Azure/kubelogin/pull/362
 * added github token support by @weinong in https://github.com/Azure/kubelogin/pull/366
+* added armv7 support by @weinong in https://github.com/Azure/kubelogin/pull/367
 
 ### Maintenance
 
