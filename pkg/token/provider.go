@@ -15,7 +15,7 @@ type TokenProvider interface {
 	Token() (adal.Token, error)
 }
 
-func newTokenProvider(o *Options) (TokenProvider, error) {
+func NewTokenProvider(o *Options) (TokenProvider, error) {
 	oAuthConfig, err := getOAuthConfig(o.Environment, o.TenantID, o.IsLegacy)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get oAuthConfig. isLegacy: %t, err: %s", o.IsLegacy, err)
