@@ -11,7 +11,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/kubelogin/pkg/internal/token/mock_token"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func TestExecCredentialPlugin(t *testing.T) {
