@@ -46,12 +46,11 @@ func newInteractiveTokenProvider(oAuthConfig adal.OAuthConfig, clientID, resourc
 }
 
 // Token fetches an azcore.AccessToken from the interactive browser SDK and converts it to an adal.Token for use with kubelogin.
-func (p *InteractiveToken) Token() (adal.Token, error) {
-	return p.TokenWithOptions(nil)
+func (p *InteractiveToken) Token(ctx context.Context) (adal.Token, error) {
+	return p.TokenWithOptions(ctx, nil)
 }
 
-func (p *InteractiveToken) TokenWithOptions(options *azcore.ClientOptions) (adal.Token, error) {
-	ctx := context.Background()
+func (p *InteractiveToken) TokenWithOptions(ctx context.Context, options *azcore.ClientOptions) (adal.Token, error) {
 	emptyToken := adal.Token{}
 
 	// Request a new Interactive token provider

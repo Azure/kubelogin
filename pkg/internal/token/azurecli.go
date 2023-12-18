@@ -40,7 +40,7 @@ func newAzureCLIToken(resourceID string, tenantID string, timeout time.Duration)
 }
 
 // Token fetches an azcore.AccessToken from the Azure CLI SDK and converts it to an adal.Token for use with kubelogin.
-func (p *AzureCLIToken) Token() (adal.Token, error) {
+func (p *AzureCLIToken) Token(ctx context.Context) (adal.Token, error) {
 	emptyToken := adal.Token{}
 
 	// Request a new Azure CLI token provider
@@ -51,7 +51,7 @@ func (p *AzureCLIToken) Token() (adal.Token, error) {
 		return emptyToken, fmt.Errorf("unable to create credential. Received: %v", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), p.timeout)
+	ctx, cancel := context.WithTimeout(ctx, p.timeout)
 	defer cancel()
 
 	// Use the token provider to get a new token with the new context

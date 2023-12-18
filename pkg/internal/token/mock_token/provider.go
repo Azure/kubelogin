@@ -5,6 +5,7 @@
 package mock_token
 
 import (
+	"context"
 	adal "github.com/Azure/go-autorest/autorest/adal"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
@@ -34,16 +35,16 @@ func (m *MockTokenProvider) EXPECT() *MockTokenProviderMockRecorder {
 }
 
 // Token mocks base method.
-func (m *MockTokenProvider) Token() (adal.Token, error) {
+func (m *MockTokenProvider) Token(arg0 context.Context) (adal.Token, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Token")
+	ret := m.ctrl.Call(m, "Token", arg0)
 	ret0, _ := ret[0].(adal.Token)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Token indicates an expected call of Token.
-func (mr *MockTokenProviderMockRecorder) Token() *gomock.Call {
+func (mr *MockTokenProviderMockRecorder) Token(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Token", reflect.TypeOf((*MockTokenProvider)(nil).Token))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Token", reflect.TypeOf((*MockTokenProvider)(nil).Token), arg0)
 }

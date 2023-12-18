@@ -3,6 +3,7 @@ package token
 //go:generate sh -c "mockgen -destination mock_$GOPACKAGE/provider.go github.com/Azure/kubelogin/pkg/internal/token TokenProvider"
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -12,7 +13,7 @@ import (
 )
 
 type TokenProvider interface {
-	Token() (adal.Token, error)
+	Token(ctx context.Context) (adal.Token, error)
 }
 
 func newTokenProvider(o *Options) (TokenProvider, error) {

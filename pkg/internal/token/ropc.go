@@ -1,6 +1,7 @@
 package token
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -43,7 +44,7 @@ func newResourceOwnerToken(oAuthConfig adal.OAuthConfig, clientID, username, pas
 	}, nil
 }
 
-func (p *resourceOwnerToken) Token() (adal.Token, error) {
+func (p *resourceOwnerToken) Token(ctx context.Context) (adal.Token, error) {
 	emptyToken := adal.Token{}
 	callback := func(t adal.Token) error {
 		return nil
@@ -59,7 +60,7 @@ func (p *resourceOwnerToken) Token() (adal.Token, error) {
 		return emptyToken, fmt.Errorf("failed to create service principal token from username password: %s", err)
 	}
 
-	err = spt.Refresh()
+	err = spt.RefreshWithContext(ctx)
 	if err != nil {
 		return emptyToken, err
 	}

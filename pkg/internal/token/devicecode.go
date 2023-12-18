@@ -1,6 +1,7 @@
 package token
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -35,7 +36,7 @@ func newDeviceCodeTokenProvider(oAuthConfig adal.OAuthConfig, clientID, resource
 	}, nil
 }
 
-func (p *deviceCodeTokenProvider) Token() (adal.Token, error) {
+func (p *deviceCodeTokenProvider) Token(ctx context.Context) (adal.Token, error) {
 	emptyToken := adal.Token{}
 	client := &autorest.Client{}
 	deviceCode, err := adal.InitiateDeviceAuth(client, p.oAuthConfig, p.clientID, p.resourceID)
@@ -48,7 +49,7 @@ func (p *deviceCodeTokenProvider) Token() (adal.Token, error) {
 		return emptyToken, fmt.Errorf("prompting the device code message: %s", err)
 	}
 
-	token, err := adal.WaitForUserCompletion(client, deviceCode)
+	token, err := adal.WaitForUserCompletionWithContext(ctx, client, deviceCode)
 	if err != nil {
 		return emptyToken, fmt.Errorf("waiting for device code authentication to complete: %s", err)
 	}

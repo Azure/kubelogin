@@ -67,12 +67,11 @@ func newServicePrincipalTokenProvider(
 }
 
 // Token fetches an azcore.AccessToken from the Azure SDK and converts it to an adal.Token for use with kubelogin.
-func (p *servicePrincipalToken) Token() (adal.Token, error) {
-	return p.TokenWithOptions(nil)
+func (p *servicePrincipalToken) Token(ctx context.Context) (adal.Token, error) {
+	return p.TokenWithOptions(ctx, nil)
 }
 
-func (p *servicePrincipalToken) TokenWithOptions(options *azcore.ClientOptions) (adal.Token, error) {
-	ctx := context.Background()
+func (p *servicePrincipalToken) TokenWithOptions(ctx context.Context, options *azcore.ClientOptions) (adal.Token, error) {
 	emptyToken := adal.Token{}
 	var accessToken string
 	var expirationTimeUnix int64

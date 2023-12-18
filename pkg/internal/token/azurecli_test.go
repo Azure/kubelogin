@@ -1,6 +1,7 @@
 package token
 
 import (
+	"context"
 	"testing"
 
 	"github.com/Azure/kubelogin/pkg/internal/testutils"
@@ -17,7 +18,7 @@ func TestNewAzureCLITokenEmpty(t *testing.T) {
 
 func TestNewAzureCLIToken(t *testing.T) {
 	azcli := AzureCLIToken{}
-	_, err := azcli.Token()
+	_, err := azcli.Token(context.TODO())
 
 	if !testutils.ErrorContains(err, "expected an empty error but received:") {
 		t.Errorf("unexpected error: %v", err)
