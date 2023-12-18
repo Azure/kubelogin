@@ -7,7 +7,7 @@ import (
 )
 
 // gitTag provides the git tag used to build this binary.
-// This is set via ldflags at build time, which normally set by release pipeline.
+// This is set via ldflags at build time, which normally set by the release pipeline.
 // For go install binary, this value stays empty.
 var gitTag string
 
