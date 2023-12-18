@@ -3,7 +3,7 @@ package token
 import (
 	"testing"
 
-	"github.com/Azure/kubelogin/pkg/testutils"
+	"github.com/Azure/kubelogin/pkg/internal/testutils"
 )
 
 func TestMissingCertFile(t *testing.T) {

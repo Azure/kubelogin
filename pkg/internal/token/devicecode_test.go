@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/Azure/go-autorest/autorest/adal"
-	"github.com/Azure/kubelogin/pkg/testutils"
+	"github.com/Azure/kubelogin/pkg/internal/testutils"
 )
 
 func TestNewDeviceCodeTokenProviderEmpty(t *testing.T) {

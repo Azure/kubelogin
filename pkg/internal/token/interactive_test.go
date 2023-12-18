@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/Azure/go-autorest/autorest/adal"
-	"github.com/Azure/kubelogin/pkg/testutils"
+	"github.com/Azure/kubelogin/pkg/internal/testutils"
 	"github.com/google/go-cmp/cmp"
 )
 

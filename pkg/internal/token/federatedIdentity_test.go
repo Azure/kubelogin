@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Azure/kubelogin/pkg/testutils"
+	"github.com/Azure/kubelogin/pkg/internal/testutils"
 )
 
 func TestNewWorkloadIdentityTokenProviderEmpty(t *testing.T) {

@@ -3,7 +3,7 @@ package cmd
 import (
 	"os"
 
-	"github.com/Azure/kubelogin/pkg/token"
+	"github.com/Azure/kubelogin/pkg/internal/token"
 	"github.com/spf13/cobra"
 	klog "k8s.io/klog/v2"
 )

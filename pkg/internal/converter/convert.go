@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/kubelogin/pkg/token"
+	"github.com/Azure/kubelogin/pkg/internal/token"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 	klog "k8s.io/klog/v2"

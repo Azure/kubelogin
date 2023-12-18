@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/Azure/go-autorest/autorest/adal"
-	"github.com/Azure/kubelogin/pkg/token/mock_token"
+	"github.com/Azure/kubelogin/pkg/internal/token/mock_token"
 	"github.com/golang/mock/gomock"
 )
 

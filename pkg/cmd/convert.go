@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/Azure/kubelogin/pkg/converter"
+	"github.com/Azure/kubelogin/pkg/internal/converter"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 )
