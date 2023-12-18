@@ -18,10 +18,10 @@ jobs:
     env:
       GO111MODULE: on
     steps:
-      - name: Set up Go 1.21
+      - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.21"
+          go-version-file: "go.mod"
           cache: false
         id: go
 
