@@ -14,7 +14,7 @@ func main() {
 	pflag.CommandLine.AddGoFlag(flag.CommandLine.Lookup("v"))
 	pflag.CommandLine.AddGoFlag(flag.CommandLine.Lookup("logtostderr"))
 	_ = pflag.CommandLine.Set("logtostderr", "true")
-	root := cmd.NewRootCmd(v.String())
+	root := cmd.NewRootCmd(loadVersion().String())
 	if err := root.Execute(); err != nil {
 		os.Exit(1)
 	}
