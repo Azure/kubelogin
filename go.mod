@@ -1,6 +1,6 @@
 module github.com/Azure/kubelogin
 
-go 1.21.3
+go 1.18
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.8.0
