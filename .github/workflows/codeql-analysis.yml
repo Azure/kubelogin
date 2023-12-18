@@ -45,15 +45,15 @@ jobs:
         # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
 
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
     # NOTE: this is a workaround for codeql go toolchain setup
     # ref: https://github.com/github/codeql-action/issues/1842#issuecomment-1704398087
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
         go-version-file: go.mod
-
-    - name: Checkout repository
-      uses: actions/checkout@v3
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
