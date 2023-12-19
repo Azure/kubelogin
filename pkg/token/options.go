@@ -30,6 +30,10 @@ type Options struct {
 	IsPopTokenEnabled  bool
 	PoPTokenClaims     string
 
+	// for ROPCLogin
+	Username string
+	Password string
+
 	// for MSILogin
 
 	IdentityResourceID string
