@@ -12,6 +12,8 @@ const (
 )
 
 // Options defines the options for getting token.
+// This struct is a subset of internal/token.Options where its values are copied
+// to internal type. See internal/token/options.go for details
 type Options struct {
 	LoginMethod string
 
@@ -27,7 +29,7 @@ type Options struct {
 	ClientSecret       string
 	ClientCert         string
 	ClientCertPassword string
-	IsPopTokenEnabled  bool
+	IsPoPTokenEnabled  bool
 	PoPTokenClaims     string
 
 	// for ROPCLogin
