@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/Azure/kubelogin/pkg/internal/env"
+	"github.com/Azure/kubelogin/pkg/internal/token"
 )
 
 // OptionsWithEnv loads options from environment variables.
@@ -43,4 +44,24 @@ func OptionsWithEnv() *Options {
 	}
 
 	return rv
+}
+
+func (opts *Options) toInternalOptions() *token.Options {
+	return &token.Options{
+		LoginMethod:        opts.LoginMethod,
+		Environment:        opts.Environment,
+		TenantID:           opts.TenantID,
+		ServerID:           opts.ServerID,
+		ClientID:           opts.ClientID,
+		ClientSecret:       opts.ClientSecret,
+		ClientCert:         opts.ClientCert,
+		ClientCertPassword: opts.ClientCertPassword,
+		IsPoPTokenEnabled:  opts.IsPoPTokenEnabled,
+		PoPTokenClaims:     opts.PoPTokenClaims,
+		Username:           opts.Username,
+		Password:           opts.Password,
+		IdentityResourceID: opts.IdentityResourceID,
+		AuthorityHost:      opts.AuthorityHost,
+		FederatedTokenFile: opts.FederatedTokenFile,
+	}
 }
