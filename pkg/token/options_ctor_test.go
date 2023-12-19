@@ -122,7 +122,6 @@ func TestOptions_toInternalOptions(t *testing.T) {
 		}, o.toInternalOptions())
 	})
 
-
 	// this test uses reflection to ensure all fields in *Options
 	// are copied to *token.Options without modification.
 	t.Run("fields assignment", func(t *testing.T) {
