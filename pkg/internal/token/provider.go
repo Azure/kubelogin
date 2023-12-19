@@ -3,6 +3,7 @@ package token
 //go:generate sh -c "mockgen -destination mock_$GOPACKAGE/provider.go github.com/Azure/kubelogin/pkg/internal/token TokenProvider"
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -12,10 +13,11 @@ import (
 )
 
 type TokenProvider interface {
-	Token() (adal.Token, error)
+	Token(ctx context.Context) (adal.Token, error)
 }
 
-func newTokenProvider(o *Options) (TokenProvider, error) {
+// NewTokenProvider creates the TokenProvider instance with giving options.
+func NewTokenProvider(o *Options) (TokenProvider, error) {
 	oAuthConfig, err := getOAuthConfig(o.Environment, o.TenantID, o.IsLegacy)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get oAuthConfig. isLegacy: %t, err: %s", o.IsLegacy, err)

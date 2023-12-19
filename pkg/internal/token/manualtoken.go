@@ -1,6 +1,7 @@
 package token
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -40,7 +41,7 @@ func newManualToken(oAuthConfig adal.OAuthConfig, clientID, resourceID, tenantID
 	return provider, nil
 }
 
-func (p *manualToken) Token() (adal.Token, error) {
+func (p *manualToken) Token(ctx context.Context) (adal.Token, error) {
 	emptyToken := adal.Token{}
 	callback := func(t adal.Token) error {
 		return nil
@@ -55,7 +56,7 @@ func (p *manualToken) Token() (adal.Token, error) {
 		return emptyToken, fmt.Errorf("failed to create service principal from manual token for token refresh: %s", err)
 	}
 
-	err = spt.Refresh()
+	err = spt.RefreshWithContext(ctx)
 	if err != nil {
 		return emptyToken, err
 	}

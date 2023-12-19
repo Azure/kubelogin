@@ -1,6 +1,7 @@
 package token
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -51,7 +52,7 @@ func newLegacyServicePrincipalToken(oAuthConfig adal.OAuthConfig, clientID, clie
 	}, nil
 }
 
-func (p *legacyServicePrincipalToken) Token() (adal.Token, error) {
+func (p *legacyServicePrincipalToken) Token(ctx context.Context) (adal.Token, error) {
 	emptyToken := adal.Token{}
 
 	var (
@@ -91,7 +92,7 @@ func (p *legacyServicePrincipalToken) Token() (adal.Token, error) {
 		}
 	}
 
-	err = spt.EnsureFresh()
+	err = spt.EnsureFreshWithContext(ctx)
 	if err != nil {
 		return emptyToken, err
 	}

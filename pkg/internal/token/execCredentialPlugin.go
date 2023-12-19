@@ -3,6 +3,7 @@ package token
 //go:generate sh -c "mockgen -destination mock_$GOPACKAGE/execCredentialPlugin.go github.com/Azure/kubelogin/pkg/internal/token ExecCredentialPlugin"
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
@@ -16,7 +17,7 @@ const (
 )
 
 type ExecCredentialPlugin interface {
-	Do() error
+	Do(ctx context.Context) error
 }
 
 type execCredentialPlugin struct {
@@ -31,7 +32,7 @@ type execCredentialPlugin struct {
 func New(o *Options) (ExecCredentialPlugin, error) {
 
 	klog.V(10).Info(o.ToString())
-	provider, err := newTokenProvider(o)
+	provider, err := NewTokenProvider(o)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +50,7 @@ func New(o *Options) (ExecCredentialPlugin, error) {
 	}, nil
 }
 
-func (p *execCredentialPlugin) Do() error {
+func (p *execCredentialPlugin) Do(ctx context.Context) error {
 	var (
 		token adal.Token
 		err   error
@@ -87,7 +88,7 @@ func (p *execCredentialPlugin) Do() error {
 				return fmt.Errorf("failed to get refresher: %s", err)
 			}
 			klog.V(5).Info("refresh token")
-			token, err := refresher.Token()
+			token, err := refresher.Token(ctx)
 			// if refresh fails, we will login using token provider
 			if err != nil {
 				klog.V(5).Infof("refresh failed, will continue to login: %s", err)
@@ -98,7 +99,7 @@ func (p *execCredentialPlugin) Do() error {
 			if tokenRefreshed {
 				klog.V(10).Info("token refreshed")
 
-				// if refresh succeeds, save tooken, and return
+				// if refresh succeeds, save token, and return
 				if err := p.tokenCache.Write(p.o.tokenCacheFile, token); err != nil {
 					return fmt.Errorf("failed to write to store: %s", err)
 				}
@@ -112,7 +113,7 @@ func (p *execCredentialPlugin) Do() error {
 
 	klog.V(5).Info("acquire new token")
 	// run the underlying provider
-	token, err = p.provider.Token()
+	token, err = p.provider.Token(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get token: %s", err)
 	}

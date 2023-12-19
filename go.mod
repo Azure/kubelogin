@@ -10,12 +10,12 @@ require (
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.2.0
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/golang-jwt/jwt/v5 v5.0.0
-	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.6.0
 	github.com/google/uuid v1.4.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4
+	go.uber.org/mock v0.3.0
 	golang.org/x/crypto v0.14.0
 	gopkg.in/dnaeon/go-vcr.v3 v3.1.2
 	gopkg.in/retry.v1 v1.0.3

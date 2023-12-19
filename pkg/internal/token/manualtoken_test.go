@@ -1,6 +1,7 @@
 package token
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -87,7 +88,7 @@ func TestManualTokenToken(t *testing.T) {
 	provider, _ := newManualToken(oAuthConfig, clientID, resourceID, tenantID, token)
 
 	// Test successful token refresh
-	if _, err := provider.Token(); err == nil {
+	if _, err := provider.Token(context.TODO()); err == nil {
 		if err == nil {
 			t.Errorf("Expected no error, but got %v", err)
 		}

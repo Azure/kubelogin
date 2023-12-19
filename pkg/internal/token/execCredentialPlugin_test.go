@@ -1,6 +1,7 @@
 package token
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,7 +11,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/kubelogin/pkg/internal/token/mock_token"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 func TestExecCredentialPlugin(t *testing.T) {
@@ -45,7 +46,7 @@ func TestExecCredentialPlugin(t *testing.T) {
 			},
 			setupExpectations: func(tc testContext) {
 				tc.tokenCache.EXPECT().Read(cacheFile).Return(adal.Token{}, nil)
-				tc.tokenProvider.EXPECT().Token().Return(adal.Token{}, nil)
+				tc.tokenProvider.EXPECT().Token(gomock.Any()).Return(adal.Token{}, nil)
 				tc.tokenCache.EXPECT().Write(cacheFile, adal.Token{}).Return(nil)
 				tc.pluginWriter.EXPECT().Write(adal.Token{}, os.Stdout)
 			},
@@ -97,7 +98,7 @@ func TestExecCredentialPlugin(t *testing.T) {
 					ExpiresOn: json.Number(fmt.Sprintf("%d", time.Now().AddDate(1, 0, 0).Unix())),
 				}
 				tc.tokenCache.EXPECT().Read(cacheFile).Return(cachedToken, nil)
-				tc.tokenProvider.EXPECT().Token().Return(refreshedToken, nil)
+				tc.tokenProvider.EXPECT().Token(gomock.Any()).Return(refreshedToken, nil)
 				tc.tokenCache.EXPECT().Write(cacheFile, refreshedToken).Return(nil)
 				tc.pluginWriter.EXPECT().Write(refreshedToken, os.Stdout)
 			},
@@ -124,8 +125,9 @@ func TestExecCredentialPlugin(t *testing.T) {
 				execCredentialWriter: pluginWriter,
 			}
 
+			ctx := context.TODO()
 			errMessage := ""
-			if err := plugin.Do(); err != nil {
+			if err := plugin.Do(ctx); err != nil {
 				errMessage = err.Error()
 			}
 			if errMessage != data.expectedError {

@@ -1,6 +1,7 @@
 package token
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
@@ -135,7 +136,7 @@ func TestNewServicePrincipalTokenProvider(t *testing.T) {
 func TestMissingLoginMethods(t *testing.T) {
 	p := &servicePrincipalToken{}
 	expectedErr := "service principal token requires either client secret or certificate"
-	_, err := p.Token()
+	_, err := p.Token(context.TODO())
 	if !testutils.ErrorContains(err, expectedErr) {
 		t.Errorf("expected error %s, but got %s", expectedErr, err)
 	}
@@ -228,7 +229,7 @@ func TestServicePrincipalTokenVCR(t *testing.T) {
 				Transport: httpClient,
 			}
 
-			token, err := tc.p.TokenWithOptions(&clientOpts)
+			token, err := tc.p.TokenWithOptions(context.TODO(), &clientOpts)
 			defer vcrRecorder.Stop()
 			if err != nil {
 				if !testutils.ErrorContains(err, tc.expectedError.Error()) {
@@ -349,7 +350,7 @@ func TestServicePrincipalPoPTokenVCR(t *testing.T) {
 				Transport: httpClient,
 			}
 
-			token, err = tc.p.TokenWithOptions(&clientOpts)
+			token, err = tc.p.TokenWithOptions(context.TODO(), &clientOpts)
 			defer vcrRecorder.Stop()
 			if err != nil {
 				if !testutils.ErrorContains(err, tc.expectedError.Error()) {

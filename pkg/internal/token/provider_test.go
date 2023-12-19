@@ -8,13 +8,13 @@ import (
 )
 
 func TestNewTokenProvider(t *testing.T) {
-	t.Run("newTokenProvider should return error on failure to get oAuthConfig", func(t *testing.T) {
+	t.Run("NewTokenProvider should return error on failure to get oAuthConfig", func(t *testing.T) {
 		options := &Options{
 			Environment: "badenvironment",
 			TenantID:    "testtenant",
 			IsLegacy:    false,
 		}
-		provider, err := newTokenProvider(options)
+		provider, err := NewTokenProvider(options)
 		if err == nil || provider != nil {
 			t.Errorf("expected error but got nil")
 		}
@@ -23,14 +23,14 @@ func TestNewTokenProvider(t *testing.T) {
 		}
 	})
 
-	t.Run("newTokenProvider should return error on failure to parse PoP claims", func(t *testing.T) {
+	t.Run("NewTokenProvider should return error on failure to parse PoP claims", func(t *testing.T) {
 		options := &Options{
 			TenantID:          "testtenant",
 			IsLegacy:          false,
 			IsPoPTokenEnabled: true,
 			PoPTokenClaims:    "1=2",
 		}
-		provider, err := newTokenProvider(options)
+		provider, err := NewTokenProvider(options)
 		if err == nil || provider != nil {
 			t.Errorf("expected error but got nil")
 		}
@@ -39,11 +39,11 @@ func TestNewTokenProvider(t *testing.T) {
 		}
 	})
 
-	t.Run("newTokenProvider should return error on invalid login method", func(t *testing.T) {
+	t.Run("NewTokenProvider should return error on invalid login method", func(t *testing.T) {
 		options := &Options{
 			LoginMethod: "unsupported",
 		}
-		provider, err := newTokenProvider(options)
+		provider, err := NewTokenProvider(options)
 		if err == nil || provider != nil {
 			t.Errorf("expected error but got nil")
 		}
@@ -52,7 +52,7 @@ func TestNewTokenProvider(t *testing.T) {
 		}
 	})
 
-	t.Run("newTokenProvider should return interactive token provider with correct fields", func(t *testing.T) {
+	t.Run("NewTokenProvider should return interactive token provider with correct fields", func(t *testing.T) {
 		options := &Options{
 			TenantID:          "testtenant",
 			ClientID:          "testclient",
@@ -61,7 +61,7 @@ func TestNewTokenProvider(t *testing.T) {
 			PoPTokenClaims:    "u=testhost",
 			LoginMethod:       "interactive",
 		}
-		provider, err := newTokenProvider(options)
+		provider, err := NewTokenProvider(options)
 		if err != nil || provider == nil {
 			t.Errorf("expected no error but got: %s", err)
 		}
@@ -81,7 +81,7 @@ func TestNewTokenProvider(t *testing.T) {
 		}
 	})
 
-	t.Run("newTokenProvider should return SPN token provider using client secret with correct fields", func(t *testing.T) {
+	t.Run("NewTokenProvider should return SPN token provider using client secret with correct fields", func(t *testing.T) {
 		options := &Options{
 			TenantID:          "testtenant",
 			ClientID:          "testclient",
@@ -91,7 +91,7 @@ func TestNewTokenProvider(t *testing.T) {
 			PoPTokenClaims:    "u=testhost, 1=2",
 			LoginMethod:       "spn",
 		}
-		provider, err := newTokenProvider(options)
+		provider, err := NewTokenProvider(options)
 		if err != nil || provider == nil {
 			t.Errorf("expected no error but got: %s", err)
 		}
@@ -114,7 +114,7 @@ func TestNewTokenProvider(t *testing.T) {
 		}
 	})
 
-	t.Run("newTokenProvider should return SPN token provider using client cert with correct fields", func(t *testing.T) {
+	t.Run("NewTokenProvider should return SPN token provider using client cert with correct fields", func(t *testing.T) {
 		options := &Options{
 			TenantID:           "testtenant",
 			ClientID:           "testclient",
@@ -123,7 +123,7 @@ func TestNewTokenProvider(t *testing.T) {
 			ClientCertPassword: "testcertpass",
 			LoginMethod:        "spn",
 		}
-		provider, err := newTokenProvider(options)
+		provider, err := NewTokenProvider(options)
 		if err != nil || provider == nil {
 			t.Errorf("expected no error but got: %s", err)
 		}
@@ -148,7 +148,7 @@ func TestNewTokenProvider(t *testing.T) {
 		}
 	})
 
-	t.Run("newTokenProvider should return resource owner token provider with correct fields", func(t *testing.T) {
+	t.Run("NewTokenProvider should return resource owner token provider with correct fields", func(t *testing.T) {
 		options := &Options{
 			TenantID:    "testtenant",
 			ClientID:    "testclient",
@@ -157,7 +157,7 @@ func TestNewTokenProvider(t *testing.T) {
 			Password:    "testpass",
 			LoginMethod: "ropc",
 		}
-		provider, err := newTokenProvider(options)
+		provider, err := NewTokenProvider(options)
 		if err != nil || provider == nil {
 			t.Errorf("expected no error but got: %s", err)
 		}
@@ -179,14 +179,14 @@ func TestNewTokenProvider(t *testing.T) {
 		}
 	})
 
-	t.Run("newTokenProvider should return resource owner token provider with correct fields", func(t *testing.T) {
+	t.Run("NewTokenProvider should return resource owner token provider with correct fields", func(t *testing.T) {
 		options := &Options{
 			ClientID:           "testclient",
 			ServerID:           "testserver",
 			IdentityResourceID: "testidentity",
 			LoginMethod:        "msi",
 		}
-		provider, err := newTokenProvider(options)
+		provider, err := NewTokenProvider(options)
 		if err != nil || provider == nil {
 			t.Errorf("expected no error but got: %s", err)
 		}
@@ -202,13 +202,13 @@ func TestNewTokenProvider(t *testing.T) {
 		}
 	})
 
-	t.Run("newTokenProvider should return azure CLI token provider with correct fields", func(t *testing.T) {
+	t.Run("NewTokenProvider should return azure CLI token provider with correct fields", func(t *testing.T) {
 		options := &Options{
 			ServerID:    "testserver",
 			TenantID:    "testtenant",
 			LoginMethod: "azurecli",
 		}
-		provider, err := newTokenProvider(options)
+		provider, err := NewTokenProvider(options)
 		if err != nil || provider == nil {
 			t.Errorf("expected no error but got: %s", err)
 		}
@@ -221,7 +221,7 @@ func TestNewTokenProvider(t *testing.T) {
 		}
 	})
 
-	t.Run("newTokenProvider should return workload identity token provider with correct fields", func(t *testing.T) {
+	t.Run("NewTokenProvider should return workload identity token provider with correct fields", func(t *testing.T) {
 		options := &Options{
 			TenantID:           "testtenant",
 			ClientID:           "testclient",
@@ -231,7 +231,7 @@ func TestNewTokenProvider(t *testing.T) {
 			LoginMethod:        "workloadidentity",
 		}
 		t.Run("with token file", func(t *testing.T) {
-			provider, err := newTokenProvider(options)
+			provider, err := NewTokenProvider(options)
 			if err != nil || provider == nil {
 				t.Errorf("expected no error but got: %s", err)
 			}
@@ -244,7 +244,7 @@ func TestNewTokenProvider(t *testing.T) {
 			options.FederatedTokenFile = ""
 			t.Setenv(actionsIDTokenRequestToken, "fake-token")
 			t.Setenv(actionsIDTokenRequestURL, "fake-url")
-			provider, err := newTokenProvider(options)
+			provider, err := NewTokenProvider(options)
 			if err != nil || provider == nil {
 				t.Errorf("expected no error but got: %s", err)
 			}
