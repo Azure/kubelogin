@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Azure/kubelogin/pkg/internal/env"
 	"github.com/spf13/pflag"
 	"k8s.io/client-go/util/homedir"
 )
@@ -45,33 +46,6 @@ const (
 	AzureCLILogin         = "azurecli"
 	WorkloadIdentityLogin = "workloadidentity"
 	manualTokenLogin      = "manual_token"
-
-	// env vars
-	loginMethod                        = "AAD_LOGIN_METHOD"
-	kubeloginROPCUsername              = "AAD_USER_PRINCIPAL_NAME"
-	kubeloginROPCPassword              = "AAD_USER_PRINCIPAL_PASSWORD"
-	kubeloginClientID                  = "AAD_SERVICE_PRINCIPAL_CLIENT_ID"
-	kubeloginClientSecret              = "AAD_SERVICE_PRINCIPAL_CLIENT_SECRET"
-	kubeloginClientCertificatePath     = "AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE"
-	kubeloginClientCertificatePassword = "AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE_PASSWORD"
-
-	// env vars used by Terraform
-	terraformClientID                  = "ARM_CLIENT_ID"
-	terraformClientSecret              = "ARM_CLIENT_SECRET"
-	terraformClientCertificatePath     = "ARM_CLIENT_CERTIFICATE_PATH"
-	terraformClientCertificatePassword = "ARM_CLIENT_CERTIFICATE_PASSWORD"
-	terraformTenantID                  = "ARM_TENANT_ID"
-
-	// env vars following azure sdk naming convention
-	azureAuthorityHost             = "AZURE_AUTHORITY_HOST"
-	azureClientCertificatePassword = "AZURE_CLIENT_CERTIFICATE_PASSWORD"
-	azureClientCertificatePath     = "AZURE_CLIENT_CERTIFICATE_PATH"
-	azureClientID                  = "AZURE_CLIENT_ID"
-	azureClientSecret              = "AZURE_CLIENT_SECRET"
-	azureFederatedTokenFile        = "AZURE_FEDERATED_TOKEN_FILE"
-	azureTenantID                  = "AZURE_TENANT_ID"
-	azureUsername                  = "AZURE_USERNAME"
-	azurePassword                  = "AZURE_PASSWORD"
 )
 
 var (
@@ -97,27 +71,27 @@ func NewOptions() Options {
 
 func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&o.LoginMethod, "login", "l", o.LoginMethod,
-		fmt.Sprintf("Login method. Supported methods: %s. It may be specified in %s environment variable", GetSupportedLogins(), loginMethod))
+		fmt.Sprintf("Login method. Supported methods: %s. It may be specified in %s environment variable", GetSupportedLogins(), env.LoginMethod))
 	fs.StringVar(&o.ClientID, "client-id", o.ClientID,
-		fmt.Sprintf("AAD client application ID. It may be specified in %s or %s environment variable", kubeloginClientID, azureClientID))
+		fmt.Sprintf("AAD client application ID. It may be specified in %s or %s environment variable", env.KubeloginClientID, env.AzureClientID))
 	fs.StringVar(&o.ClientSecret, "client-secret", o.ClientSecret,
-		fmt.Sprintf("AAD client application secret. Used in spn login. It may be specified in %s or %s environment variable", kubeloginClientSecret, azureClientSecret))
+		fmt.Sprintf("AAD client application secret. Used in spn login. It may be specified in %s or %s environment variable", env.KubeloginClientSecret, env.AzureClientSecret))
 	fs.StringVar(&o.ClientCert, "client-certificate", o.ClientCert,
-		fmt.Sprintf("AAD client cert in pfx. Used in spn login. It may be specified in %s or %s environment variable", kubeloginClientCertificatePath, azureClientCertificatePath))
+		fmt.Sprintf("AAD client cert in pfx. Used in spn login. It may be specified in %s or %s environment variable", env.KubeloginClientCertificatePath, env.AzureClientCertificatePath))
 	fs.StringVar(&o.ClientCertPassword, "client-certificate-password", o.ClientCertPassword,
-		fmt.Sprintf("Password for AAD client cert. Used in spn login. It may be specified in %s or %s environment variable", kubeloginClientCertificatePassword, azureClientCertificatePassword))
+		fmt.Sprintf("Password for AAD client cert. Used in spn login. It may be specified in %s or %s environment variable", env.KubeloginClientCertificatePassword, env.AzureClientCertificatePassword))
 	fs.StringVar(&o.Username, "username", o.Username,
-		fmt.Sprintf("user name for ropc login flow. It may be specified in %s or %s environment variable", kubeloginROPCUsername, azureUsername))
+		fmt.Sprintf("user name for ropc login flow. It may be specified in %s or %s environment variable", env.KubeloginROPCUsername, env.AzureUsername))
 	fs.StringVar(&o.Password, "password", o.Password,
-		fmt.Sprintf("password for ropc login flow. It may be specified in %s or %s environment variable", kubeloginROPCPassword, azurePassword))
+		fmt.Sprintf("password for ropc login flow. It may be specified in %s or %s environment variable", env.KubeloginROPCPassword, env.AzurePassword))
 	fs.StringVar(&o.IdentityResourceID, "identity-resource-id", o.IdentityResourceID, "Managed Identity resource id.")
 	fs.StringVar(&o.ServerID, "server-id", o.ServerID, "AAD server application ID")
 	fs.StringVar(&o.FederatedTokenFile, "federated-token-file", o.FederatedTokenFile,
-		fmt.Sprintf("Workload Identity federated token file. It may be specified in %s environment variable", azureFederatedTokenFile))
+		fmt.Sprintf("Workload Identity federated token file. It may be specified in %s environment variable", env.AzureFederatedTokenFile))
 	fs.StringVar(&o.AuthorityHost, "authority-host", o.AuthorityHost,
-		fmt.Sprintf("Workload Identity authority host. It may be specified in %s environment variable", azureAuthorityHost))
+		fmt.Sprintf("Workload Identity authority host. It may be specified in %s environment variable", env.AzureAuthorityHost))
 	fs.StringVar(&o.TokenCacheDir, "token-cache-dir", o.TokenCacheDir, "directory to cache token")
-	fs.StringVarP(&o.TenantID, "tenant-id", "t", o.TenantID, fmt.Sprintf("AAD tenant ID. It may be specified in %s environment variable", azureTenantID))
+	fs.StringVarP(&o.TenantID, "tenant-id", "t", o.TenantID, fmt.Sprintf("AAD tenant ID. It may be specified in %s environment variable", env.AzureTenantID))
 	fs.StringVarP(&o.Environment, "environment", "e", o.Environment, "Azure environment name")
 	fs.BoolVar(&o.IsLegacy, "legacy", o.IsLegacy, "set to true to get token with 'spn:' prefix in audience claim")
 	fs.BoolVar(&o.UseAzureRMTerraformEnv, "use-azurerm-env-vars", o.UseAzureRMTerraformEnv,
@@ -160,75 +134,75 @@ func (o *Options) UpdateFromEnv() {
 	o.tokenCacheFile = getCacheFileName(o)
 
 	if o.UseAzureRMTerraformEnv {
-		if v, ok := os.LookupEnv(terraformClientID); ok {
+		if v, ok := os.LookupEnv(env.TerraformClientID); ok {
 			o.ClientID = v
 		}
-		if v, ok := os.LookupEnv(terraformClientSecret); ok {
+		if v, ok := os.LookupEnv(env.TerraformClientSecret); ok {
 			o.ClientSecret = v
 		}
-		if v, ok := os.LookupEnv(terraformClientCertificatePath); ok {
+		if v, ok := os.LookupEnv(env.TerraformClientCertificatePath); ok {
 			o.ClientCert = v
 		}
-		if v, ok := os.LookupEnv(terraformClientCertificatePassword); ok {
+		if v, ok := os.LookupEnv(env.TerraformClientCertificatePassword); ok {
 			o.ClientCertPassword = v
 		}
-		if v, ok := os.LookupEnv(terraformTenantID); ok {
+		if v, ok := os.LookupEnv(env.TerraformTenantID); ok {
 			o.TenantID = v
 		}
 	} else {
-		if v, ok := os.LookupEnv(kubeloginClientID); ok {
+		if v, ok := os.LookupEnv(env.KubeloginClientID); ok {
 			o.ClientID = v
 		}
-		if v, ok := os.LookupEnv(azureClientID); ok {
+		if v, ok := os.LookupEnv(env.AzureClientID); ok {
 			o.ClientID = v
 		}
-		if v, ok := os.LookupEnv(kubeloginClientSecret); ok {
+		if v, ok := os.LookupEnv(env.KubeloginClientSecret); ok {
 			o.ClientSecret = v
 		}
-		if v, ok := os.LookupEnv(azureClientSecret); ok {
+		if v, ok := os.LookupEnv(env.AzureClientSecret); ok {
 			o.ClientSecret = v
 		}
-		if v, ok := os.LookupEnv(kubeloginClientCertificatePath); ok {
+		if v, ok := os.LookupEnv(env.KubeloginClientCertificatePath); ok {
 			o.ClientCert = v
 		}
-		if v, ok := os.LookupEnv(azureClientCertificatePath); ok {
+		if v, ok := os.LookupEnv(env.AzureClientCertificatePath); ok {
 			o.ClientCert = v
 		}
-		if v, ok := os.LookupEnv(kubeloginClientCertificatePassword); ok {
+		if v, ok := os.LookupEnv(env.KubeloginClientCertificatePassword); ok {
 			o.ClientCertPassword = v
 		}
-		if v, ok := os.LookupEnv(azureClientCertificatePassword); ok {
+		if v, ok := os.LookupEnv(env.AzureClientCertificatePassword); ok {
 			o.ClientCertPassword = v
 		}
-		if v, ok := os.LookupEnv(azureTenantID); ok {
+		if v, ok := os.LookupEnv(env.AzureTenantID); ok {
 			o.TenantID = v
 		}
 	}
 
-	if v, ok := os.LookupEnv(kubeloginROPCUsername); ok {
+	if v, ok := os.LookupEnv(env.KubeloginROPCUsername); ok {
 		o.Username = v
 	}
-	if v, ok := os.LookupEnv(azureUsername); ok {
+	if v, ok := os.LookupEnv(env.AzureUsername); ok {
 		o.Username = v
 	}
-	if v, ok := os.LookupEnv(kubeloginROPCPassword); ok {
+	if v, ok := os.LookupEnv(env.KubeloginROPCPassword); ok {
 		o.Password = v
 	}
-	if v, ok := os.LookupEnv(azurePassword); ok {
+	if v, ok := os.LookupEnv(env.AzurePassword); ok {
 		o.Password = v
 	}
-	if v, ok := os.LookupEnv(loginMethod); ok {
+	if v, ok := os.LookupEnv(env.LoginMethod); ok {
 		o.LoginMethod = v
 	}
 
 	if o.LoginMethod == WorkloadIdentityLogin {
-		if v, ok := os.LookupEnv(azureClientID); ok {
+		if v, ok := os.LookupEnv(env.AzureClientID); ok {
 			o.ClientID = v
 		}
-		if v, ok := os.LookupEnv(azureFederatedTokenFile); ok {
+		if v, ok := os.LookupEnv(env.AzureFederatedTokenFile); ok {
 			o.FederatedTokenFile = v
 		}
-		if v, ok := os.LookupEnv(azureAuthorityHost); ok {
+		if v, ok := os.LookupEnv(env.AzureAuthorityHost); ok {
 			o.AuthorityHost = v
 		}
 	}
