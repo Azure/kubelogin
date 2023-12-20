@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"github.com/Azure/kubelogin/pkg/token"
+	"github.com/Azure/kubelogin/pkg/internal/token"
 	"github.com/spf13/cobra"
 )
 
-// NewTokenCmd provides a cobra command for convert sub command
-func NewTokenCmd() *cobra.Command {
+// newTokenCmd provides a cobra command for convert sub command
+func newTokenCmd() *cobra.Command {
 	o := token.NewOptions()
 
 	cmd := &cobra.Command{

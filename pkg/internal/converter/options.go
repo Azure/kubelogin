@@ -3,7 +3,7 @@ package converter
 import (
 	"fmt"
 
-	"github.com/Azure/kubelogin/pkg/token"
+	"github.com/Azure/kubelogin/pkg/internal/token"
 	"github.com/spf13/pflag"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )

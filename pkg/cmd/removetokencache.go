@@ -3,13 +3,13 @@ package cmd
 import (
 	"os"
 
-	"github.com/Azure/kubelogin/pkg/token"
+	"github.com/Azure/kubelogin/pkg/internal/token"
 	"github.com/spf13/cobra"
 	klog "k8s.io/klog/v2"
 )
 
-// NewRemoveTokenCacheCmd provides a cobra command for removing token cache sub command
-func NewRemoveTokenCacheCmd() *cobra.Command {
+// newRemoveTokenCacheCmd provides a cobra command for removing token cache sub command
+func newRemoveTokenCacheCmd() *cobra.Command {
 	var tokenCacheDir string
 
 	cmd := &cobra.Command{

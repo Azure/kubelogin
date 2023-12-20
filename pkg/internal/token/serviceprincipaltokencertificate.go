@@ -11,7 +11,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/Azure/kubelogin/pkg/pop"
+	"github.com/Azure/kubelogin/pkg/internal/pop"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/confidential"
 	"golang.org/x/crypto/pkcs12"
 )

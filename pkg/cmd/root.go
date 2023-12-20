@@ -17,9 +17,9 @@ func NewRootCmd(version string) *cobra.Command {
 		},
 	}
 
-	cmd.AddCommand(NewConvertCmd())
-	cmd.AddCommand(NewTokenCmd())
-	cmd.AddCommand(NewRemoveTokenCacheCmd())
+	cmd.AddCommand(newConvertCmd())
+	cmd.AddCommand(newTokenCmd())
+	cmd.AddCommand(newRemoveTokenCacheCmd())
 
 	return cmd
 }

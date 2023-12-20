@@ -12,7 +12,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/go-autorest/autorest/adal"
-	"github.com/Azure/kubelogin/pkg/pop"
+	"github.com/Azure/kubelogin/pkg/internal/pop"
 )
 
 type InteractiveToken struct {

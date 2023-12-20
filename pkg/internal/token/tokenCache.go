@@ -1,6 +1,6 @@
 package token
 
-//go:generate sh -c "mockgen -destination mock_$GOPACKAGE/tokenCache.go github.com/Azure/kubelogin/pkg/token TokenCache"
+//go:generate sh -c "mockgen -destination mock_$GOPACKAGE/tokenCache.go github.com/Azure/kubelogin/pkg/internal/token TokenCache"
 
 import (
 	"os"

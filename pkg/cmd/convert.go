@@ -1,13 +1,13 @@
 package cmd
 
 import (
-	"github.com/Azure/kubelogin/pkg/converter"
+	"github.com/Azure/kubelogin/pkg/internal/converter"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// NewConvertCmd provides a cobra command for convert sub command
-func NewConvertCmd() *cobra.Command {
+// newConvertCmd provides a cobra command for convert sub command
+func newConvertCmd() *cobra.Command {
 	o := converter.New()
 
 	cmd := &cobra.Command{
