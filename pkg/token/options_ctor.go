@@ -17,8 +17,6 @@ func OptionsWithEnv() *Options {
 		ClientSecret:       os.Getenv(env.KubeloginClientSecret),
 		ClientCert:         os.Getenv(env.KubeloginClientCertificatePath),
 		ClientCertPassword: os.Getenv(env.KubeloginClientCertificatePassword),
-		Username:           os.Getenv(env.KubeloginROPCUsername),
-		Password:           os.Getenv(env.KubeloginROPCPassword),
 		AuthorityHost:      os.Getenv(env.AzureAuthorityHost),
 		FederatedTokenFile: os.Getenv(env.AzureFederatedTokenFile),
 	}
@@ -36,12 +34,6 @@ func OptionsWithEnv() *Options {
 	if v, ok := os.LookupEnv(env.AzureClientCertificatePassword); ok {
 		rv.ClientCertPassword = v
 	}
-	if v, ok := os.LookupEnv(env.AzureUsername); ok {
-		rv.Username = v
-	}
-	if v, ok := os.LookupEnv(env.AzurePassword); ok {
-		rv.Password = v
-	}
 
 	return rv
 }
@@ -58,8 +50,6 @@ func (opts *Options) toInternalOptions() *token.Options {
 		ClientCertPassword: opts.ClientCertPassword,
 		IsPoPTokenEnabled:  opts.IsPoPTokenEnabled,
 		PoPTokenClaims:     opts.PoPTokenClaims,
-		Username:           opts.Username,
-		Password:           opts.Password,
 		IdentityResourceID: opts.IdentityResourceID,
 		AuthorityHost:      opts.AuthorityHost,
 		FederatedTokenFile: opts.FederatedTokenFile,

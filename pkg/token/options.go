@@ -6,7 +6,6 @@ import "github.com/Azure/kubelogin/pkg/internal/token"
 
 const (
 	ServicePrincipalLogin = token.ServicePrincipalLogin
-	ROPCLogin             = token.ROPCLogin
 	MSILogin              = token.MSILogin
 	WorkloadIdentityLogin = token.WorkloadIdentityLogin
 )
@@ -24,17 +23,13 @@ type Options struct {
 	ServerID    string
 	ClientID    string
 
-	// for ServicePrincipalLogin & ROPCLogin
+	// for ServicePrincipalLogin
 
 	ClientSecret       string
 	ClientCert         string
 	ClientCertPassword string
 	IsPoPTokenEnabled  bool
 	PoPTokenClaims     string
-
-	// for ROPCLogin
-	Username string
-	Password string
 
 	// for MSILogin
 
