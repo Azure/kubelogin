@@ -11,6 +11,6 @@ type AccessToken = azcore.AccessToken
 
 // TokenProvider provides access to tokens.
 type TokenProvider interface {
-	// GetAccessToken returns an access token from giving settings.
+	// GetAccessToken returns an access token from given settings.
 	GetAccessToken(ctx context.Context) (AccessToken, error)
 }
