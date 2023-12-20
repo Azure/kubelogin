@@ -1,6 +1,10 @@
 package cmd
 
 import (
+	"context"
+	"os"
+	"os/signal"
+
 	"github.com/Azure/kubelogin/pkg/internal/token"
 	"github.com/spf13/cobra"
 )
@@ -16,6 +20,10 @@ func newTokenCmd() *cobra.Command {
 		RunE: func(c *cobra.Command, args []string) error {
 			o.UpdateFromEnv()
 
+			ctx := context.Background()
+			ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
+			defer cancel()
+
 			if err := o.Validate(); err != nil {
 				return err
 			}
@@ -24,7 +32,7 @@ func newTokenCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if err := plugin.Do(); err != nil {
+			if err := plugin.Do(ctx); err != nil {
 				return err
 			}
 			return nil

@@ -1,6 +1,7 @@
 package token
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -27,7 +28,7 @@ func newManagedIdentityToken(clientID, identityResourceID, resourceID string) (T
 	return provider, nil
 }
 
-func (p *managedIdentityToken) Token() (adal.Token, error) {
+func (p *managedIdentityToken) Token(ctx context.Context) (adal.Token, error) {
 	var (
 		spt        *adal.ServicePrincipalToken
 		err        error
@@ -77,7 +78,7 @@ func (p *managedIdentityToken) Token() (adal.Token, error) {
 		}
 	}
 
-	err = spt.Refresh()
+	err = spt.RefreshWithContext(ctx)
 	if err != nil {
 		return emptyToken, err
 	}

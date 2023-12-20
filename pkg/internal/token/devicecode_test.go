@@ -1,6 +1,7 @@
 package token
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -50,7 +51,7 @@ func TestNewDeviceCodeTokenProviderEmpty(t *testing.T) {
 
 func TestNewDeviceCodeToken(t *testing.T) {
 	deviceCode := deviceCodeTokenProvider{}
-	_, err := deviceCode.Token()
+	_, err := deviceCode.Token(context.TODO())
 
 	if !testutils.ErrorContains(err, "initialing the device code authentication:") {
 		t.Errorf("unexpected error: %v", err)

@@ -67,7 +67,7 @@ func newWorkloadIdentityToken(clientID, federatedTokenFile, authorityHost, serve
 	}, nil
 }
 
-func (p *workloadIdentityToken) Token() (adal.Token, error) {
+func (p *workloadIdentityToken) Token(ctx context.Context) (adal.Token, error) {
 	emptyToken := adal.Token{}
 
 	resource := strings.TrimSuffix(p.serverID, "/")
@@ -76,7 +76,7 @@ func (p *workloadIdentityToken) Token() (adal.Token, error) {
 		resource += defaultScope
 	}
 
-	result, err := p.client.AcquireTokenByCredential(context.Background(), []string{resource})
+	result, err := p.client.AcquireTokenByCredential(ctx, []string{resource})
 	if err != nil {
 		return emptyToken, fmt.Errorf("failed to acquire token. %s", err)
 	}

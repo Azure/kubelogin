@@ -8,7 +8,7 @@ import (
 
 func TestNewLegacyServicePrincipalToken(t *testing.T) {
 	t.Run("new spn token provider with legacy should not result in error", func(t *testing.T) {
-		_, err := newTokenProvider(&Options{
+		_, err := NewTokenProvider(&Options{
 			LoginMethod:  ServicePrincipalLogin,
 			IsLegacy:     true,
 			TenantID:     "tenantID",
