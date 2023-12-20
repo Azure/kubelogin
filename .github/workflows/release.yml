@@ -9,15 +9,15 @@ jobs:
     env:
       GO111MODULE: on
     steps:
-      - name: Set up Go 1.21
-        uses: actions/setup-go@v4
-        with:
-          go-version: "1.21"
-          cache: false
-        id: go
-
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: "go.mod"
+          cache: false
+        id: go
 
       # Read changelog and read versions etc.
       - name: Check version is mentioned in Changelog.md
