@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Azure/kubelogin/pkg/internal/env"
 	"github.com/Azure/kubelogin/pkg/internal/testutils"
 	"github.com/google/go-cmp/cmp"
 	"github.com/spf13/pflag"
@@ -86,14 +87,14 @@ func TestOptionsWithEnvVars(t *testing.T) {
 		{
 			name: "setting env var using legacy env var format",
 			envVarMap: map[string]string{
-				kubeloginClientID:                  clientID,
-				kubeloginClientSecret:              clientSecret,
-				kubeloginClientCertificatePath:     certPath,
-				kubeloginClientCertificatePassword: certPassword,
-				kubeloginROPCUsername:              username,
-				kubeloginROPCPassword:              password,
-				azureTenantID:                      tenantID,
-				loginMethod:                        DeviceCodeLogin,
+				env.KubeloginClientID:                  clientID,
+				env.KubeloginClientSecret:              clientSecret,
+				env.KubeloginClientCertificatePath:     certPath,
+				env.KubeloginClientCertificatePassword: certPassword,
+				env.KubeloginROPCUsername:              username,
+				env.KubeloginROPCPassword:              password,
+				env.AzureTenantID:                      tenantID,
+				env.LoginMethod:                        DeviceCodeLogin,
 			},
 			expected: Options{
 				ClientID:           clientID,
@@ -112,12 +113,12 @@ func TestOptionsWithEnvVars(t *testing.T) {
 			name:        "setting env var using terraform env var format",
 			isTerraform: true,
 			envVarMap: map[string]string{
-				terraformClientID:                  clientID,
-				terraformClientSecret:              clientSecret,
-				terraformClientCertificatePath:     certPath,
-				terraformClientCertificatePassword: certPassword,
-				terraformTenantID:                  tenantID,
-				loginMethod:                        DeviceCodeLogin,
+				env.TerraformClientID:                  clientID,
+				env.TerraformClientSecret:              clientSecret,
+				env.TerraformClientCertificatePath:     certPath,
+				env.TerraformClientCertificatePassword: certPassword,
+				env.TerraformTenantID:                  tenantID,
+				env.LoginMethod:                        DeviceCodeLogin,
 			},
 			expected: Options{
 				UseAzureRMTerraformEnv: true,
@@ -134,16 +135,16 @@ func TestOptionsWithEnvVars(t *testing.T) {
 		{
 			name: "setting env var using azure sdk env var format",
 			envVarMap: map[string]string{
-				azureClientID:                  clientID,
-				azureClientSecret:              clientSecret,
-				azureClientCertificatePath:     certPath,
-				azureClientCertificatePassword: certPassword,
-				azureUsername:                  username,
-				azurePassword:                  password,
-				azureTenantID:                  tenantID,
-				loginMethod:                    WorkloadIdentityLogin,
-				azureFederatedTokenFile:        tokenFile,
-				azureAuthorityHost:             authorityHost,
+				env.AzureClientID:                  clientID,
+				env.AzureClientSecret:              clientSecret,
+				env.AzureClientCertificatePath:     certPath,
+				env.AzureClientCertificatePassword: certPassword,
+				env.AzureUsername:                  username,
+				env.AzurePassword:                  password,
+				env.AzureTenantID:                  tenantID,
+				env.LoginMethod:                    WorkloadIdentityLogin,
+				env.AzureFederatedTokenFile:        tokenFile,
+				env.AzureAuthorityHost:             authorityHost,
 			},
 			expected: Options{
 				ClientID:           clientID,
