@@ -1,5 +1,26 @@
 # Change Log
 
+## [0.1.0]
+
+### Enhancements
+
+- [library usage] Move modules under `pkg` to `pkg/internal` by @bcho in https://github.com/Azure/kubelogin/pull/376
+- [library usage] Update module version usages by @bcho in https://github.com/Azure/kubelogin/pull/377
+- [library usage] Refine internal token types by @bcho in https://github.com/Azure/kubelogin/pull/379
+- [library usage] Implement library token provider by @bcho in https://github.com/Azure/kubelogin/pull/380
+- [library usage] fix: downgrade required go version to 1.20 by @bcho in https://github.com/Azure/kubelogin/pull/386
+
+### Maintenance
+
+- Bump github.com/spf13/cobra from 1.7.0 to 1.8.0 by @dependabot in https://github.com/Azure/kubelogin/pull/359
+- Bump golang.org/x/crypto from 0.14.0 to 0.17.0 by @dependabot in https://github.com/Azure/kubelogin/pull/378
+- Bump github.com/golang-jwt/jwt/v5 from 5.0.0 to 5.2.0 by @dependabot in https://github.com/Azure/kubelogin/pull/370
+- Bump github.com/Azure/azure-sdk-for-go/sdk/azcore from 1.8.0 to 1.9.1 by @dependabot in https://github.com/Azure/kubelogin/pull/372
+- Bump go.uber.org/mock from 0.3.0 to 0.4.0 by @dependabot in https://github.com/Azure/kubelogin/pull/385
+- Bump github.com/google/uuid from 1.4.0 to 1.5.0 by @dependabot in https://github.com/Azure/kubelogin/pull/383
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.0.34...v0.1.0
+
 ## [0.0.34]
 
 ### Enhancements
