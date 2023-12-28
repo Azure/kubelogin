@@ -1,21 +1,43 @@
 # Change Log
 
+## [0.1.0]
+
+### Enhancements
+
+- [library usage] Move modules under `pkg` to `pkg/internal` by @bcho in https://github.com/Azure/kubelogin/pull/376
+- [library usage] Update module version usages by @bcho in https://github.com/Azure/kubelogin/pull/377
+- [library usage] Refine internal token types by @bcho in https://github.com/Azure/kubelogin/pull/379
+- [library usage] Implement library token provider by @bcho in https://github.com/Azure/kubelogin/pull/380
+- [library usage] fix: downgrade required go version to 1.20 by @bcho in https://github.com/Azure/kubelogin/pull/386
+
+### Maintenance
+
+- Bump github.com/spf13/cobra from 1.7.0 to 1.8.0 by @dependabot in https://github.com/Azure/kubelogin/pull/359
+- Bump golang.org/x/crypto from 0.14.0 to 0.17.0 by @dependabot in https://github.com/Azure/kubelogin/pull/378
+- Bump github.com/golang-jwt/jwt/v5 from 5.0.0 to 5.2.0 by @dependabot in https://github.com/Azure/kubelogin/pull/370
+- Bump github.com/Azure/azure-sdk-for-go/sdk/azcore from 1.8.0 to 1.9.1 by @dependabot in https://github.com/Azure/kubelogin/pull/372
+- Bump go.uber.org/mock from 0.3.0 to 0.4.0 by @dependabot in https://github.com/Azure/kubelogin/pull/385
+- Bump github.com/google/uuid from 1.4.0 to 1.5.0 by @dependabot in https://github.com/Azure/kubelogin/pull/383
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.0.34...v0.1.0
+
 ## [0.0.34]
 
 ### Enhancements
 
-* feat(timeout): Implement customizable timeout for Azure CLI token ret… by @Aricg in https://github.com/Azure/kubelogin/pull/362
-* added github token support by @weinong in https://github.com/Azure/kubelogin/pull/366
-* added armv7 support by @weinong in https://github.com/Azure/kubelogin/pull/367
+- feat(timeout): Implement customizable timeout for Azure CLI token ret… by @Aricg in https://github.com/Azure/kubelogin/pull/362
+- added github token support by @weinong in https://github.com/Azure/kubelogin/pull/366
+- added armv7 support by @weinong in https://github.com/Azure/kubelogin/pull/367
 
 ### Maintenance
 
-* bump golang to 1.21 by @weinong in https://github.com/Azure/kubelogin/pull/356
-* Bump k8s.io/klog/v2 from 2.100.1 to 2.110.1 by @dependabot in https://github.com/Azure/kubelogin/pull/357
-* Bump github.com/google/uuid from 1.3.1 to 1.4.0 by @dependabot in https://github.com/Azure/kubelogin/pull/355
+- bump golang to 1.21 by @weinong in https://github.com/Azure/kubelogin/pull/356
+- Bump k8s.io/klog/v2 from 2.100.1 to 2.110.1 by @dependabot in https://github.com/Azure/kubelogin/pull/357
+- Bump github.com/google/uuid from 1.3.1 to 1.4.0 by @dependabot in https://github.com/Azure/kubelogin/pull/355
 
 ## New Contributors
-* @Aricg made their first contribution in https://github.com/Azure/kubelogin/pull/362
+
+- @Aricg made their first contribution in https://github.com/Azure/kubelogin/pull/362
 
 **Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.0.33...v0.0.34
 
@@ -128,32 +150,4 @@
 
 - add --context support in convert subcommand by @weinong in https://github.com/Azure/kubelogin/pull/260
 - return error when specified context is not found by @weinong in https://github.com/Azure/kubelogin/pull/261
-- add --azure-config-dir in convert-kubeconfig subcommand by @weinong in https://github.com/Azure/kubelogin/pull/263
-
-### Maintenance
-
-- Enable Code Cov for this repo. by @Tatsinnit in https://github.com/Azure/kubelogin/pull/229
-- Bump golang.org/x/crypto from 0.6.0 to 0.7.0 by @dependabot in https://github.com/Azure/kubelogin/pull/230
-- Bump k8s.io/client-go from 0.26.2 to 0.26.3 by @dependabot in https://github.com/Azure/kubelogin/pull/234
-- Feature/addtests by @Tatsinnit in https://github.com/Azure/kubelogin/pull/238
-- Bump k8s.io/cli-runtime from 0.26.2 to 0.26.3 by @dependabot in https://github.com/Azure/kubelogin/pull/237
-- Bump github.com/spf13/cobra from 1.6.1 to 1.7.0 by @dependabot in https://github.com/Azure/kubelogin/pull/245
-- Bump golang.org/x/crypto from 0.7.0 to 0.8.0 by @dependabot in https://github.com/Azure/kubelogin/pull/250
-- Add codecov badge to this repo. by @Tatsinnit in https://github.com/Azure/kubelogin/pull/252
-- Bump k8s.io/apimachinery from 0.26.3 to 0.27.1 by @dependabot in https://github.com/Azure/kubelogin/pull/257
-- Bump k8s.io/client-go from 0.26.3 to 0.27.1 by @dependabot in https://github.com/Azure/kubelogin/pull/258
-- Fix merge conflicts and breaking changes in PR 221 by @cirvine-MSFT in https://github.com/Azure/kubelogin/pull/264
-- Fix merge conflicts in PR 232 updating adal from 0.9.22 to 0.9.23 by @cirvine-MSFT in https://github.com/Azure/kubelogin/pull/265
-
-### Doc Update
-
-- refactor windows install doc by @weinong in https://github.com/Azure/kubelogin/pull/233
-- adding github pages by @weinong in https://github.com/Azure/kubelogin/pull/241
-- added inline toc by @weinong in https://github.com/Azure/kubelogin/pull/244
-- Document scoop installation option by @goostleek in https://github.com/Azure/kubelogin/pull/242
-- revamp the website by @weinong in https://github.com/Azure/kubelogin/pull/246
-- update readme and docs by @weinong in https://github.com/Azure/kubelogin/pull/247
-- ignore docs and readme on some workflows by @weinong in https://github.com/Azure/kubelogin/pull/248
-- Add reference to a context. by @Tatsinnit in https://github.com/Azure/kubelogin/pull/253
-- How to install kubelogin with asdf tool manager by @daveneeley in https://github.com/Azure/kubelogin/pull/256
-- Update devicecode.md by @madhurgupta03 in https://github.com/Azu
+- add --azure-config-dir in convert-kubeconfig subcommand by @weinong in https://github.com/Azure/kubelogin/pu
