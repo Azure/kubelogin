@@ -46,4 +46,4 @@ The configuration parameters of this file:
 }
 ```
 
-The full configuration is available in the source code at <https://github.com/Azure/go-autorest/blob/master/autorest/azure/environments.go>.
+The full configuration is available in the source code at <https://github.com/Azure/go-autorest/blob/main/autorest/azure/environments.go>.
