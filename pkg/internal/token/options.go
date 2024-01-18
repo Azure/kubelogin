@@ -38,14 +38,15 @@ type Options struct {
 const (
 	defaultEnvironmentName = "AzurePublicCloud"
 
-	DeviceCodeLogin       = "devicecode"
-	InteractiveLogin      = "interactive"
-	ServicePrincipalLogin = "spn"
-	ROPCLogin             = "ropc"
-	MSILogin              = "msi"
-	AzureCLILogin         = "azurecli"
-	WorkloadIdentityLogin = "workloadidentity"
-	manualTokenLogin      = "manual_token"
+	DeviceCodeLogin        = "devicecode"
+	InteractiveLogin       = "interactive"
+	ServicePrincipalLogin  = "spn"
+	ROPCLogin              = "ropc"
+	MSILogin               = "msi"
+	AzureCLILogin          = "azurecli"
+	AzureDeveloperCLILogin = "azd"
+	WorkloadIdentityLogin  = "workloadidentity"
+	manualTokenLogin       = "manual_token"
 )
 
 var (
@@ -54,7 +55,7 @@ var (
 )
 
 func init() {
-	supportedLogin = []string{DeviceCodeLogin, InteractiveLogin, ServicePrincipalLogin, ROPCLogin, MSILogin, AzureCLILogin, WorkloadIdentityLogin}
+	supportedLogin = []string{DeviceCodeLogin, InteractiveLogin, ServicePrincipalLogin, ROPCLogin, MSILogin, AzureCLILogin, WorkloadIdentityLogin, AzureDeveloperCLILogin}
 }
 
 func GetSupportedLogins() string {

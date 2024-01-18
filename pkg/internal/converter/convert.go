@@ -253,6 +253,11 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 		}
 
 		switch o.TokenOptions.LoginMethod {
+		case token.AzureDeveloperCLILogin:
+			if o.isSet(flagTenantID) {
+				exec.Args = append(exec.Args, argTenantID, o.TokenOptions.TenantID)
+			}
+
 		case token.AzureCLILogin:
 
 			if o.azureConfigDir != "" {
