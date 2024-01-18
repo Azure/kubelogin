@@ -25,7 +25,7 @@ ECRET environment variable
   -h, --help                                 help for get-token
       --identity-resource-id string          Managed Identity resource id.
       --legacy                               set to true to get token with 'spn:' prefix in audience claim
-  -l, --login string                         Login method. Supported methods: devicecode, interactive, spn, ropc, msi, azurecli, workloadidentity. It may be specified in A
+  -l, --login string                         Login method. Supported methods: devicecode, interactive, spn, ropc, msi, azurecli, azd, workloadidentity. It may be specified in A
 AD_LOGIN_METHOD environment variable (default "devicecode")
       --password string                      password for ropc login flow. It may be specified in AAD_USER_PRINCIPAL_PASSWORD or AZURE_PASSWORD environment variable
       --pop-enabled                          set to true to request a proof-of-possession/PoP token, or false to request a regular bearer token. Only works with interactive and spn login modes. --pop-claims must be provided if --pop-enabled is true

@@ -55,7 +55,7 @@ var (
 )
 
 func init() {
-	supportedLogin = []string{DeviceCodeLogin, InteractiveLogin, ServicePrincipalLogin, ROPCLogin, MSILogin, AzureCLILogin, WorkloadIdentityLogin, AzureDeveloperCLILogin}
+	supportedLogin = []string{DeviceCodeLogin, InteractiveLogin, ServicePrincipalLogin, ROPCLogin, MSILogin, AzureCLILogin, AzureDeveloperCLILogin, WorkloadIdentityLogin}
 }
 
 func GetSupportedLogins() string {

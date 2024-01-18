@@ -43,8 +43,7 @@ func (p *AzureDeveloperCLIToken) Token(ctx context.Context) (adal.Token, error) 
 
 	// Request a new Azure CLI token provider
 	cred, err := azidentity.NewAzureDeveloperCLICredential(&azidentity.AzureDeveloperCLICredentialOptions{
-		TenantID:                   p.tenantID,
-		AdditionallyAllowedTenants: []string{"*"},
+		TenantID: p.tenantID,
 	})
 	if err != nil {
 		return emptyToken, fmt.Errorf("unable to create credential. Received: %v", err)
@@ -53,8 +52,13 @@ func (p *AzureDeveloperCLIToken) Token(ctx context.Context) (adal.Token, error) 
 	ctx, cancel := context.WithTimeout(ctx, p.timeout)
 	defer cancel()
 
+	policyOptions := policy.TokenRequestOptions{
+		TenantID: p.tenantID,
+		Scopes:   []string{fmt.Sprintf("%s/.default", p.resourceID)},
+	}
+
 	// Use the token provider to get a new token with the new context
-	azdAccessToken, err := cred.GetToken(ctx, policy.TokenRequestOptions{Scopes: []string{p.resourceID}})
+	azdAccessToken, err := cred.GetToken(ctx, policyOptions)
 	if err != nil {
 		return emptyToken, fmt.Errorf("expected an empty error but received: %v", err)
 	}
