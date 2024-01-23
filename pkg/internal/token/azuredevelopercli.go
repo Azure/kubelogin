@@ -19,8 +19,8 @@ type AzureDeveloperCLIToken struct {
 	timeout    time.Duration
 }
 
-// newAzureDeveloperCLIToken returns a TokenProvider that will fetch a token for the user currently logged into the Azure CLI.
-// Required arguments include an oAuthConfiguration object and the resourceID (which is used as the scope)
+// newAzureDeveloperCLIToken returns a TokenProvider that will fetch a token for the user currently logged into the Azure Developer CLI.
+// Required arguments the resourceID (which is used as the scope) and an optional tenantID.
 func newAzureDeveloperCLIToken(resourceID string, tenantID string, timeout time.Duration) (TokenProvider, error) {
 	if resourceID == "" {
 		return nil, errors.New("resourceID cannot be empty")
@@ -37,11 +37,11 @@ func newAzureDeveloperCLIToken(resourceID string, tenantID string, timeout time.
 	}, nil
 }
 
-// Token fetches an azcore.AccessToken from the Azure CLI SDK and converts it to an adal.Token for use with kubelogin.
+// Token fetches an azcore.AccessToken from the Azure Developer CLI SDK and converts it to an adal.Token for use with kubelogin.
 func (p *AzureDeveloperCLIToken) Token(ctx context.Context) (adal.Token, error) {
 	emptyToken := adal.Token{}
 
-	// Request a new Azure CLI token provider
+	// Request a new Azure Developer CLI token provider
 	cred, err := azidentity.NewAzureDeveloperCLICredential(&azidentity.AzureDeveloperCLICredentialOptions{
 		TenantID: p.tenantID,
 	})
