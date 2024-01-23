@@ -20,6 +20,11 @@ jobs:
   golangci:
     name: lint
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      deployments: read
+      packages: none
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
