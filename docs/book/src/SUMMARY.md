@@ -8,6 +8,7 @@
   - [Login Modes](./concepts/login-modes.md)
     - [Device Code](./concepts/login-modes/devicecode.md)
     - [Azure CLI](./concepts/login-modes/azurecli.md)
+    - [Azure Developer CLI](./concepts/login-modes/azd.md)
     - [Web Browser Interactive](./concepts/login-modes/interactive.md)
     - [Service Principal](./concepts/login-modes/sp.md)
     - [Managed Service Identity](./concepts/login-modes/msi.md)
