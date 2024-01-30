@@ -11,6 +11,9 @@ on:
       - docs/**
       - README.md
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build
@@ -23,11 +26,16 @@ jobs:
     env:
       GO111MODULE: on
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895 # v2.6.1
+        with:
+          egress-policy: audit
+
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
           go-version-file: "go.mod"
           cache: false
@@ -83,8 +91,8 @@ jobs:
         run: make
 
       - name: Snap Build
-        uses: snapcore/action-build@v1
+        uses: snapcore/action-build@2096990827aa966f773676c8a53793c723b6b40f # v1.2.0
         id: snapbuild
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@4fe8c5f003fae66aa5ebb77cfd3e7bfbbda0b6b0 # v3.1.5

@@ -2,6 +2,9 @@ name: Release
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build
@@ -14,11 +17,16 @@ jobs:
     env:
       GO111MODULE: on
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895 # v2.6.1
+        with:
+          egress-policy: audit
+
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
           go-version-file: "go.mod"
           cache: false
@@ -27,7 +35,7 @@ jobs:
       # Read changelog and read versions etc.
       - name: Check version is mentioned in Changelog.md
         id: changelog_reader
-        uses: mindsers/changelog-reader-action@v2
+        uses: mindsers/changelog-reader-action@b97ce03a10d9bdbb07beb491c76a5a01d78cd3ef # v2.2.2
         with:
           validation_depth: 10
           path: "CHANGELOG.md"
@@ -43,7 +51,7 @@ jobs:
       - name: Create Kubelogin Release
         id: create_release
         if: ${{ steps.check-tag-exists.outputs.exists == 'false'}}
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -99,46 +107,46 @@ jobs:
         run: make
 
       - name: Snap Build
-        uses: snapcore/action-build@v1
+        uses: snapcore/action-build@2096990827aa966f773676c8a53793c723b6b40f # v1.2.0
         id: snapbuild
 
       - name: Zip
-        uses: montudor/action-zip@v1
+        uses: montudor/action-zip@a8e75c9faefcd80fac3baf53ef40b9b119d5b702 # v1
         with:
           args: zip -qq -r kubelogin.zip bin
 
       - name: Zip (win-amd64)
-        uses: montudor/action-zip@v1
+        uses: montudor/action-zip@a8e75c9faefcd80fac3baf53ef40b9b119d5b702 # v1
         with:
           args: zip -qq kubelogin-win-amd64.zip bin/windows_amd64/kubelogin.exe
 
       - name: Zip (win-arm64)
-        uses: montudor/action-zip@v1
+        uses: montudor/action-zip@a8e75c9faefcd80fac3baf53ef40b9b119d5b702 # v1
         with:
           args: zip -qq kubelogin-win-arm64.zip bin/windows_arm64/kubelogin.exe
 
       - name: Zip (darwin-amd64)
-        uses: montudor/action-zip@v1
+        uses: montudor/action-zip@a8e75c9faefcd80fac3baf53ef40b9b119d5b702 # v1
         with:
           args: zip -qq kubelogin-darwin-amd64.zip bin/darwin_amd64/kubelogin
 
       - name: Zip (darwin-arm64)
-        uses: montudor/action-zip@v1
+        uses: montudor/action-zip@a8e75c9faefcd80fac3baf53ef40b9b119d5b702 # v1
         with:
           args: zip -qq kubelogin-darwin-arm64.zip bin/darwin_arm64/kubelogin
 
       - name: Zip (linux-amd64)
-        uses: montudor/action-zip@v1
+        uses: montudor/action-zip@a8e75c9faefcd80fac3baf53ef40b9b119d5b702 # v1
         with:
           args: zip -qq kubelogin-linux-amd64.zip bin/linux_amd64/kubelogin
 
       - name: Zip (linux-arm64)
-        uses: montudor/action-zip@v1
+        uses: montudor/action-zip@a8e75c9faefcd80fac3baf53ef40b9b119d5b702 # v1
         with:
           args: zip -qq kubelogin-linux-arm64.zip bin/linux_arm64/kubelogin
 
       - name: Zip (linux-armv7)
-        uses: montudor/action-zip@v1
+        uses: montudor/action-zip@a8e75c9faefcd80fac3baf53ef40b9b119d5b702 # v1
         with:
           args: zip -qq kubelogin-linux-armv7.zip bin/linux_armv7/kubelogin
 
@@ -154,7 +162,7 @@ jobs:
           sha256sum kubelogin-linux-armv7.zip > kubelogin-linux-armv7.zip.sha256
 
       - name: Publish
-        uses: skx/github-action-publish-binaries@master
+        uses: skx/github-action-publish-binaries@44887b225ceca96efd8a912d39c09ad70312af31 # master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -162,7 +170,7 @@ jobs:
           releaseId: ${{ steps.create_release.outputs.id }}
 
       - name: Publish to Snap Store
-        uses: snapcore/action-publish@v1
+        uses: snapcore/action-publish@214b86e5ca036ead1668c79afb81e550e6c54d40 # v1.2.0
         env:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPSTORE_LOGIN }}
         with:
