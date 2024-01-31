@@ -16,6 +16,7 @@ import (
 type AzureDeveloperCLIToken struct {
 	resourceID string
 	tenantID   string
+	cred       *azidentity.AzureDeveloperCLICredential
 	timeout    time.Duration
 }
 
@@ -30,9 +31,18 @@ func newAzureDeveloperCLIToken(resourceID string, tenantID string, timeout time.
 		timeout = defaultTimeout
 	}
 
+	// Request a new Azure Developer CLI token provider
+	cred, err := azidentity.NewAzureDeveloperCLICredential(&azidentity.AzureDeveloperCLICredentialOptions{
+		TenantID: tenantID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("unable to create credential. Received: %v", err)
+	}
+
 	return &AzureDeveloperCLIToken{
 		resourceID: resourceID,
 		tenantID:   tenantID,
+		cred:       cred,
 		timeout:    timeout,
 	}, nil
 }
@@ -41,12 +51,8 @@ func newAzureDeveloperCLIToken(resourceID string, tenantID string, timeout time.
 func (p *AzureDeveloperCLIToken) Token(ctx context.Context) (adal.Token, error) {
 	emptyToken := adal.Token{}
 
-	// Request a new Azure Developer CLI token provider
-	cred, err := azidentity.NewAzureDeveloperCLICredential(&azidentity.AzureDeveloperCLICredentialOptions{
-		TenantID: p.tenantID,
-	})
-	if err != nil {
-		return emptyToken, fmt.Errorf("unable to create credential. Received: %v", err)
+	if p.cred == nil {
+		return emptyToken, errors.New("credential is nil. Create new instance with newAzureDeveloperCLIToken function")
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, p.timeout)
@@ -58,7 +64,7 @@ func (p *AzureDeveloperCLIToken) Token(ctx context.Context) (adal.Token, error) 
 	}
 
 	// Use the token provider to get a new token with the new context
-	azdAccessToken, err := cred.GetToken(ctx, policyOptions)
+	azdAccessToken, err := p.cred.GetToken(ctx, policyOptions)
 	if err != nil {
 		return emptyToken, fmt.Errorf("expected an empty error but received: %v", err)
 	}

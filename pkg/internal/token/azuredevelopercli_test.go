@@ -20,7 +20,7 @@ func TestNewAzureDeveloperCLIToken(t *testing.T) {
 	azd := AzureDeveloperCLIToken{}
 	_, err := azd.Token(context.TODO())
 
-	if !testutils.ErrorContains(err, "expected an empty error but received:") {
+	if !testutils.ErrorContains(err, "credential is nil") {
 		t.Errorf("unexpected error: %v", err)
 	}
 }
