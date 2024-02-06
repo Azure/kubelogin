@@ -10,4 +10,5 @@
 - [non-interactive user principal login](./concepts/login-modes/ropc.md) using [Resource owner login flow](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth-ropc)
 - [non-interactive managed service identity login](./concepts/login-modes/msi.md)
 - [non-interactive Azure CLI token login (AKS only)](./concepts/login-modes/azurecli.md)
+- [non-interactive Azure Developer CLI token login (AKS only)](./concepts/login-modes/azd.md)
 - [non-interactive workload identity login](./concepts/login-modes/workloadidentity.md)

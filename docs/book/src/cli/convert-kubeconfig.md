@@ -27,7 +27,7 @@ Flags:
       --identity-resource-id string          Managed Identity resource id.
       --kubeconfig string                    Path to the kubeconfig file to use for CLI requests.
       --legacy                               set to true to get token with 'spn:' prefix in audience claim
-  -l, --login string                         Login method. Supported methods: devicecode, interactive, spn, ropc, msi, azurecli, workloadidentity. It may be specified in AAD_LOGIN_METHOD environment variable (default "devicecode")
+  -l, --login string                         Login method. Supported methods: devicecode, interactive, spn, ropc, msi, azurecli, azd, workloadidentity. It may be specified in AAD_LOGIN_METHOD environment variable (default "devicecode")
       --password string                      password for ropc login flow. It may be specified in AAD_USER_PRINCIPAL_PASSWORD or AZURE_PASSWORD environment variable
       --pop-enabled                          set to true to request a proof-of-possession/PoP token, or false to request a regular bearer token. Only works with interactive and spn login modes. --pop-claims must be provided if --pop-enabled is true
       --pop-claims                           claims to include when requesting a PoP token, formatted as a comma-separated string of key=value pairs. Must include the u-claim, `u=ARM_ID` containing the ARM ID of the cluster (host). --pop-enabled must be set to true if --pop-claims are provided

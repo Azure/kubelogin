@@ -322,6 +322,24 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
+			name: "using legacy azure auth to convert to azd",
+			authProviderConfig: map[string]string{
+				cfgEnvironment: envName,
+				cfgApiserverID: serverID,
+				cfgClientID:    clientID,
+				cfgTenantID:    tenantID,
+				cfgConfigMode:  "1",
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.AzureDeveloperCLILogin,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argLoginMethod, token.AzureDeveloperCLILogin,
+			},
+		},
+		{
 			name: "using legacy azure auth to convert to azurecli with --tenant-id override",
 			authProviderConfig: map[string]string{
 				cfgEnvironment: envName,
@@ -338,6 +356,26 @@ func TestConvert(t *testing.T) {
 				getTokenCommand,
 				argServerID, serverID,
 				argLoginMethod, token.AzureCLILogin,
+				argTenantID, tenantID,
+			},
+		},
+		{
+			name: "using legacy azure auth to convert to azd with --tenant-id override",
+			authProviderConfig: map[string]string{
+				cfgEnvironment: envName,
+				cfgApiserverID: serverID,
+				cfgClientID:    clientID,
+				cfgTenantID:    tenantID,
+				cfgConfigMode:  "1",
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.AzureDeveloperCLILogin,
+				flagTenantID:    tenantID,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argLoginMethod, token.AzureDeveloperCLILogin,
 				argTenantID, tenantID,
 			},
 		},
