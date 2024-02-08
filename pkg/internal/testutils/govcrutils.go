@@ -30,7 +30,12 @@ func GetVCRHttpClient(path string, token string) (*recorder.Recorder, *http.Clie
 	rec, _ := recorder.NewWithOptions(opts)
 
 	hook := func(i *cassette.Interaction) error {
-		var detectedClientID, detectedClientSecret, detectedClientAssertion, detectedScope, detectedReqCnf string
+		var detectedClientID,
+			detectedClientSecret,
+			detectedClientAssertion,
+			detectedScope,
+			detectedReqCnf,
+			detectedPassword string
 		// Delete sensitive content
 		delete(i.Response.Headers, "Set-Cookie")
 		delete(i.Response.Headers, "X-Ms-Request-Id")
@@ -54,6 +59,10 @@ func GetVCRHttpClient(path string, token string) (*recorder.Recorder, *http.Clie
 			detectedScope = i.Request.Form["req_cnf"][0]
 			i.Request.Form["req_cnf"] = []string{redactionToken}
 		}
+		if i.Request.Form["password"] != nil && i.Request.Form["password"][0] != BadSecret {
+			detectedPassword = i.Request.Form["password"][0]
+			i.Request.Form["password"] = []string{redactionToken}
+		}
 
 		if os.Getenv(tenantUUID) != "" {
 			i.Request.URL = strings.ReplaceAll(i.Request.URL, os.Getenv(tenantUUID), tenantUUID)
@@ -64,7 +73,7 @@ func GetVCRHttpClient(path string, token string) (*recorder.Recorder, *http.Clie
 			i.Request.Body = strings.ReplaceAll(i.Request.Body, detectedClientID, redactionToken)
 		}
 		if detectedClientSecret != "" {
-			i.Request.Body = strings.ReplaceAll(i.Request.Body, detectedClientSecret, redactionToken)
+			i.Request.Body = ReplaceSecretValuesIncludingURLEscaped(i.Request.Body, detectedClientSecret, redactionToken)
 		}
 		if detectedClientAssertion != "" {
 			i.Request.Body = strings.ReplaceAll(i.Request.Body, detectedClientAssertion, redactionToken)
@@ -74,6 +83,9 @@ func GetVCRHttpClient(path string, token string) (*recorder.Recorder, *http.Clie
 		}
 		if detectedReqCnf != "" {
 			i.Request.Body = strings.ReplaceAll(i.Request.Body, detectedReqCnf, redactionToken)
+		}
+		if detectedPassword != "" {
+			i.Request.Body = ReplaceSecretValuesIncludingURLEscaped(i.Request.Body, detectedPassword, redactionToken)
 		}
 
 		if strings.Contains(i.Response.Body, "access_token") {
