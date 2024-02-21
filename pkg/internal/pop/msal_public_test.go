@@ -3,6 +3,7 @@ package pop
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"testing"
@@ -11,6 +12,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/kubelogin/pkg/internal/testutils"
+	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"gopkg.in/dnaeon/go-vcr.v3/recorder"
@@ -149,5 +151,67 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 }
 
 func TestGetPublicClient(t *testing.T) {
+	httpClient := &http.Client{}
+	authority := "https://login.microsoftonline.com/" + testutils.TenantID
 
+	testCase := []struct {
+		testName      string
+		authority     string
+		options       *azcore.ClientOptions
+		expectedError error
+	}{
+		{
+			// Test using custom HTTP transport
+			testName:  "TestGetPublicClientWithCustomTransport",
+			authority: authority,
+			options: &azcore.ClientOptions{
+				Cloud:     cloud.AzurePublic,
+				Transport: httpClient,
+			},
+			expectedError: nil,
+		},
+		{
+			// Test using default HTTP transport
+			testName:  "TestGetPublicClientWithDefaultTransport",
+			authority: authority,
+			options: &azcore.ClientOptions{
+				Cloud: cloud.AzurePublic,
+			},
+			expectedError: nil,
+		},
+		{
+			// Test using incorrectly formatted authority
+			testName:  "TestGetPublicClientWithBadAuthority",
+			authority: "login.microsoft.com",
+			options: &azcore.ClientOptions{
+				Cloud: cloud.AzurePublic,
+			},
+			expectedError: fmt.Errorf("unable to create public client"),
+		},
+	}
+
+	var client *public.Client
+	var err error
+
+	for _, tc := range testCase {
+		t.Run(tc.testName, func(t *testing.T) {
+			client, err = getPublicClient(
+				tc.authority,
+				testutils.ClientID,
+				tc.options,
+			)
+
+			if tc.expectedError != nil {
+				if !testutils.ErrorContains(err, tc.expectedError.Error()) {
+					t.Errorf("expected error %s, but got %s", tc.expectedError.Error(), err)
+				}
+			} else if err != nil {
+				t.Errorf("expected no error, but got: %s", err)
+			} else {
+				if client == nil {
+					t.Errorf("expected a client but got nil")
+				}
+			}
+		})
+	}
 }
