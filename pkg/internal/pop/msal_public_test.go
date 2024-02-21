@@ -83,7 +83,7 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 			expectedError: fmt.Errorf("failed to create PoP token with username/password flow"),
 		},
 		{
-			// Test using service principal secret value to get PoP token
+			// Test using username/password to get PoP token
 			cassetteName: "AcquirePoPTokenByUsernamePasswordVCR",
 			p: &resourceOwnerTokenVars{
 				clientID:   pEnv.clientID,
@@ -146,4 +146,8 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetPublicClient(t *testing.T) {
+
 }
