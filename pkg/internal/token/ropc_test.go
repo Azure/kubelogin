@@ -133,7 +133,7 @@ func TestROPCPoPTokenVCR(t *testing.T) {
 		resourceID: os.Getenv(testutils.ResourceID),
 		tenantID:   os.Getenv(testutils.TenantID),
 	}
-	// Use defaults if environmental variables are empty
+	// Use defaults if environment variables are empty
 	if pEnv.clientID == "" {
 		pEnv.clientID = testutils.ClientID
 	}
