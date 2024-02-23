@@ -41,7 +41,7 @@ func NewTokenProvider(o *Options) (TokenProvider, error) {
 		}
 		return newServicePrincipalTokenProvider(cloudConfiguration, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID, popClaimsMap)
 	case ROPCLogin:
-		return newResourceOwnerToken(*oAuthConfig, o.ClientID, o.Username, o.Password, o.ServerID, o.TenantID)
+		return newResourceOwnerTokenProvider(*oAuthConfig, o.ClientID, o.Username, o.Password, o.ServerID, o.TenantID, popClaimsMap)
 	case MSILogin:
 		return newManagedIdentityToken(o.ClientID, o.IdentityResourceID, o.ServerID)
 	case AzureCLILogin:
