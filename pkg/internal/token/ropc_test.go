@@ -209,7 +209,7 @@ func TestROPCPoPTokenVCR(t *testing.T) {
 				Transport: httpClient,
 			}
 
-			token, err = tc.p.TokenWithOptions(context.TODO(), &clientOpts)
+			token, err = tc.p.tokenWithOptions(context.TODO(), &clientOpts)
 			defer vcrRecorder.Stop()
 			if err != nil {
 				if !testutils.ErrorContains(err, tc.expectedError.Error()) {

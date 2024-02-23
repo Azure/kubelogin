@@ -61,10 +61,10 @@ func newResourceOwnerTokenProvider(
 
 // Token fetches an azcore.AccessToken from the Azure SDK and converts it to an adal.Token for use with kubelogin.
 func (p *resourceOwnerToken) Token(ctx context.Context) (adal.Token, error) {
-	return p.TokenWithOptions(ctx, nil)
+	return p.tokenWithOptions(ctx, nil)
 }
 
-func (p *resourceOwnerToken) TokenWithOptions(ctx context.Context, options *azcore.ClientOptions) (adal.Token, error) {
+func (p *resourceOwnerToken) tokenWithOptions(ctx context.Context, options *azcore.ClientOptions) (adal.Token, error) {
 	emptyToken := adal.Token{}
 	authorityFromConfig := p.oAuthConfig.AuthorityEndpoint
 	clientOpts := azcore.ClientOptions{Cloud: cloud.Configuration{
