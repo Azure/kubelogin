@@ -1,5 +1,27 @@
 # Change Log
 
+## [0.1.1]
+
+### Enhancements
+
+- Adds Azure Developer CLI (azd) as a new login method by @wbreza in https://github.com/Azure/kubelogin/pull/398
+- Add PoP token support for ROPC flow by @rharpavat in https://github.com/Azure/kubelogin/pull/412
+
+### Maintenance
+
+- Default branch is now main. by @Tatsinnit in https://github.com/Azure/kubelogin/pull/390
+- Changes in correlation with new GH Action Permission Changes. by @Tatsinnit in https://github.com/Azure/kubelogin/pull/400
+- Bump github.com/AzureAD/microsoft-authentication-library-for-go from 1.2.0 to 1.2.1 by @dependabot in https://github.com/Azure/kubelogin/pull/391
+- Bump golang.org/x/crypto from 0.17.0 to 0.18.0 by @dependabot in https://github.com/Azure/kubelogin/pull/392
+- [StepSecurity] Apply security best practices by @step-security-bot in https://github.com/Azure/kubelogin/pull/404
+
+### New Contributors
+
+- @wbreza made their first contribution in https://github.com/Azure/kubelogin/pull/398
+- @step-security-bot made their first contribution in https://github.com/Azure/kubelogin/pull/404
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.1.0...v0.1.1
+
 ## [0.1.0]
 
 ### Enhancements
