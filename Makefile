@@ -23,7 +23,6 @@ version:
 	@echo VERSION: $(VERSION)
 
 $(TARGET): clean
-	go version
 	CGO_ENABLED=0 go build -o $(BIN) -ldflags "$(LDFLAGS)"
 
 clean:
