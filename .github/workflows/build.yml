@@ -85,9 +85,5 @@ jobs:
           GOARCH: arm64
         run: make
 
-      - name: Snap Build
-        uses: snapcore/action-build@2096990827aa966f773676c8a53793c723b6b40f # v1.2.0
-        id: snapbuild
-
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@4fe8c5f003fae66aa5ebb77cfd3e7bfbbda0b6b0 # v3.1.5
