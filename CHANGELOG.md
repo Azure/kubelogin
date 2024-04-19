@@ -1,5 +1,18 @@
 # Change Log
 
+## [0.1.2]
+
+### Maintenance
+
+- Bump google.golang.org/protobuf from 1.30.0 to 1.33.0 by @dependabot in https://github.com/Azure/kubelogin/pull/430
+- Bump k8s.io/cli-runtime from 0.28.3 to 0.29.3 by @dependabot in https://github.com/Azure/kubelogin/pull/433
+- fix: tidy go.mod and bump go version by @bcho in https://github.com/Azure/kubelogin/pull/448
+- Bump golang.org/x/crypto from 0.18.0 to 0.22.0 by @dependabot in https://github.com/Azure/kubelogin/pull/445
+- Bump github.com/google/uuid from 1.5.0 to 1.6.0 by @dependabot in https://github.com/Azure/kubelogin/pull/406
+- Bump github.com/golang-jwt/jwt/v5 from 5.2.0 to 5.2.1 by @dependabot in https://github.com/Azure/kubelogin/pull/443
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.1.1...v0.1.2
+
 ## [0.1.1]
 
 ### Enhancements
