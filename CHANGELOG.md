@@ -4,6 +4,8 @@
 
 - Bump golang.org/x/net from 0.21.0 to 0.23.0 by @dependabot in https://github.com/Azure/kubelogin/pull/451
 
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.1.2...v0.1.3
+
 ## [0.1.2]
 
 ### Maintenance
