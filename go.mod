@@ -1,7 +1,7 @@
 module github.com/Azure/kubelogin
 
 // NOTE: kubelogin follows the same support policy as Go, which supports the last two major versions.
-go 1.21.0
+go 1.21.9
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.11.1
