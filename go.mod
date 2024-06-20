@@ -18,7 +18,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/mock v0.4.0
 	golang.org/x/crypto v0.24.0
-	gopkg.in/dnaeon/go-vcr.v3 v3.1.2
+	gopkg.in/dnaeon/go-vcr.v3 v3.2.0
 	gopkg.in/retry.v1 v1.0.3
 	k8s.io/apimachinery v0.29.3
 	k8s.io/cli-runtime v0.29.3
