@@ -1,5 +1,24 @@
 # Change Log
 
+## [0.1.4]
+
+### Maintenance
+
+* Bump github.com/Azure/azure-sdk-for-go/sdk/azidentity from 1.5.1 to 1.6.0 by @dependabot in https://github.com/Azure/kubelogin/pull/474
+* feat: declare go version directive with patch version by @bcho in https://github.com/Azure/kubelogin/pull/476
+* Bump github.com/Azure/azure-sdk-for-go/sdk/azcore from 1.11.1 to 1.12.0 by @dependabot in https://github.com/Azure/kubelogin/pull/478
+* chore: upgrade go to v1.21.11 to fix CVE-2024-24790 by @strivedi-px in https://github.com/Azure/kubelogin/pull/485
+* Bump k8s.io/klog/v2 from 2.110.1 to 2.130.1 by @dependabot in https://github.com/Azure/kubelogin/pull/483
+* Bump github.com/spf13/cobra from 1.8.0 to 1.8.1 by @dependabot in https://github.com/Azure/kubelogin/pull/482
+* Bump github.com/stretchr/testify from 1.8.4 to 1.9.0 by @dependabot in https://github.com/Azure/kubelogin/pull/444
+* Bump gopkg.in/dnaeon/go-vcr.v3 from 3.1.2 to 3.2.0 by @dependabot in https://github.com/Azure/kubelogin/pull/459
+
+### New Contributors
+
+* @strivedi-px made their first contribution in https://github.com/Azure/kubelogin/pull/485
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.1.3...v0.1.4
+
 ## [0.1.3]
 
 - Bump golang.org/x/net from 0.21.0 to 0.23.0 by @dependabot in https://github.com/Azure/kubelogin/pull/451
