@@ -2,6 +2,7 @@ module github.com/Azure/kubelogin
 
 // NOTE: kubelogin follows the same support policy as Go, which supports the last two major versions.
 go 1.21.11
+toolchain go1.22.4
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.12.0
@@ -20,7 +21,7 @@ require (
 	golang.org/x/crypto v0.24.0
 	gopkg.in/dnaeon/go-vcr.v3 v3.2.0
 	gopkg.in/retry.v1 v1.0.3
-	k8s.io/apimachinery v0.29.3
+	k8s.io/apimachinery v0.30.2
 	k8s.io/cli-runtime v0.29.3
 	k8s.io/client-go v0.29.3
 	k8s.io/klog/v2 v2.130.1
@@ -79,7 +80,7 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/api v0.29.3 // indirect
-	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00 // indirect
+	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/kustomize/api v0.13.5-0.20230601165947-6ce0bf390ce3 // indirect
