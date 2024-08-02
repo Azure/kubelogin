@@ -63,10 +63,16 @@ func GetSupportedLogins() string {
 }
 
 func NewOptions() Options {
+	env_TokenCacheDir := os.Getenv("KUBECACHEDIR")
 	return Options{
-		LoginMethod:   DeviceCodeLogin,
-		Environment:   defaultEnvironmentName,
-		TokenCacheDir: DefaultTokenCacheDir,
+		LoginMethod: DeviceCodeLogin,
+		Environment: defaultEnvironmentName,
+		TokenCacheDir: func() string {
+			if env_TokenCacheDir != "" {
+				return env_TokenCacheDir
+			}
+			return DefaultTokenCacheDir
+		}(),
 	}
 }
 
