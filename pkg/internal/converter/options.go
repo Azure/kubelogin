@@ -28,7 +28,7 @@ func New() Options {
 }
 
 func (o *Options) AddFlags(fs *pflag.FlagSet) {
-	o.TokenOptions = token.NewOptions()
+	o.TokenOptions = token.NewOptions(true)
 	if cf, ok := o.configFlags.(*genericclioptions.ConfigFlags); ok {
 		cf.AddFlags(fs)
 	}

@@ -11,8 +11,6 @@ import (
 	"github.com/Azure/kubelogin/pkg/internal/testutils"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/confidential"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/google/uuid"
-	"gopkg.in/dnaeon/go-vcr.v3/recorder"
 )
 
 type confidentialTokenVars struct {
@@ -33,16 +31,16 @@ func TestAcquirePoPTokenConfidential(t *testing.T) {
 	}
 	// Use defaults if environmental variables are empty
 	if pEnv.clientID == "" {
-		pEnv.clientID = testutils.ClientID
+		pEnv.clientID = testutils.TestClientID
 	}
 	if pEnv.clientSecret == "" {
 		pEnv.clientSecret = testutils.ClientSecret
 	}
 	if pEnv.resourceID == "" {
-		pEnv.resourceID = testutils.ResourceID
+		pEnv.resourceID = testutils.TestServerID
 	}
 	if pEnv.tenantID == "" {
-		pEnv.tenantID = "00000000-0000-0000-0000-000000000000"
+		pEnv.tenantID = testutils.TestTenantID
 	}
 	ctx := context.Background()
 	scopes := []string{pEnv.resourceID + "/.default"}
@@ -66,7 +64,7 @@ func TestAcquirePoPTokenConfidential(t *testing.T) {
 				tenantID:     pEnv.tenantID,
 				popClaims:    map[string]string{"u": "testhost"},
 				cloud: cloud.Configuration{
-					ActiveDirectoryAuthorityHost: "https://login.microsoftonline.com/AZURE_TENANT_ID",
+					ActiveDirectoryAuthorityHost: authority,
 				},
 			},
 			expectedError: fmt.Errorf("failed to create service principal PoP token using secret"),
@@ -82,7 +80,7 @@ func TestAcquirePoPTokenConfidential(t *testing.T) {
 				tenantID:     pEnv.tenantID,
 				popClaims:    map[string]string{"u": "testhost"},
 				cloud: cloud.Configuration{
-					ActiveDirectoryAuthorityHost: "https://login.microsoftonline.com/AZURE_TENANT_ID",
+					ActiveDirectoryAuthorityHost: authority,
 				},
 			},
 			expectedError: nil,
@@ -93,13 +91,11 @@ func TestAcquirePoPTokenConfidential(t *testing.T) {
 	for _, tc := range testCase {
 		t.Run(tc.cassetteName, func(t *testing.T) {
 			if tc.expectedError == nil {
-				expectedToken = uuid.New().String()
+				expectedToken = testutils.TestToken
 			}
-			vcrRecorder, httpClient := testutils.GetVCRHttpClient(fmt.Sprintf("testdata/%s", tc.cassetteName), expectedToken)
-
-			clientOpts := azcore.ClientOptions{
-				Cloud:     cloud.AzurePublic,
-				Transport: httpClient,
+			vcrRecorder, err := testutils.GetVCRHttpClient(fmt.Sprintf("testdata/%s", tc.cassetteName), pEnv.tenantID)
+			if err != nil {
+				t.Fatalf("failed to create vcr recorder: %s", err)
 			}
 
 			cred, err := confidential.NewCredFromSecret(tc.p.clientSecret)
@@ -113,10 +109,13 @@ func TestAcquirePoPTokenConfidential(t *testing.T) {
 				scopes,
 				cred,
 				&MsalClientOptions{
-					Authority:                authority,
-					ClientID:                 tc.p.clientID,
-					TenantID:                 tc.p.tenantID,
-					Options:                  &clientOpts,
+					Authority: authority,
+					ClientID:  tc.p.clientID,
+					TenantID:  tc.p.tenantID,
+					Options: azcore.ClientOptions{
+						Cloud:     cloud.AzurePublic,
+						Transport: vcrRecorder.GetDefaultClient(),
+					},
 					DisableInstanceDiscovery: false,
 				},
 				GetSwPoPKey,
@@ -134,13 +133,11 @@ func TestAcquirePoPTokenConfidential(t *testing.T) {
 				}
 				claims := jwt.MapClaims{}
 				parsed, _ := jwt.ParseWithClaims(token, &claims, nil)
-				if vcrRecorder.Mode() == recorder.ModeReplayOnly {
-					if claims["at"] != expectedToken {
-						t.Errorf("unexpected token returned (expected %s, but got %s)", expectedToken, claims["at"])
-					}
-					if parsed.Header["typ"] != expectedTokenType {
-						t.Errorf("unexpected token returned (expected %s, but got %s)", expectedTokenType, parsed.Header["typ"])
-					}
+				if claims["at"] != expectedToken {
+					t.Errorf("unexpected token returned (expected %s, but got %s)", expectedToken, claims["at"])
+				}
+				if parsed.Header["typ"] != expectedTokenType {
+					t.Errorf("unexpected token returned (expected %s, but got %s)", expectedTokenType, parsed.Header["typ"])
 				}
 			}
 		})

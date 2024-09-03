@@ -101,7 +101,7 @@ func TestReplaceSecretValuesIncludingURLEscaped(t *testing.T) {
 
 	for _, tc := range testCase {
 		t.Run(tc.name, func(t *testing.T) {
-			result := ReplaceSecretValuesIncludingURLEscaped(tc.body, tc.secret, redactionToken)
+			result := ReplaceSecretValuesIncludingURLEscaped(tc.body, tc.secret, redactedToken)
 			if result != tc.expectedResult {
 				t.Errorf(
 					"expected redaction of secret as \n%s\n but got \n%s\n",

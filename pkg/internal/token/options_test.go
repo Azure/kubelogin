@@ -15,7 +15,7 @@ import (
 
 func TestOptions(t *testing.T) {
 	t.Run("Default option should produce token cache file under default token cache directory", func(t *testing.T) {
-		o := NewOptions()
+		o := defaultOptions()
 		o.AddFlags(&pflag.FlagSet{})
 		o.UpdateFromEnv()
 		if err := o.Validate(); err != nil {
@@ -28,7 +28,7 @@ func TestOptions(t *testing.T) {
 	})
 
 	t.Run("option with customized token cache dir should produce token cache file under specified token cache directory", func(t *testing.T) {
-		o := NewOptions()
+		o := defaultOptions()
 		o.TokenCacheDir = "/tmp/foo/"
 		o.AddFlags(&pflag.FlagSet{})
 		o.UpdateFromEnv()
@@ -42,7 +42,7 @@ func TestOptions(t *testing.T) {
 	})
 
 	t.Run("invalid login method should return error", func(t *testing.T) {
-		o := NewOptions()
+		o := defaultOptions()
 		o.LoginMethod = "unsupported"
 		if err := o.Validate(); err == nil || !strings.Contains(err.Error(), "is not a supported login method") {
 			t.Fatalf("unsupported login method should return unsupported error. got: %s", err)
@@ -50,7 +50,7 @@ func TestOptions(t *testing.T) {
 	})
 
 	t.Run("pop-enabled flag should return error if pop-claims are not provided", func(t *testing.T) {
-		o := NewOptions()
+		o := defaultOptions()
 		o.IsPoPTokenEnabled = true
 		if err := o.Validate(); err == nil || !strings.Contains(err.Error(), "please provide the pop-claims flag") {
 			t.Fatalf("pop-enabled with no pop claims should return missing pop-claims error. got: %s", err)
@@ -58,12 +58,77 @@ func TestOptions(t *testing.T) {
 	})
 
 	t.Run("pop-claims flag should return error if pop-enabled is not provided", func(t *testing.T) {
-		o := NewOptions()
+		o := defaultOptions()
 		o.PoPTokenClaims = "u=testhost"
 		if err := o.Validate(); err == nil || !strings.Contains(err.Error(), "pop-enabled flag is required to use the PoP token feature") {
 			t.Fatalf("pop-claims provided with no pop-enabled flag should return missing pop-enabled error. got: %s", err)
 		}
 	})
+
+	t.Run("invalid authority host should return error", func(t *testing.T) {
+		o := defaultOptions()
+		o.AuthorityHost = "invalid"
+		if err := o.Validate(); err == nil || !strings.Contains(err.Error(), `authority host "`+o.AuthorityHost+`" is not valid`) {
+			t.Fatalf("invalid authority host should return invalid authority host error. got: %s", err)
+		}
+	})
+
+	t.Run("missing server id should return error", func(t *testing.T) {
+		o := defaultOptions()
+		o.ServerID = ""
+		if err := o.Validate(); err == nil || !strings.Contains(err.Error(), "server-id is required") {
+			t.Fatalf("missing server id should return missing server id error. got: %s", err)
+		}
+	})
+
+	t.Run("setting authority host will set cloud.Configuration properly", func(t *testing.T) {
+		o := defaultOptions()
+		o.AuthorityHost = "https://login.example.com/"
+		if err := o.Validate(); err != nil {
+			t.Fatalf("setting authority host should not return error. got: %s", err)
+		}
+		if o.GetCloudConfiguration().ActiveDirectoryAuthorityHost != o.AuthorityHost {
+			t.Fatalf("expected authority host to be %s, got %s",
+				o.AuthorityHost, o.GetCloudConfiguration().ActiveDirectoryAuthorityHost)
+		}
+	})
+
+	t.Run("default cloud.Configuration should be public azure", func(t *testing.T) {
+		o := defaultOptions()
+		if err := o.Validate(); err != nil {
+			t.Fatalf("setting authority host should not return error. got: %s", err)
+		}
+		defaultAuthorityHost := "https://login.microsoftonline.com/"
+		if o.GetCloudConfiguration().ActiveDirectoryAuthorityHost != defaultAuthorityHost {
+			t.Fatalf("expected authority host to be %s, got %s",
+				defaultAuthorityHost, o.GetCloudConfiguration().ActiveDirectoryAuthorityHost)
+		}
+	})
+
+	t.Run("invalid timeout should return error", func(t *testing.T) {
+		o := defaultOptions()
+		o.Timeout = 0
+		if err := o.Validate(); err == nil || !strings.Contains(err.Error(), "timeout must be greater than 0") {
+			t.Fatalf("timeout of 0 should return error. got: %s", err)
+		}
+	})
+
+	t.Run("valid PoP token claims should pass validation", func(t *testing.T) {
+		o := defaultOptions()
+		o.IsPoPTokenEnabled = true
+		o.PoPTokenClaims = "u=testhost"
+		if err := o.Validate(); err != nil {
+			t.Fatalf("valid PoP token claims should not return error. got: %s", err)
+		}
+	})
+
+}
+
+func defaultOptions() Options {
+	o := NewOptions(true)
+	o.ServerID = "https://example.com"
+	o.Timeout = 30 * time.Second
+	return o
 }
 
 func TestOptionsWithEnvVars(t *testing.T) {
@@ -274,4 +339,203 @@ func TestDisableEnvironmentOverride(t *testing.T) {
 			t.Fatalf("expected client-id to be 'client-id from env', got %s", o.ClientID)
 		}
 	})
+}
+
+func TestGetCloudConfiguration(t *testing.T) {
+	testCases := []struct {
+		name        string
+		environment string
+		authority   string
+		expected    string
+	}{
+		{
+			name:        "AZURECLOUD environment",
+			environment: "AZURECLOUD",
+			expected:    "https://login.microsoftonline.com/",
+		},
+		{
+			name:        "AZUREPUBLIC environment",
+			environment: "AZUREPUBLIC",
+			expected:    "https://login.microsoftonline.com/",
+		},
+		{
+			name:        "AZUREPUBLICCLOUD environment",
+			environment: "AZUREPUBLICCLOUD",
+			expected:    "https://login.microsoftonline.com/",
+		},
+		{
+			name:        "AZUREUSGOVERNMENT environment",
+			environment: "AZUREUSGOVERNMENT",
+			expected:    "https://login.microsoftonline.us/",
+		},
+		{
+			name:        "AZUREUSGOVERNMENTCLOUD environment",
+			environment: "AZUREUSGOVERNMENTCLOUD",
+			expected:    "https://login.microsoftonline.us/",
+		},
+		{
+			name:        "AZURECHINACLOUD environment",
+			environment: "AZURECHINACLOUD",
+			expected:    "https://login.chinacloudapi.cn/",
+		},
+		{
+			name:        "custom authority host",
+			environment: "AZURECLOUD",
+			authority:   "https://custom.authority.com/",
+			expected:    "https://custom.authority.com/",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			o := Options{
+				Environment:   tc.environment,
+				AuthorityHost: tc.authority,
+			}
+			config := o.GetCloudConfiguration()
+			if config.ActiveDirectoryAuthorityHost != tc.expected {
+				t.Errorf("expected authority host %s, got %s", tc.expected, config.ActiveDirectoryAuthorityHost)
+			}
+		})
+	}
+}
+
+func TestAuthorityHostValidation(t *testing.T) {
+	testCases := []struct {
+		name        string
+		authority   string
+		shouldError bool
+	}{
+		{
+			name:        "valid authority with trailing slash",
+			authority:   "https://login.example.com/",
+			shouldError: false,
+		},
+		{
+			name:        "valid authority without trailing slash",
+			authority:   "https://login.example.com",
+			shouldError: true,
+		},
+		{
+			name:        "invalid authority without scheme",
+			authority:   "login.example.com/",
+			shouldError: true,
+		},
+		{
+			name:        "invalid authority with malformed URL",
+			authority:   "https://login example.com/",
+			shouldError: true,
+		},
+		{
+			name:        "empty authority",
+			authority:   "",
+			shouldError: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			o := defaultOptions()
+			o.AuthorityHost = tc.authority
+			err := o.Validate()
+			if tc.shouldError && err == nil {
+				t.Error("expected error but got none")
+			}
+			if !tc.shouldError && err != nil {
+				t.Errorf("expected no error but got: %v", err)
+			}
+		})
+	}
+}
+
+func TestSanitizeFileName(t *testing.T) {
+	testCases := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "normal filename",
+			input:    "normal-file-name",
+			expected: "normal-file-name",
+		},
+		{
+			name:     "filename with invalid characters",
+			input:    "file<>:\"/\\|?*name",
+			expected: "file_________name",
+		},
+		{
+			name:     "filename with spaces",
+			input:    " file name ",
+			expected: "file name",
+		},
+		{
+			name:     "filename with control characters",
+			input:    "file\x00\x1Fname",
+			expected: "file__name",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := sanitizeFileName(tc.input)
+			if result != tc.expected {
+				t.Errorf("expected %q, got %q", tc.expected, result)
+			}
+		})
+	}
+}
+
+func TestGetCacheFileName(t *testing.T) {
+	testCases := []struct {
+		name     string
+		options  Options
+		expected string
+	}{
+		{
+			name: "normal cache file name",
+			options: Options{
+				Environment:   "env",
+				ServerID:      "server",
+				ClientID:      "client",
+				TenantID:      "tenant",
+				IsLegacy:      false,
+				TokenCacheDir: "/cache/dir",
+			},
+			expected: "/cache/dir/env-server-client-tenant.json",
+		},
+		{
+			name: "legacy cache file name",
+			options: Options{
+				Environment:   "env",
+				ServerID:      "server",
+				ClientID:      "client",
+				TenantID:      "tenant",
+				IsLegacy:      true,
+				TokenCacheDir: "/cache/dir",
+			},
+			expected: "/cache/dir/env-server-client-tenant_legacy.json",
+		},
+		{
+			name: "cache file name with special characters",
+			options: Options{
+				Environment:   "env<>",
+				ServerID:      "ser/ver",
+				ClientID:      "cli\\ent",
+				TenantID:      "ten:ant",
+				IsLegacy:      false,
+				TokenCacheDir: "/cache/dir",
+			},
+			expected: "/cache/dir/env__-ser_ver-cli_ent-ten_ant.json",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := getCacheFileName(&tc.options)
+			if result != tc.expected {
+				t.Errorf("expected %q, got %q", tc.expected, result)
+			}
+		})
+	}
 }

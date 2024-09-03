@@ -4,16 +4,14 @@ package token
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
-	"time"
+	"strings"
 
-	"github.com/Azure/go-autorest/autorest/adal"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	klog "k8s.io/klog/v2"
-)
-
-const (
-	expirationDelta time.Duration = 60 * time.Second
 )
 
 type ExecCredentialPlugin interface {
@@ -22,108 +20,76 @@ type ExecCredentialPlugin interface {
 
 type execCredentialPlugin struct {
 	o                    *Options
-	tokenCache           TokenCache
+	cachedRecord         CachedRecordProvider
 	execCredentialWriter ExecCredentialWriter
-	provider             TokenProvider
-	disableTokenCache    bool
-	refresher            func(adal.OAuthConfig, string, string, string, *adal.Token) (TokenProvider, error)
+	newCredentialFunc    func(record azidentity.AuthenticationRecord, o *Options) (CredentialProvider, error)
 }
 
 func New(o *Options) (ExecCredentialPlugin, error) {
-
 	klog.V(10).Info(o.ToString())
-	provider, err := NewTokenProvider(o)
-	if err != nil {
-		return nil, err
-	}
-	disableTokenCache := false
-	if o.LoginMethod == ServicePrincipalLogin || o.LoginMethod == MSILogin || o.LoginMethod == WorkloadIdentityLogin || o.LoginMethod == AzureCLILogin || o.LoginMethod == AzureDeveloperCLILogin {
-		disableTokenCache = true
-	}
 	return &execCredentialPlugin{
 		o:                    o,
-		tokenCache:           &defaultTokenCache{},
 		execCredentialWriter: &execCredentialWriter{},
-		provider:             provider,
-		refresher:            newManualToken,
-		disableTokenCache:    disableTokenCache,
+		cachedRecord: &defaultCachedRecordProvider{
+			file: o.tokenCacheFile,
+		},
+		newCredentialFunc: NewAzIdentityCredential,
 	}, nil
 }
 
 func (p *execCredentialPlugin) Do(ctx context.Context) error {
-	var (
-		token adal.Token
-		err   error
-	)
-	if !p.disableTokenCache {
-		// get token from cache
-		token, err = p.tokenCache.Read(p.o.tokenCacheFile)
+	if p.o.ServerID == "" {
+		return errors.New("server-id is required")
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, p.o.Timeout)
+	defer cancel()
+
+	record, err := p.cachedRecord.Retrieve()
+	if err != nil {
+		klog.V(5).Infof("failed to retrieve cached record: %s", err)
+	}
+
+	cred, err := p.newCredentialFunc(record, p.o)
+	if err != nil {
+		return fmt.Errorf("failed to create azidentity credential: %s", err)
+	}
+
+	klog.V(5).Infof("using credential: %s", cred.Name())
+	scopes := []string{GetScope(p.o.ServerID)}
+	tokenRequestOptions := policy.TokenRequestOptions{
+		TenantID: p.o.TenantID,
+		Scopes:   scopes,
+	}
+
+	if cred.NeedAuthenticate() && record == (azidentity.AuthenticationRecord{}) {
+		// No stored record; call Authenticate to acquire one.
+		// This will prompt the user to authenticate interactively.
+		klog.V(5).Info("no stored record; calling Authenticate")
+		record, err = cred.Authenticate(ctx, &tokenRequestOptions)
 		if err != nil {
-			return fmt.Errorf("unable to read from token cache: %s, err: %s", p.o.tokenCacheFile, err)
+			return fmt.Errorf("failed to authenticate: %s", err)
+			// TODO: handle error
+		}
+		err = p.cachedRecord.Store(record)
+		if err != nil {
+			// TODO: handle error
+			return fmt.Errorf("failed to store record: %s", err)
 		}
 	}
-
-	// verify resource
-	targetAudience := p.o.ServerID
-	if p.o.IsLegacy {
-		targetAudience = fmt.Sprintf("spn:%s", p.o.ServerID)
-	}
-	if token.Resource == targetAudience && !token.IsZero() {
-		// if not expired, return
-		if !token.WillExpireIn(expirationDelta) {
-			klog.V(10).Info("access token is still valid. will return")
-			return p.execCredentialWriter.Write(token, os.Stdout)
-		}
-
-		// if expired, try refresh when refresh token exists
-		if token.RefreshToken != "" {
-			tokenRefreshed := false
-			klog.V(10).Info("getting refresher")
-			oAuthConfig, err := getOAuthConfig(p.o.Environment, p.o.TenantID, p.o.IsLegacy)
-			if err != nil {
-				return fmt.Errorf("unable to get oAuthConfig: %s", err)
-			}
-			refresher, err := p.refresher(*oAuthConfig, p.o.ClientID, p.o.ServerID, p.o.TenantID, &token)
-			if err != nil {
-				return fmt.Errorf("failed to get refresher: %s", err)
-			}
-			klog.V(5).Info("refresh token")
-			token, err := refresher.Token(ctx)
-			// if refresh fails, we will login using token provider
-			if err != nil {
-				klog.V(5).Infof("refresh failed, will continue to login: %s", err)
-			} else {
-				tokenRefreshed = true
-			}
-
-			if tokenRefreshed {
-				klog.V(10).Info("token refreshed")
-
-				// if refresh succeeds, save token, and return
-				if err := p.tokenCache.Write(p.o.tokenCacheFile, token); err != nil {
-					return fmt.Errorf("failed to write to store: %s", err)
-				}
-
-				return p.execCredentialWriter.Write(token, os.Stdout)
-			}
-		} else {
-			klog.V(5).Info("there is no refresh token")
-		}
-	}
-
-	klog.V(5).Info("acquire new token")
-	// run the underlying provider
-	token, err = p.provider.Token(ctx)
+	klog.V(5).Infof("getting token with scopes: %v", scopes)
+	token, err := cred.GetToken(ctx, tokenRequestOptions)
 	if err != nil {
 		return fmt.Errorf("failed to get token: %s", err)
 	}
 
-	if !p.disableTokenCache {
-		// save token
-		if err := p.tokenCache.Write(p.o.tokenCacheFile, token); err != nil {
-			return fmt.Errorf("unable to write to token cache: %s, err: %s", p.o.tokenCacheFile, err)
-		}
-	}
-
 	return p.execCredentialWriter.Write(token, os.Stdout)
+}
+
+func GetScope(serverID string) string {
+	scope := strings.TrimRight(serverID, "/")
+	if !strings.HasSuffix(scope, defaultScope) {
+		scope += defaultScope
+	}
+	return scope
 }
