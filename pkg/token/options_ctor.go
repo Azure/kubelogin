@@ -53,5 +53,6 @@ func (opts *Options) toInternalOptions() *token.Options {
 		IdentityResourceID: opts.IdentityResourceID,
 		AuthorityHost:      opts.AuthorityHost,
 		FederatedTokenFile: opts.FederatedTokenFile,
+		UsePersistentCache: false,
 	}
 }

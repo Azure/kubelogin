@@ -2,11 +2,14 @@ package token
 
 import (
 	"fmt"
+	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/kubelogin/pkg/internal/env"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -26,8 +29,8 @@ type Options struct {
 	Environment                string
 	IsLegacy                   bool
 	Timeout                    time.Duration
-	TokenCacheDir              string
-	tokenCacheFile             string
+	AuthRecordCacheDir         string
+	authRecordCacheFile        string
 	IdentityResourceID         string
 	FederatedTokenFile         string
 	AuthorityHost              string
@@ -35,7 +38,9 @@ type Options struct {
 	IsPoPTokenEnabled          bool
 	PoPTokenClaims             string
 	DisableEnvironmentOverride bool
+	UsePersistentCache         bool
 	DisableInstanceDiscovery   bool
+	httpClient                 *http.Client
 }
 
 const (
@@ -49,12 +54,11 @@ const (
 	AzureCLILogin          = "azurecli"
 	AzureDeveloperCLILogin = "azd"
 	WorkloadIdentityLogin  = "workloadidentity"
-	manualTokenLogin       = "manual_token"
 )
 
 var (
-	supportedLogin       []string
-	DefaultTokenCacheDir = homedir.HomeDir() + "/.kube/cache/kubelogin/"
+	supportedLogin            []string
+	DefaultAuthRecordCacheDir = homedir.HomeDir() + "/.kube/cache/kubelogin/"
 )
 
 func init() {
@@ -65,17 +69,18 @@ func GetSupportedLogins() string {
 	return strings.Join(supportedLogin, ", ")
 }
 
-func NewOptions() Options {
-	envTokenCacheDir := os.Getenv("KUBECACHEDIR")
+func NewOptions(usePersistentCache bool) Options {
+	envAuthRecordCacheDir := os.Getenv("KUBECACHEDIR")
 	return Options{
 		LoginMethod: DeviceCodeLogin,
 		Environment: defaultEnvironmentName,
-		TokenCacheDir: func() string {
-			if envTokenCacheDir != "" {
-				return envTokenCacheDir
+		AuthRecordCacheDir: func() string {
+			if envAuthRecordCacheDir != "" {
+				return envAuthRecordCacheDir
 			}
-			return DefaultTokenCacheDir
+			return DefaultAuthRecordCacheDir
 		}(),
+		UsePersistentCache: usePersistentCache,
 	}
 }
 
@@ -100,7 +105,9 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 		fmt.Sprintf("Workload Identity federated token file. It may be specified in %s environment variable", env.AzureFederatedTokenFile))
 	fs.StringVar(&o.AuthorityHost, "authority-host", o.AuthorityHost,
 		fmt.Sprintf("Workload Identity authority host. It may be specified in %s environment variable", env.AzureAuthorityHost))
-	fs.StringVar(&o.TokenCacheDir, "token-cache-dir", o.TokenCacheDir, "directory to cache token")
+	fs.StringVar(&o.AuthRecordCacheDir, "token-cache-dir", o.AuthRecordCacheDir, "directory to cache authentication record")
+	_ = fs.MarkDeprecated("token-cache-dir", "use --cache-dir instead")
+	fs.StringVar(&o.AuthRecordCacheDir, "cache-dir", o.AuthRecordCacheDir, "directory to cache authentication record")
 	fs.StringVarP(&o.TenantID, "tenant-id", "t", o.TenantID, fmt.Sprintf("AAD tenant ID. It may be specified in %s environment variable", env.AzureTenantID))
 	fs.StringVarP(&o.Environment, "environment", "e", o.Environment, "Azure environment name")
 	fs.BoolVar(&o.IsLegacy, "legacy", o.IsLegacy, "set to true to get token with 'spn:' prefix in audience claim")
@@ -126,6 +133,23 @@ func (o *Options) Validate() error {
 		return fmt.Errorf("'%s' is not a supported login method. Supported method is one of %s", o.LoginMethod, GetSupportedLogins())
 	}
 
+	if o.ServerID == "" {
+		return fmt.Errorf("server-id is required")
+	}
+
+	if o.AuthorityHost != "" {
+		u, err := url.ParseRequestURI(o.AuthorityHost)
+		if err != nil {
+			return fmt.Errorf("authority host %q is not valid: %s", o.AuthorityHost, err)
+		}
+		if u.Scheme == "" || u.Host == "" {
+			return fmt.Errorf("authority host %q is not valid", o.AuthorityHost)
+		}
+		if !strings.HasSuffix(o.AuthorityHost, "/") {
+			return fmt.Errorf("authority host %q should have a trailing slash", o.AuthorityHost)
+		}
+	}
+
 	// both of the following checks ensure that --pop-enabled and --pop-claims flags are provided together
 	if o.IsPoPTokenEnabled && o.PoPTokenClaims == "" {
 		return fmt.Errorf("if enabling pop token mode, please provide the pop-claims flag containing the PoP token claims as a comma-separated string: `u=popClaimHost,key1=val1`")
@@ -143,7 +167,7 @@ func (o *Options) Validate() error {
 }
 
 func (o *Options) UpdateFromEnv() {
-	o.tokenCacheFile = getCacheFileName(o)
+	o.authRecordCacheFile = getAuthenticationRecordFileName(o)
 
 	if o.DisableEnvironmentOverride {
 		return
@@ -229,9 +253,33 @@ func (o *Options) UpdateFromEnv() {
 	}
 }
 
+func (o *Options) GetCloudConfiguration() cloud.Configuration {
+	if o.AuthorityHost != "" {
+		return cloud.Configuration{
+			ActiveDirectoryAuthorityHost: o.AuthorityHost,
+		}
+	}
+
+	switch strings.ToUpper(o.Environment) {
+	case "AZURECLOUD":
+		fallthrough
+	case "AZUREPUBLIC":
+		fallthrough
+	case "AZUREPUBLICCLOUD":
+		return cloud.AzurePublic
+	case "AZUREUSGOVERNMENT":
+		fallthrough
+	case "AZUREUSGOVERNMENTCLOUD":
+		return cloud.AzureGovernment
+	case "AZURECHINACLOUD":
+		return cloud.AzureChina
+	}
+	return cloud.AzurePublic
+}
+
 func (o *Options) ToString() string {
 	azureConfigDir := os.Getenv("AZURE_CONFIG_DIR")
-	return fmt.Sprintf("Login Method: %s, Environment: %s, TenantID: %s, ServerID: %s, ClientID: %s, IsLegacy: %t, msiResourceID: %s, Timeout: %v, tokenCacheDir: %s, tokenCacheFile: %s, AZURE_CONFIG_DIR: %s",
+	return fmt.Sprintf("Login Method: %s, Environment: %s, TenantID: %s, ServerID: %s, ClientID: %s, IsLegacy: %t, msiResourceID: %s, Timeout: %v, authRecordCacheDir: %s, tokenauthRecordFile: %s, AZURE_CONFIG_DIR: %s",
 		o.LoginMethod,
 		o.Environment,
 		o.TenantID,
@@ -240,19 +288,14 @@ func (o *Options) ToString() string {
 		o.IsLegacy,
 		o.IdentityResourceID,
 		o.Timeout,
-		o.TokenCacheDir,
-		o.tokenCacheFile,
+		o.AuthRecordCacheDir,
+		o.authRecordCacheFile,
 		azureConfigDir,
 	)
 }
 
-func getCacheFileName(o *Options) string {
-	// format: ${environment}-${server-id}-${client-id}-${tenant-id}[_legacy].json
-	cacheFileNameFormat := "%s-%s-%s-%s.json"
-	if o.IsLegacy {
-		cacheFileNameFormat = "%s-%s-%s-%s_legacy.json"
-	}
-	return filepath.Join(o.TokenCacheDir, fmt.Sprintf(cacheFileNameFormat, o.Environment, o.ServerID, o.ClientID, o.TenantID))
+func getAuthenticationRecordFileName(o *Options) string {
+	return filepath.Join(o.AuthRecordCacheDir, "auth.json")
 }
 
 // parsePoPClaims parses the pop token claims. Pop token claims are passed in as a

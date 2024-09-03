@@ -92,7 +92,7 @@ func getPublicClient(msalOptions *MsalClientOptions) (*public.Client, error) {
 	if msalOptions == nil {
 		return nil, fmt.Errorf("unable to create public client: MsalClientOptions is empty")
 	}
-	if msalOptions.Options != nil && msalOptions.Options.Transport != nil {
+	if msalOptions.Options.Transport != nil {
 		client, err = public.New(
 			msalOptions.ClientID,
 			public.WithAuthority(msalOptions.Authority),

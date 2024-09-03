@@ -5,6 +5,7 @@
 //
 //	mockgen -destination mock_token/execCredentialWriter.go github.com/Azure/kubelogin/pkg/internal/token ExecCredentialWriter
 //
+
 // Package mock_token is a generated GoMock package.
 package mock_token
 
@@ -12,7 +13,7 @@ import (
 	io "io"
 	reflect "reflect"
 
-	adal "github.com/Azure/go-autorest/autorest/adal"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -40,7 +41,7 @@ func (m *MockExecCredentialWriter) EXPECT() *MockExecCredentialWriterMockRecorde
 }
 
 // Write mocks base method.
-func (m *MockExecCredentialWriter) Write(arg0 adal.Token, arg1 io.Writer) error {
+func (m *MockExecCredentialWriter) Write(arg0 azcore.AccessToken, arg1 io.Writer) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Write", arg0, arg1)
 	ret0, _ := ret[0].(error)

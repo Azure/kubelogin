@@ -6,27 +6,18 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build
+  create-release:
+    name: Create Release
     runs-on: ubuntu-latest
     permissions:
       actions: read
       contents: write
       deployments: read
       packages: none
-    env:
-      GO111MODULE: on
+    outputs:
+      release_id: ${{ steps.create_release.outputs.id }}
+      version: ${{ steps.changelog_reader.outputs.version }}
     steps:
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Set up Go
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
-        with:
-          go-version-file: "go.mod"
-          cache: false
-        id: go
-
       # Read changelog and read versions etc.
       - name: Check version is mentioned in Changelog.md
         id: changelog_reader
@@ -34,15 +25,17 @@ jobs:
         with:
           validation_depth: 10
           path: "CHANGELOG.md"
+
       # Check if the newest tag already exists
       - name: Check if tag exist
         uses: mukunku/tag-exists-action@bdad1eaa119ce71b150b952c97351c75025c06a9 # v1.6.0
         id: check-tag-exists
         with:
-          tag: "v${{ steps.changelog_reader.outputs.version }} release" # following the pattern of vx.x.xx release used in this repo
+          tag: "v${{ steps.changelog_reader.outputs.version }} release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # Create Release with artifacts
+
+      # Create Release
       - name: Create Kubelogin Release
         id: create_release
         if: ${{ steps.check-tag-exists.outputs.exists == 'false'}}
@@ -51,55 +44,152 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: "v${{ steps.changelog_reader.outputs.version }}"
-          name: "v${{ steps.changelog_reader.outputs.version }} release" # following the pattern of vx.x.xx release used in this repo
+          name: "v${{ steps.changelog_reader.outputs.version }} release"
           body: ${{ steps.changelog_reader.outputs.changes }}
 
-      # We need the latest tag in the git local workspace before it start building.
+  build-linux:
+    name: Build Linux
+    runs-on: ubuntu-latest
+    needs: create-release
+    if: ${{ needs.create-release.outputs.release_id != '' }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
       - name: Get tags
         run: git fetch --tags
 
-      - name: Build (linux)
+      - name: Install cross-compilation toolchains
+        run: |
+          sudo apt-get update && sudo apt-get install -y \
+            gcc-aarch64-linux-gnu \
+            gcc-arm-linux-gnueabihf
+
+      - name: Set up Go
+        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+        with:
+          go-version-file: "go.mod"
+          cache: false
+
+      - name: Build Linux AMD64
+        run: make
         env:
           GOOS: linux
           GOARCH: amd64
-        run: make
 
-      - name: Build (linux/arm64)
+      - name: Build Linux ARM64
+        run: make
         env:
           GOOS: linux
           GOARCH: arm64
-        run: make
+          CC: aarch64-linux-gnu-gcc
 
-      - name: Build (linux/armv7)
+      - name: Build Linux ARMv7
+        run: make
         env:
           GOOS: linux
           GOARCH: arm
           GOARM: "7"
-        run: make
+          CC: arm-linux-gnueabihf-gcc
 
-      - name: Build (darwin)
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-binaries
+          path: bin/linux_*
+
+  build-macos:
+    name: Build macOS
+    runs-on: macos-latest
+    needs: create-release
+    if: ${{ needs.create-release.outputs.release_id != '' }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Get tags
+        run: git fetch --tags
+
+      - name: Set up Go
+        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+        with:
+          go-version-file: "go.mod"
+          cache: false
+
+      - name: Build macOS AMD64
+        run: make
         env:
           GOOS: darwin
           GOARCH: amd64
-        run: make
 
-      - name: Build (darwin/arm)
+      - name: Build macOS ARM64
+        run: make
         env:
           GOOS: darwin
           GOARCH: arm64
-        run: make
 
-      - name: Build (windows)
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos-binaries
+          path: bin/darwin_*
+
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+    needs: create-release
+    if: ${{ needs.create-release.outputs.release_id != '' }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Get tags
+        run: git fetch --tags
+
+      - name: Set up Go
+        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+        with:
+          go-version-file: "go.mod"
+          cache: false
+
+      - name: Build Windows AMD64
+        run: make
         env:
           GOOS: windows
           GOARCH: amd64
-        run: make
 
-      - name: Build (windows/arm)
+      - name: Build Windows ARM64
+        run: make
         env:
           GOOS: windows
           GOARCH: arm64
-        run: make
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-binaries
+          path: bin/windows_*
+
+  package-and-publish:
+    name: Package and Publish
+    runs-on: ubuntu-latest
+    needs: [create-release, build-linux, build-macos, build-windows]
+    if: ${{ needs.create-release.outputs.release_id != '' }}
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: bin
+
+      - name: Move binaries to correct locations
+        run: |
+          mkdir -p bin/linux_amd64 bin/linux_arm64 bin/linux_armv7 \
+                 bin/darwin_amd64 bin/darwin_arm64 \
+                 bin/windows_amd64 bin/windows_arm64
+          mv bin/linux-binaries/linux_* bin/
+          mv bin/macos-binaries/darwin_* bin/
+          mv bin/windows-binaries/windows_* bin/
+          rm -rf bin/linux-binaries bin/macos-binaries bin/windows-binaries
 
       - name: Zip
         uses: montudor/action-zip@a8e75c9faefcd80fac3baf53ef40b9b119d5b702 # v1
@@ -158,4 +248,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           args: kubelogin.zip kubelogin-win-amd64.zip kubelogin-win-arm64.zip kubelogin-darwin-amd64.zip kubelogin-darwin-arm64.zip kubelogin-linux-amd64.zip kubelogin-linux-arm64.zip kubelogin-linux-armv7.zip kubelogin.zip.sha256 kubelogin-win-amd64.zip.sha256 kubelogin-win-arm64.zip.sha256 kubelogin-darwin-amd64.zip.sha256 kubelogin-darwin-arm64.zip.sha256 kubelogin-linux-amd64.zip.sha256 kubelogin-linux-arm64.zip.sha256 kubelogin-linux-armv7.zip.sha256
-          releaseId: ${{ steps.create_release.outputs.id }}
+          releaseId: ${{ needs.create-release.outputs.release_id }}
