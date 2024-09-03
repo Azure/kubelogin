@@ -4,13 +4,11 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 	"os"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
-	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/kubelogin/pkg/internal/testutils"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
 	"github.com/golang-jwt/jwt/v4"
@@ -19,13 +17,12 @@ import (
 )
 
 type resourceOwnerTokenVars struct {
-	clientID    string
-	username    string
-	password    string
-	resourceID  string
-	tenantID    string
-	popClaims   map[string]string
-	oAuthConfig adal.OAuthConfig
+	clientID   string
+	username   string
+	password   string
+	resourceID string
+	tenantID   string
+	popClaims  map[string]string
 }
 
 func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
@@ -56,12 +53,7 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 	ctx := context.Background()
 	scopes := []string{pEnv.resourceID + "/.default"}
 	authority := "https://login.microsoftonline.com/" + pEnv.tenantID
-	authorityEndpoint, err := url.Parse(authority)
-	if err != nil {
-		t.Errorf("error encountered when parsing active directory endpoint: %s", err)
-	}
 	var expectedToken string
-	var token string
 	expectedTokenType := "pop"
 	testCase := []struct {
 		cassetteName  string
@@ -78,9 +70,6 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 				resourceID: pEnv.resourceID,
 				tenantID:   pEnv.tenantID,
 				popClaims:  map[string]string{"u": "testhost"},
-				oAuthConfig: adal.OAuthConfig{
-					AuthorityEndpoint: *authorityEndpoint,
-				},
 			},
 			expectedError: fmt.Errorf("failed to create PoP token with username/password flow"),
 		},
@@ -94,9 +83,6 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 				resourceID: pEnv.resourceID,
 				tenantID:   pEnv.tenantID,
 				popClaims:  map[string]string{"u": "testhost"},
-				oAuthConfig: adal.OAuthConfig{
-					AuthorityEndpoint: *authorityEndpoint,
-				},
 			},
 			expectedError: nil,
 		},
@@ -114,7 +100,7 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 				Transport: httpClient,
 			}
 
-			token, _, err = AcquirePoPTokenByUsernamePassword(
+			token, _, err := AcquirePoPTokenByUsernamePassword(
 				ctx,
 				tc.p.popClaims,
 				scopes,

@@ -1,89 +1,88 @@
 package token
 
-//go:generate sh -c "mockgen -destination mock_$GOPACKAGE/provider.go github.com/Azure/kubelogin/pkg/internal/token TokenProvider"
+//go:generate sh -c "mockgen -destination mock_$GOPACKAGE/provider.go github.com/Azure/kubelogin/pkg/internal/token CredentialProvider"
 
 import (
 	"context"
 	"errors"
-	"fmt"
+	"os"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
-	"github.com/Azure/go-autorest/autorest/adal"
-	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 )
 
-type TokenProvider interface {
-	Token(ctx context.Context) (adal.Token, error)
+const authorityFormat = "%s%s/oauth2/token"
+
+type CredentialProvider interface {
+	GetToken(ctx context.Context, options policy.TokenRequestOptions) (azcore.AccessToken, error)
+
+	Authenticate(ctx context.Context, options *policy.TokenRequestOptions) (azidentity.AuthenticationRecord, error)
+
+	NeedAuthenticate() bool
+
+	Name() string
 }
 
-// NewTokenProvider creates the TokenProvider instance with giving options.
-func NewTokenProvider(o *Options) (TokenProvider, error) {
-	oAuthConfig, err := getOAuthConfig(o.Environment, o.TenantID, o.IsLegacy)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get oAuthConfig. isLegacy: %t, err: %s", o.IsLegacy, err)
-	}
-	cloudConfiguration, err := getCloudConfig(o.Environment)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get cloud.Configuration. err: %s", err)
-	}
-	popClaimsMap, err := parsePoPClaims(o.PoPTokenClaims)
-	if o.IsPoPTokenEnabled && err != nil {
-		return nil, err
-	}
+func NewAzIdentityCredential(record azidentity.AuthenticationRecord, o *Options) (CredentialProvider, error) {
 	switch o.LoginMethod {
-	case DeviceCodeLogin:
-		return newDeviceCodeTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID)
-	case InteractiveLogin:
-		return newInteractiveTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID, popClaimsMap)
-	case ServicePrincipalLogin:
-		if o.IsLegacy {
-			return newLegacyServicePrincipalToken(*oAuthConfig, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID)
-		}
-		return newServicePrincipalTokenProvider(cloudConfiguration, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID, popClaimsMap)
-	case ROPCLogin:
-		return newResourceOwnerTokenProvider(*oAuthConfig, o.ClientID, o.Username, o.Password, o.ServerID, o.TenantID, popClaimsMap)
-	case MSILogin:
-		return newManagedIdentityToken(o.ClientID, o.IdentityResourceID, o.ServerID)
 	case AzureCLILogin:
-		return newAzureCLIToken(o.ServerID, o.TenantID, o.Timeout)
-	case WorkloadIdentityLogin:
-		return newWorkloadIdentityToken(o.ClientID, o.FederatedTokenFile, o.AuthorityHost, o.ServerID, o.TenantID)
+		return newAzureCLICredential(o)
+
 	case AzureDeveloperCLILogin:
-		return newAzureDeveloperCLIToken(o.ServerID, o.TenantID, o.Timeout)
+		return newAzureDeveloperCLICredential(o)
+
+	case DeviceCodeLogin:
+		switch {
+		case o.IsLegacy:
+			return newADALDeviceCodeCredential(o)
+		default:
+			return newDeviceCodeCredential(o, record)
+		}
+
+	case InteractiveLogin:
+		switch {
+		case o.IsPoPTokenEnabled:
+			return newInteractiveBrowserCredentialWithPoP(o)
+		default:
+			return newInteractiveBrowserCredential(o, record)
+		}
+
+	case MSILogin:
+		return newManagedIdentityCredential(o)
+
+	case ROPCLogin:
+		switch {
+		case o.IsPoPTokenEnabled:
+			return newUsernamePasswordCredentialWithPoP(o)
+		default:
+			return newUsernamePasswordCredential(o, record)
+		}
+
+	case ServicePrincipalLogin:
+		switch {
+		case o.IsLegacy && o.ClientCert != "":
+			return newADALClientCertCredential(o)
+		case o.IsLegacy:
+			return newADALClientSecretCredential(o)
+		case o.ClientCert != "" && o.IsPoPTokenEnabled:
+			return newClientCertificateCredentialWithPoP(o)
+		case o.ClientCert != "":
+			return newClientCertificateCredential(o)
+		case o.IsPoPTokenEnabled:
+			return newClientSecretCredentialWithPoP(o)
+		default:
+			return newClientSecretCredential(o)
+		}
+
+	case WorkloadIdentityLogin:
+		switch {
+		case os.Getenv(actionsIDTokenRequestToken) != "" && os.Getenv(actionsIDTokenRequestURL) != "":
+			return newGithubActionsCredential(o)
+		default:
+			return newWorkloadIdentityCredential(o)
+		}
 	}
 
 	return nil, errors.New("unsupported token provider")
-}
-
-func getCloudConfig(envName string) (cloud.Configuration, error) {
-	env, err := getAzureEnvironment(envName)
-	c := cloud.Configuration{
-		ActiveDirectoryAuthorityHost: env.ActiveDirectoryEndpoint,
-	}
-	return c, err
-}
-
-func getOAuthConfig(envName, tenantID string, isLegacy bool) (*adal.OAuthConfig, error) {
-	var (
-		oAuthConfig *adal.OAuthConfig
-		environment azure.Environment
-		err         error
-	)
-	environment, err = getAzureEnvironment(envName)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get environment: %s", err)
-	}
-	if isLegacy {
-		oAuthConfig, err = adal.NewOAuthConfig(environment.ActiveDirectoryEndpoint, tenantID)
-	} else {
-		oAuthConfig, err = adal.NewOAuthConfigWithAPIVersion(environment.ActiveDirectoryEndpoint, tenantID, nil)
-	}
-	return oAuthConfig, err
-}
-
-func getAzureEnvironment(environment string) (azure.Environment, error) {
-	if environment == "" {
-		environment = defaultEnvironmentName
-	}
-	return azure.EnvironmentFromName(environment)
 }

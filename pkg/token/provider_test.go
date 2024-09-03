@@ -2,10 +2,11 @@ package token
 
 import (
 	"context"
-	"encoding/json"
 	"testing"
+	"time"
 
-	"github.com/Azure/go-autorest/autorest/adal"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/kubelogin/pkg/internal/token"
 	"github.com/Azure/kubelogin/pkg/internal/token/mock_token"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -39,11 +40,15 @@ func TestTokenProviderShim_GetAccessToken(t *testing.T) {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 
-		mockTokenProvider := mock_token.NewMockTokenProvider(mockCtrl)
-		mockTokenProvider.EXPECT().Token(gomock.Any()).Return(adal.Token{}, assert.AnError)
+		credProvider := mock_token.NewMockCredentialProvider(mockCtrl)
+		credProvider.EXPECT().GetToken(gomock.Any(), gomock.Any()).Return(azcore.AccessToken{}, assert.AnError)
 
 		tp := &tokenProviderShim{
-			impl: mockTokenProvider,
+			cred: credProvider,
+			opts: &token.Options{
+				TenantID: "tenant-id",
+				ServerID: "server-id",
+			},
 		}
 
 		token, err := tp.GetAccessToken(context.Background())
@@ -55,20 +60,24 @@ func TestTokenProviderShim_GetAccessToken(t *testing.T) {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 
-		adalToken := adal.Token{
-			AccessToken: "access-token",
-			ExpiresOn:   json.Number("1700000000"),
+		expectedToken := azcore.AccessToken{
+			Token:     "access-token",
+			ExpiresOn: time.Unix(1700000000, 0),
 		}
-		mockTokenProvider := mock_token.NewMockTokenProvider(mockCtrl)
-		mockTokenProvider.EXPECT().Token(gomock.Any()).Return(adalToken, nil)
+		credProvider := mock_token.NewMockCredentialProvider(mockCtrl)
+		credProvider.EXPECT().GetToken(gomock.Any(), gomock.Any()).Return(expectedToken, nil)
 
 		tp := &tokenProviderShim{
-			impl: mockTokenProvider,
+			cred: credProvider,
+			opts: &token.Options{
+				TenantID: "tenant-id",
+				ServerID: "server-id",
+			},
 		}
 
 		token, err := tp.GetAccessToken(context.Background())
 		assert.NoError(t, err)
-		assert.Equal(t, adalToken.AccessToken, token.Token)
-		assert.Equal(t, adalToken.Expires(), token.ExpiresOn)
+		assert.Equal(t, expectedToken.Token, token.Token)
+		assert.Equal(t, expectedToken.ExpiresOn, token.ExpiresOn)
 	})
 }

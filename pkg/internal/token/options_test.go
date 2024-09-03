@@ -15,7 +15,7 @@ import (
 
 func TestOptions(t *testing.T) {
 	t.Run("Default option should produce token cache file under default token cache directory", func(t *testing.T) {
-		o := NewOptions()
+		o := defaultOptions()
 		o.AddFlags(&pflag.FlagSet{})
 		o.UpdateFromEnv()
 		if err := o.Validate(); err != nil {
@@ -28,7 +28,7 @@ func TestOptions(t *testing.T) {
 	})
 
 	t.Run("option with customized token cache dir should produce token cache file under specified token cache directory", func(t *testing.T) {
-		o := NewOptions()
+		o := defaultOptions()
 		o.TokenCacheDir = "/tmp/foo/"
 		o.AddFlags(&pflag.FlagSet{})
 		o.UpdateFromEnv()
@@ -42,7 +42,7 @@ func TestOptions(t *testing.T) {
 	})
 
 	t.Run("invalid login method should return error", func(t *testing.T) {
-		o := NewOptions()
+		o := defaultOptions()
 		o.LoginMethod = "unsupported"
 		if err := o.Validate(); err == nil || !strings.Contains(err.Error(), "is not a supported login method") {
 			t.Fatalf("unsupported login method should return unsupported error. got: %s", err)
@@ -50,7 +50,7 @@ func TestOptions(t *testing.T) {
 	})
 
 	t.Run("pop-enabled flag should return error if pop-claims are not provided", func(t *testing.T) {
-		o := NewOptions()
+		o := defaultOptions()
 		o.IsPoPTokenEnabled = true
 		if err := o.Validate(); err == nil || !strings.Contains(err.Error(), "please provide the pop-claims flag") {
 			t.Fatalf("pop-enabled with no pop claims should return missing pop-claims error. got: %s", err)
@@ -58,12 +58,59 @@ func TestOptions(t *testing.T) {
 	})
 
 	t.Run("pop-claims flag should return error if pop-enabled is not provided", func(t *testing.T) {
-		o := NewOptions()
+		o := defaultOptions()
 		o.PoPTokenClaims = "u=testhost"
 		if err := o.Validate(); err == nil || !strings.Contains(err.Error(), "pop-enabled flag is required to use the PoP token feature") {
 			t.Fatalf("pop-claims provided with no pop-enabled flag should return missing pop-enabled error. got: %s", err)
 		}
 	})
+
+	t.Run("invalid authority host should return error", func(t *testing.T) {
+		o := defaultOptions()
+		o.AuthorityHost = "invalid"
+		if err := o.Validate(); err == nil || !strings.Contains(err.Error(), `authority host "`+o.AuthorityHost+`" is not valid`) {
+			t.Fatalf("invalid authority host should return invalid authority host error. got: %s", err)
+		}
+	})
+
+	t.Run("missing server id should return error", func(t *testing.T) {
+		o := defaultOptions()
+		o.ServerID = ""
+		if err := o.Validate(); err == nil || !strings.Contains(err.Error(), "server-id is required") {
+			t.Fatalf("missing server id should return missing server id error. got: %s", err)
+		}
+	})
+
+	t.Run("setting authority host will set cloud.Configuration properly", func(t *testing.T) {
+		o := defaultOptions()
+		o.AuthorityHost = "https://login.example.com"
+		if err := o.Validate(); err != nil {
+			t.Fatalf("setting authority host should not return error. got: %s", err)
+		}
+		if o.GetCloudConfiguration().ActiveDirectoryAuthorityHost != o.AuthorityHost {
+			t.Fatalf("expected authority host to be %s, got %s",
+				o.AuthorityHost, o.GetCloudConfiguration().ActiveDirectoryAuthorityHost)
+		}
+	})
+
+	t.Run("default cloud.Configuration should be public azure", func(t *testing.T) {
+		o := defaultOptions()
+		if err := o.Validate(); err != nil {
+			t.Fatalf("setting authority host should not return error. got: %s", err)
+		}
+		defaultAuthorityHost := "https://login.microsoftonline.com/"
+		if o.GetCloudConfiguration().ActiveDirectoryAuthorityHost != defaultAuthorityHost {
+			t.Fatalf("expected authority host to be %s, got %s",
+				defaultAuthorityHost, o.GetCloudConfiguration().ActiveDirectoryAuthorityHost)
+		}
+	})
+}
+
+func defaultOptions() Options {
+	o := NewOptions(true)
+	o.ServerID = "https://example.com"
+	o.Timeout = 30 * time.Second
+	return o
 }
 
 func TestOptionsWithEnvVars(t *testing.T) {
