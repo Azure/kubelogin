@@ -12,7 +12,7 @@ Using kubelogin `convert-kubeconfig` subcommand with `--azure-config-dir`, the g
 stage('Download kubeconfig and convert') {
     steps {
         sh 'az aks get-credentials -g ${RESOURCE_GROUP} -n ${CLUSTER_NAME}'
-        sh 'kubelogin convert-kubeconfig -l azurecli --azure-config-dir ${WORKSPACE}/.azure'
+        sh 'kubelogin convert-kubeconfig -l azurecli --azure-config-dir ${AZURE_CONFIG_DIR:-${WORKSPACE}/.azure}'
     }
 }
 
