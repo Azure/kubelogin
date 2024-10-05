@@ -60,7 +60,7 @@ func loadVersion() Version {
 	// ref: https://github.com/golang/go/issues/51279
 	// Fallback to use module version and stop here as vcs information is incomplete.
 	if revision == "" {
-		if buildInfo.Main.Version != "" {
+		if buildInfo.Main.Version != "(devel)" {
 			// fallback to use module version (legacy usage)
 			rv.Version = buildInfo.Main.Version
 		}
