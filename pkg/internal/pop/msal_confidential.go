@@ -23,10 +23,6 @@ func AcquirePoPTokenConfidential(
 	options *azcore.ClientOptions,
 	popKey *SwKey,
 ) (string, int64, error) {
-	// popKey, err := GetSwPoPKey()
-	// if err != nil {
-	// 	return "", -1, err
-	// }
 	authnScheme := &PoPAuthenticationScheme{
 		Host:   popClaims["u"],
 		PoPKey: popKey,
