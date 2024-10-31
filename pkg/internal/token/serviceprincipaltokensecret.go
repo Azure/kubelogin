@@ -61,6 +61,11 @@ func (p *servicePrincipalToken) getPoPTokenWithClientSecret(
 	if err != nil {
 		return "", -1, fmt.Errorf("unable to create credential. Received: %w", err)
 	}
+
+	popKey, err := pop.GetSwPoPKey()
+	if err != nil {
+		return "", -1, fmt.Errorf("failed to get PoP key: %v", err)
+	}
 	accessToken, expiresOn, err := pop.AcquirePoPTokenConfidential(
 		context,
 		p.popClaims,
@@ -70,6 +75,7 @@ func (p *servicePrincipalToken) getPoPTokenWithClientSecret(
 		p.clientID,
 		p.tenantID,
 		options,
+		popKey,
 	)
 	if err != nil {
 		return "", -1, fmt.Errorf("failed to create service principal PoP token using secret: %w", err)
