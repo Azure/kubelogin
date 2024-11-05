@@ -2,6 +2,7 @@ module github.com/Azure/kubelogin
 
 // NOTE: kubelogin follows the same support policy as Go, which supports the last two major versions.
 go 1.21.11
+toolchain go1.22.5
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.14.0
@@ -16,7 +17,7 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.9.0
-	go.uber.org/mock v0.4.0
+	go.uber.org/mock v0.5.0
 	golang.org/x/crypto v0.27.0
 	gopkg.in/dnaeon/go-vcr.v3 v3.2.0
 	gopkg.in/retry.v1 v1.0.3
