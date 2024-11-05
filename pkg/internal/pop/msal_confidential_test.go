@@ -106,7 +106,10 @@ func TestAcquirePoPTokenConfidential(t *testing.T) {
 			if err != nil {
 				t.Errorf("expected no error creating credential but got: %s", err)
 			}
-
+			popKey, err := GetSwPoPKey()
+			if err != nil {
+				t.Errorf("failed to get PoP key: %v", err)
+			}
 			token, _, err = AcquirePoPTokenConfidential(
 				ctx,
 				tc.p.popClaims,
@@ -116,6 +119,7 @@ func TestAcquirePoPTokenConfidential(t *testing.T) {
 				tc.p.clientID,
 				tc.p.tenantID,
 				&clientOpts,
+				popKey,
 			)
 			defer vcrRecorder.Stop()
 			if tc.expectedError != nil {
