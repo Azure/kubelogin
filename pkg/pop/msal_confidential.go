@@ -19,13 +19,5 @@ func AcquirePoPTokenConfidential(
 	options *azcore.ClientOptions,
 	popKey *SwKey,
 ) (string, int64, error) {
-
-	internalPopKey := &pop.SwKey{}
-
-	err := pop.CopyStruct(popKey, internalPopKey)
-	if err != nil {
-		return "", -1, err
-	}
-
-	return pop.AcquirePoPTokenConfidential(context, popClaims, scopes, cred, authority, clientID, tenantID, options, internalPopKey)
+	return pop.AcquirePoPTokenConfidential(context, popClaims, scopes, cred, authority, clientID, tenantID, options, &popKey.SwKey)
 }
