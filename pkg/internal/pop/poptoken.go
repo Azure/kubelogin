@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"math/big"
 	"os"
-	"reflect"
 	"sync"
 	"time"
 )
@@ -37,22 +36,6 @@ type SwKey struct {
 	jwk    string
 	jwkTP  string
 	reqCnf string
-}
-
-// CopyStruct copies fields from src to dst, including unexported (private) fields.
-func CopyStruct(src, dst interface{}) error {
-	srcVal := reflect.ValueOf(src).Elem()
-	dstVal := reflect.ValueOf(dst).Elem()
-
-	for i := 0; i < srcVal.NumField(); i++ {
-		field := srcVal.Field(i)
-		dstField := dstVal.Field(i)
-		if dstField.CanSet() {
-			dstField.Set(field)
-		}
-	}
-
-	return nil
 }
 
 // Used for scenarios where only a single key is maintained
