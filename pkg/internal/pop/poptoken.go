@@ -8,9 +8,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"math/big"
-	"os"
 	"sync"
-	"time"
 )
 
 // PoPKey is a generic interface for PoP key properties and methods
@@ -93,40 +91,6 @@ func generateSwKey(key *rsa.PrivateKey) (*SwKey, error) {
 	swk := &SwKey{}
 	swk.init(key)
 	return swk, nil
-}
-
-// GetUniqueSwPoPKey returns a new PoP key which is maintained and that rotates every 8 hours
-func GetUniqueSwPoPKey() (*SwKey, error) {
-	pwsKeyMutex.Lock()
-	defer pwsKeyMutex.Unlock()
-
-	if pswKey != nil {
-		return pswKey, nil
-	}
-
-	key, err := GetSwPoPKey()
-	if err != nil {
-		return nil, fmt.Errorf("error generating PoP key: %w", err)
-	}
-	pswKey = key
-
-	// rotates key every 8 hours
-	ticker := time.NewTicker(8 * time.Hour)
-	go func() {
-		for {
-			<-ticker.C
-
-			key, err := GetSwPoPKey()
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "error generating PoP key: %v\n", err)
-			}
-
-			pwsKeyMutex.Lock()
-			pswKey = key
-			pwsKeyMutex.Unlock()
-		}
-	}()
-	return pswKey, nil
 }
 
 // GetSwPoPKey generates a new PoP key returns it

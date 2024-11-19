@@ -21,14 +21,21 @@ func AcquirePoPTokenConfidential(
 	clientID,
 	tenantID string,
 	options *azcore.ClientOptions,
-	popKey *SwKey,
+	popKeyFunc func() (*SwKey, error),
 ) (string, int64, error) {
+	if popKeyFunc == nil {
+		popKeyFunc = GetSwPoPKey
+	}
+	popKey, err := popKeyFunc()
+	if err != nil {
+		return "", -1, fmt.Errorf("unable to get PoP key: %w", err)
+	}
+
 	authnScheme := &PoPAuthenticationScheme{
 		Host:   popClaims["u"],
 		PoPKey: popKey,
 	}
 	var client confidential.Client
-	var err error
 	if options != nil && options.Transport != nil {
 		client, err = confidential.New(
 			authority,

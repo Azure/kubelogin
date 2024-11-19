@@ -17,7 +17,16 @@ func AcquirePoPTokenConfidential(
 	clientID,
 	tenantID string,
 	options *azcore.ClientOptions,
-	popKey *SwKey,
+	popKeyFunc func() (*SwKey, error),
 ) (string, int64, error) {
-	return pop.AcquirePoPTokenConfidential(context, popClaims, scopes, cred, authority, clientID, tenantID, options, &popKey.SwKey)
+
+	internalPopKeyFunc := func() (*pop.SwKey, error) {
+		key, err := popKeyFunc()
+		if err != nil {
+			return nil, err
+		}
+		return &key.SwKey, nil
+	}
+
+	return pop.AcquirePoPTokenConfidential(context, popClaims, scopes, cred, authority, clientID, tenantID, options, internalPopKeyFunc)
 }
