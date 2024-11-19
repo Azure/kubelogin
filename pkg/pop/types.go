@@ -11,6 +11,8 @@ type PoPAuthenticationScheme struct {
 	pop.PoPAuthenticationScheme
 }
 
+// FormatAccessToken takes an access token, formats it as a PoP token,
+// and returns it as a base-64 encoded string
 func (as *PoPAuthenticationScheme) FormatAccessToken(accessToken string) (string, error) {
 	return as.PoPAuthenticationScheme.FormatAccessToken(accessToken)
 }
