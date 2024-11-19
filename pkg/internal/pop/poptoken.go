@@ -8,7 +8,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"math/big"
-	"sync"
 )
 
 // PoPKey is a generic interface for PoP key properties and methods
@@ -35,10 +34,6 @@ type SwKey struct {
 	jwkTP  string
 	reqCnf string
 }
-
-// Used for scenarios where only a single key is maintained
-var pswKey *SwKey
-var pwsKeyMutex sync.Mutex
 
 // Alg returns the algorithm used to encrypt/sign the SwKey
 func (swk *SwKey) Alg() string {

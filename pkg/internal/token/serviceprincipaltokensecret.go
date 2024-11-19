@@ -61,7 +61,6 @@ func (p *servicePrincipalToken) getPoPTokenWithClientSecret(
 	if err != nil {
 		return "", -1, fmt.Errorf("unable to create credential. Received: %w", err)
 	}
-
 	accessToken, expiresOn, err := pop.AcquirePoPTokenConfidential(
 		context,
 		p.popClaims,
