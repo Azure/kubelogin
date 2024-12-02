@@ -116,6 +116,7 @@ func TestAcquirePoPTokenConfidential(t *testing.T) {
 				tc.p.clientID,
 				tc.p.tenantID,
 				&clientOpts,
+				GetSwPoPKey,
 			)
 			defer vcrRecorder.Stop()
 			if tc.expectedError != nil {

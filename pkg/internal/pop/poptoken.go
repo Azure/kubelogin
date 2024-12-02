@@ -27,7 +27,7 @@ type PoPKey interface {
 }
 
 // software based pop key implementation of PoPKey
-type swKey struct {
+type SwKey struct {
 	key    *rsa.PrivateKey
 	keyID  string
 	jwk    string
@@ -35,38 +35,38 @@ type swKey struct {
 	reqCnf string
 }
 
-// Alg returns the algorithm used to encrypt/sign the swKey
-func (swk *swKey) Alg() string {
+// Alg returns the algorithm used to encrypt/sign the SwKey
+func (swk *SwKey) Alg() string {
 	return "RS256"
 }
 
-// KeyID returns the keyID of the swKey, representing the key used to sign the swKey
-func (swk *swKey) KeyID() string {
+// KeyID returns the keyID of the SwKey, representing the key used to sign the SwKey
+func (swk *SwKey) KeyID() string {
 	return swk.keyID
 }
 
-// JWK returns the JSON Web Key of the given swKey
-func (swk *swKey) JWK() string {
+// JWK returns the JSON Web Key of the given SwKey
+func (swk *SwKey) JWK() string {
 	return swk.jwk
 }
 
-// JWKThumbprint returns the JWK thumbprint of the given swKey
-func (swk *swKey) JWKThumbprint() string {
+// JWKThumbprint returns the JWK thumbprint of the given SwKey
+func (swk *SwKey) JWKThumbprint() string {
 	return swk.jwkTP
 }
 
-// ReqCnf returns the req_cnf claim to send to AAD for the given swKey
-func (swk *swKey) ReqCnf() string {
+// ReqCnf returns the req_cnf claim to send to AAD for the given SwKey
+func (swk *SwKey) ReqCnf() string {
 	return swk.reqCnf
 }
 
-// Sign uses the given swKey to sign the given payload and returns the signed payload
-func (swk *swKey) Sign(payload []byte) ([]byte, error) {
+// Sign uses the given SwKey to sign the given payload and returns the signed payload
+func (swk *SwKey) Sign(payload []byte) ([]byte, error) {
 	return swk.key.Sign(rand.Reader, payload, crypto.SHA256)
 }
 
-// init initializes the given swKey using the given private key
-func (swk *swKey) init(key *rsa.PrivateKey) {
+// init initializes the given SwKey using the given private key
+func (swk *SwKey) init(key *rsa.PrivateKey) {
 	swk.key = key
 
 	eB64, nB64 := getRSAKeyExponentAndModulus(key)
@@ -81,15 +81,15 @@ func (swk *swKey) init(key *rsa.PrivateKey) {
 	swk.jwk = getJWK(eB64, nB64, swk.keyID)
 }
 
-// generateSwKey generates a new swkey and initializes it with required fields before returning it
-func generateSwKey(key *rsa.PrivateKey) (*swKey, error) {
-	swk := &swKey{}
+// generateSwKey generates a new SwKey and initializes it with required fields before returning it
+func generateSwKey(key *rsa.PrivateKey) (*SwKey, error) {
+	swk := &SwKey{}
 	swk.init(key)
 	return swk, nil
 }
 
-// GetSwPoPKey generates a new PoP key that rotates every 8 hours and returns it
-func GetSwPoPKey() (*swKey, error) {
+// GetSwPoPKey generates a new PoP key returns it
+func GetSwPoPKey() (*SwKey, error) {
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		return nil, fmt.Errorf("error generating RSA private key: %w", err)
@@ -97,7 +97,7 @@ func GetSwPoPKey() (*swKey, error) {
 	return GetSwPoPKeyWithRSAKey(key)
 }
 
-func GetSwPoPKeyWithRSAKey(rsaKey *rsa.PrivateKey) (*swKey, error) {
+func GetSwPoPKeyWithRSAKey(rsaKey *rsa.PrivateKey) (*SwKey, error) {
 	key, err := generateSwKey(rsaKey)
 	if err != nil {
 		return nil, fmt.Errorf("unable to generate PoP key. err: %w", err)

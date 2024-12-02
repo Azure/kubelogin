@@ -91,6 +91,7 @@ func (p *servicePrincipalToken) getPoPTokenWithClientCert(
 		p.clientID,
 		p.tenantID,
 		options,
+		pop.GetSwPoPKey,
 	)
 	if err != nil {
 		return "", -1, fmt.Errorf("failed to create service principal PoP token using certificate: %w", err)
