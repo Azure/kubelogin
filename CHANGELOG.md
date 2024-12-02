@@ -1,5 +1,32 @@
 # Change Log
 
+## [0.1.5]
+
+### Enhancements
+
+* support of environment variable KUBECACHEDIR #500 by @jjournet in https://github.com/Azure/kubelogin/pull/501
+* Use AZURE_CONFIG_DIR in kubelogin command example by @tspearconquest in https://github.com/Azure/kubelogin/pull/522
+* fix: fix fallback to Git tag if VCS is unavailable by @maxbrunet in https://github.com/Azure/kubelogin/pull/530
+* Expose MSAL PoP for Consistent CSP Integration by @JorgeDaboub in https://github.com/Azure/kubelogin/pull/542
+
+### Maintenance
+
+* Bump ossf/scorecard-action from 2.0.6 to 2.4.0 by @dependabot in https://github.com/Azure/kubelogin/pull/498
+* Bump golang.org/x/crypto from 0.24.0 to 0.25.0 by @dependabot in https://github.com/Azure/kubelogin/pull/490
+* Bump golang.org/x/crypto from 0.25.0 to 0.26.0 by @dependabot in https://github.com/Azure/kubelogin/pull/505
+* Bump github.com/golang-jwt/jwt/v4 from 4.5.0 to 4.5.1 by @dependabot in https://github.com/Azure/kubelogin/pull/543
+* Bump github.com/Azure/azure-sdk-for-go/sdk/azidentity from 1.6.0 to 1.8.0 by @dependabot in https://github.com/Azure/kubelogin/pull/534
+* Preemptive fix for the breaking GH Action. by @Tatsinnit in https://github.com/Azure/kubelogin/pull/546
+
+### New Contributors
+
+* @jjournet made their first contribution in https://github.com/Azure/kubelogin/pull/501
+* @tspearconquest made their first contribution in https://github.com/Azure/kubelogin/pull/522
+* @maxbrunet made their first contribution in https://github.com/Azure/kubelogin/pull/530
+* @JorgeDaboub made their first contribution in https://github.com/Azure/kubelogin/pull/542
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.1.4...v0.1.5
+
 ## [0.1.4]
 
 ### Maintenance
