@@ -46,7 +46,7 @@ jobs:
       - name: Create Kubelogin Release
         id: create_release
         if: ${{ steps.check-tag-exists.outputs.exists == 'false'}}
-        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
+        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
