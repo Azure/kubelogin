@@ -101,10 +101,6 @@ jobs:
           GOARCH: arm64
         run: make
 
-      - name: Snap Build
-        uses: snapcore/action-build@2096990827aa966f773676c8a53793c723b6b40f # v1.2.0
-        id: snapbuild
-
       - name: Zip
         uses: montudor/action-zip@a8e75c9faefcd80fac3baf53ef40b9b119d5b702 # v1
         with:
@@ -163,11 +159,3 @@ jobs:
         with:
           args: kubelogin.zip kubelogin-win-amd64.zip kubelogin-win-arm64.zip kubelogin-darwin-amd64.zip kubelogin-darwin-arm64.zip kubelogin-linux-amd64.zip kubelogin-linux-arm64.zip kubelogin-linux-armv7.zip kubelogin.zip.sha256 kubelogin-win-amd64.zip.sha256 kubelogin-win-arm64.zip.sha256 kubelogin-darwin-amd64.zip.sha256 kubelogin-darwin-arm64.zip.sha256 kubelogin-linux-amd64.zip.sha256 kubelogin-linux-arm64.zip.sha256 kubelogin-linux-armv7.zip.sha256
           releaseId: ${{ steps.create_release.outputs.id }}
-
-      - name: Publish to Snap Store
-        uses: snapcore/action-publish@214b86e5ca036ead1668c79afb81e550e6c54d40 # v1.2.0
-        env:
-          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPSTORE_LOGIN }}
-        with:
-          snap: ${{ steps.snapbuild.outputs.snap }}
-          release: stable
