@@ -42,12 +42,14 @@ func AcquirePoPTokenConfidential(
 			clientID,
 			cred,
 			confidential.WithHTTPClient(options.Transport.(*http.Client)),
+			confidential.WithX5C(),
 		)
 	} else {
 		client, err = confidential.New(
 			authority,
 			clientID,
 			cred,
+			confidential.WithX5C(),
 		)
 	}
 	if err != nil {
