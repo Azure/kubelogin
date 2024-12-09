@@ -39,4 +39,9 @@ type Options struct {
 
 	AuthorityHost      string
 	FederatedTokenFile string
+
+	// for HIMDSLogin
+
+	HIMDSApiVersion       string
+	HIMDSIdentityEndpoint string
 }

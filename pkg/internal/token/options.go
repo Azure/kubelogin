@@ -33,6 +33,8 @@ type Options struct {
 	UseAzureRMTerraformEnv bool
 	IsPoPTokenEnabled      bool
 	PoPTokenClaims         string
+	HIMDSApiVersion        string
+	HIMDSIdentityEndpoint  string
 }
 
 const (
