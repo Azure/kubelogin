@@ -1,5 +1,18 @@
 # Change Log
 
+## [0.1.6]
+
+### Enhancements
+
+* remove snap since it's unsupported by @weinong in https://github.com/Azure/kubelogin/pull/564
+* Add x5c Header when Acquiring PoP Tokens by @JorgeDaboub in https://github.com/Azure/kubelogin/pull/568
+
+### Maintenance
+
+* Bump golang.org/x/crypto from 0.27.0 to 0.31.0 by @dependabot in https://github.com/Azure/kubelogin/pull/576
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.1.5...v0.1.6
+
 ## [0.1.5]
 
 ### Enhancements
