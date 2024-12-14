@@ -30,9 +30,11 @@ func newConvertCmd() *cobra.Command {
 			}
 			return nil
 		},
+		ValidArgsFunction: cobra.NoFileCompletions,
 	}
 
 	o.AddFlags(cmd.Flags())
+	o.AddCompletions(cmd)
 
 	return cmd
 }
