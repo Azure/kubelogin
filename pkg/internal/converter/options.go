@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Azure/kubelogin/pkg/internal/token"
+	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
@@ -56,4 +57,8 @@ func (o *Options) isSet(name string) bool {
 		}
 	})
 	return found
+}
+
+func (o *Options) AddCompletions(cmd *cobra.Command) {
+	o.TokenOptions.AddCompletions(cmd)
 }
