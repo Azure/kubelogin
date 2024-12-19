@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Azure/kubelogin/pkg/internal/env"
+	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/client-go/util/homedir"
 )
@@ -270,4 +271,10 @@ func parsePoPClaims(popClaims string) (map[string]string, error) {
 		return nil, fmt.Errorf("required u-claim not provided for PoP token flow. Please provide the ARM ID of the cluster in the format `u=<ARM_ID>`")
 	}
 	return claimsMap, nil
+}
+
+func (o *Options) AddCompletions(cmd *cobra.Command) {
+	_ = cmd.RegisterFlagCompletionFunc("login", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return supportedLogin, cobra.ShellCompDirectiveNoFileComp
+	})
 }
