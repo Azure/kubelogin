@@ -41,5 +41,7 @@ func newTokenCmd() *cobra.Command {
 	}
 
 	o.AddFlags(cmd.Flags())
+	o.AddCompletions(cmd)
+
 	return cmd
 }
