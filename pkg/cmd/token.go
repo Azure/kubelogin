@@ -37,6 +37,7 @@ func newTokenCmd() *cobra.Command {
 			}
 			return nil
 		},
+		ValidArgsFunction: cobra.NoFileCompletions,
 	}
 
 	o.AddFlags(cmd.Flags())

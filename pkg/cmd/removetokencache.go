@@ -22,6 +22,7 @@ func newRemoveTokenCacheCmd() *cobra.Command {
 			}
 			return nil
 		},
+		ValidArgsFunction: cobra.NoFileCompletions,
 	}
 
 	cmd.Flags().StringVar(&tokenCacheDir, "token-cache-dir", token.DefaultTokenCacheDir, "directory to cache token")
