@@ -62,6 +62,12 @@ func (o *Options) isSet(name string) bool {
 func (o *Options) AddCompletions(cmd *cobra.Command) {
 	_ = cmd.RegisterFlagCompletionFunc(flagContext, completeContexts(o))
 	o.TokenOptions.AddCompletions(cmd)
+	cmd.Flags().VisitAll(func(flag *pflag.Flag) {
+		// Set a default completion function if none was set. We don't look
+		// up if it does already have one set, because Cobra does this for
+		// us, and returns an error (which we ignore for this reason).
+		_ = cmd.RegisterFlagCompletionFunc(flag.Name, cobra.NoFileCompletions)
+	})
 }
 
 func completeContexts(o *Options) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
