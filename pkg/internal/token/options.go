@@ -277,6 +277,9 @@ func (o *Options) AddCompletions(cmd *cobra.Command) {
 	_ = cmd.RegisterFlagCompletionFunc("login", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return supportedLogin, cobra.ShellCompDirectiveNoFileComp
 	})
+	_ = cmd.MarkFlagFilename("client-certificate", "pfx", "cert")
+	_ = cmd.MarkFlagFilename("federated-token-file", "")
+	_ = cmd.MarkFlagDirname("token-cache-dir")
 
 	cmd.Flags().VisitAll(func(flag *pflag.Flag) {
 		// Set a default completion function if none was set. We don't look
