@@ -1,3 +1,5 @@
+include .bingo/Variables.mk
+
 TARGET     := kubelogin
 OS         := $(if $(GOOS),$(GOOS),$(shell go env GOOS))
 ARCH       := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
@@ -13,8 +15,8 @@ LDFLAGS    := -X main.gitTag=$(GIT_TAG)
 
 all: $(TARGET)
 
-lint:
-	hack/verify-golangci-lint.sh
+lint: $(GOLANGCI_LINT)
+	$(GOLANGCI_LINT) run
 
 test: lint
 	go test -race -coverprofile=coverage.txt -covermode=atomic ./...
