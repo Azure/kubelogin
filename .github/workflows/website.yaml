@@ -11,6 +11,7 @@ on:
 jobs:
   deploy:
     permissions:
+      contents: write
       pages: write
       
     runs-on: ubuntu-latest
