@@ -60,5 +60,33 @@ func (o *Options) isSet(name string) bool {
 }
 
 func (o *Options) AddCompletions(cmd *cobra.Command) {
+	_ = cmd.RegisterFlagCompletionFunc(flagContext, completeContexts(o))
+	_ = cmd.MarkFlagDirname(flagAzureConfigDir)
+	_ = cmd.MarkFlagFilename("kubeconfig", "")
+
 	o.TokenOptions.AddCompletions(cmd)
+
+	cmd.Flags().VisitAll(func(flag *pflag.Flag) {
+		// Set a default completion function if none was set. We don't look
+		// up if it does already have one set, because Cobra does this for
+		// us, and returns an error (which we ignore for this reason).
+		_ = cmd.RegisterFlagCompletionFunc(flag.Name, cobra.NoFileCompletions)
+	})
+}
+
+func completeContexts(o *Options) func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		clientConfig := o.configFlags.ToRawKubeConfigLoader()
+		config, err := clientConfig.RawConfig()
+		if err != nil {
+			cobra.CompDebugln(fmt.Sprintf("unable to load kubeconfig: %s", err), false)
+		}
+
+		contexts := make([]string, 0, len(config.Contexts))
+		for name, _ := range config.Contexts {
+			contexts = append(contexts, name)
+		}
+
+		return contexts, cobra.ShellCompDirectiveNoFileComp
+	}
 }
