@@ -90,6 +90,7 @@ func (p *servicePrincipalToken) getPoPTokenWithClientCert(
 		p.cloud.ActiveDirectoryAuthorityHost,
 		p.clientID,
 		p.tenantID,
+		true,
 		options,
 		pop.GetSwPoPKey,
 	)

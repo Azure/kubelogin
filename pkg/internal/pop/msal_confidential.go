@@ -12,6 +12,7 @@ import (
 // AcquirePoPTokenConfidential acquires a PoP token using MSAL's confidential login flow.
 // This flow does not require user interaction as the credentials for the request have
 // already been provided
+// instanceDisovery is to be false only in disconnected clouds to disable instance discovery and authoority validation
 func AcquirePoPTokenConfidential(
 	context context.Context,
 	popClaims map[string]string,
@@ -20,6 +21,7 @@ func AcquirePoPTokenConfidential(
 	authority,
 	clientID,
 	tenantID string,
+	instanceDiscovery bool,
 	options *azcore.ClientOptions,
 	popKeyFunc func() (*SwKey, error),
 ) (string, int64, error) {
@@ -43,6 +45,7 @@ func AcquirePoPTokenConfidential(
 			cred,
 			confidential.WithHTTPClient(options.Transport.(*http.Client)),
 			confidential.WithX5C(),
+			confidential.WithInstanceDiscovery(instanceDiscovery),
 		)
 	} else {
 		client, err = confidential.New(
@@ -50,6 +53,7 @@ func AcquirePoPTokenConfidential(
 			clientID,
 			cred,
 			confidential.WithX5C(),
+			confidential.WithInstanceDiscovery(instanceDiscovery),
 		)
 	}
 	if err != nil {

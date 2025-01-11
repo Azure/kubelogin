@@ -115,6 +115,7 @@ func TestAcquirePoPTokenConfidential(t *testing.T) {
 				authority,
 				tc.p.clientID,
 				tc.p.tenantID,
+				true,
 				&clientOpts,
 				GetSwPoPKey,
 			)
