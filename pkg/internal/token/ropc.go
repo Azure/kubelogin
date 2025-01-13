@@ -14,13 +14,14 @@ import (
 )
 
 type resourceOwnerToken struct {
-	clientID    string
-	username    string
-	password    string
-	resourceID  string
-	tenantID    string
-	oAuthConfig adal.OAuthConfig
-	popClaims   map[string]string
+	clientID      string
+	username      string
+	password      string
+	resourceID    string
+	tenantID      string
+	oAuthConfig   adal.OAuthConfig
+	popClaims     map[string]string
+	isWinfieldEnv bool
 }
 
 func newResourceOwnerTokenProvider(
@@ -31,6 +32,7 @@ func newResourceOwnerTokenProvider(
 	resourceID,
 	tenantID string,
 	popClaims map[string]string,
+	isWinfieldEnv bool,
 ) (TokenProvider, error) {
 	if clientID == "" {
 		return nil, errors.New("clientID cannot be empty")
@@ -49,13 +51,14 @@ func newResourceOwnerTokenProvider(
 	}
 
 	return &resourceOwnerToken{
-		clientID:    clientID,
-		username:    username,
-		password:    password,
-		resourceID:  resourceID,
-		tenantID:    tenantID,
-		oAuthConfig: oAuthConfig,
-		popClaims:   popClaims,
+		clientID:      clientID,
+		username:      username,
+		password:      password,
+		resourceID:    resourceID,
+		tenantID:      tenantID,
+		oAuthConfig:   oAuthConfig,
+		popClaims:     popClaims,
+		isWinfieldEnv: isWinfieldEnv,
 	}, nil
 }
 
@@ -87,6 +90,7 @@ func (p *resourceOwnerToken) tokenWithOptions(ctx context.Context, options *azco
 			p.username,
 			p.password,
 			&clientOpts,
+			p.isWinfieldEnv,
 		)
 		if err != nil {
 			return emptyToken, fmt.Errorf("failed to create PoP token using resource owner flow: %w", err)

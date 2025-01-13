@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/go-autorest/autorest/adal"
@@ -34,14 +35,14 @@ func NewTokenProvider(o *Options) (TokenProvider, error) {
 	case DeviceCodeLogin:
 		return newDeviceCodeTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID)
 	case InteractiveLogin:
-		return newInteractiveTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID, popClaimsMap)
+		return newInteractiveTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID, popClaimsMap, isWinfieldEnvironment(o.Environment))
 	case ServicePrincipalLogin:
 		if o.IsLegacy {
 			return newLegacyServicePrincipalToken(*oAuthConfig, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID)
 		}
 		return newServicePrincipalTokenProvider(cloudConfiguration, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID, popClaimsMap)
 	case ROPCLogin:
-		return newResourceOwnerTokenProvider(*oAuthConfig, o.ClientID, o.Username, o.Password, o.ServerID, o.TenantID, popClaimsMap)
+		return newResourceOwnerTokenProvider(*oAuthConfig, o.ClientID, o.Username, o.Password, o.ServerID, o.TenantID, popClaimsMap, isWinfieldEnvironment(o.Environment))
 	case MSILogin:
 		return newManagedIdentityToken(o.ClientID, o.IdentityResourceID, o.ServerID)
 	case AzureCLILogin:
@@ -86,4 +87,11 @@ func getAzureEnvironment(environment string) (azure.Environment, error) {
 		environment = defaultEnvironmentName
 	}
 	return azure.EnvironmentFromName(environment)
+}
+
+func isWinfieldEnvironment(environment string) bool {
+	if environment == "" {
+		return false
+	}
+	return strings.EqualFold(environment, winfieldEnvironmentName)
 }

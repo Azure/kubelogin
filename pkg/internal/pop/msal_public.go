@@ -18,10 +18,11 @@ func AcquirePoPTokenInteractive(
 	authority,
 	clientID string,
 	options *azcore.ClientOptions,
+	isWinfieldEnv bool,
 ) (string, int64, error) {
 	var client *public.Client
 	var err error
-	client, err = getPublicClient(authority, clientID, options)
+	client, err = getPublicClient(authority, clientID, options, isWinfieldEnv)
 	if err != nil {
 		return "", -1, err
 	}
@@ -58,8 +59,9 @@ func AcquirePoPTokenByUsernamePassword(
 	username,
 	password string,
 	options *azcore.ClientOptions,
+	isWinfieldEnv bool,
 ) (string, int64, error) {
-	client, err := getPublicClient(authority, clientID, options)
+	client, err := getPublicClient(authority, clientID, options, isWinfieldEnv)
 	if err != nil {
 		return "", -1, err
 	}
@@ -88,10 +90,12 @@ func AcquirePoPTokenByUsernamePassword(
 }
 
 // getPublicClient returns an instance of the msal `public` client based on the provided options
+// The instance discovery will be disable on Winfield environment
 func getPublicClient(
 	authority,
 	clientID string,
 	options *azcore.ClientOptions,
+	isWinfieldEnv bool,
 ) (*public.Client, error) {
 	var client public.Client
 	var err error
@@ -100,11 +104,13 @@ func getPublicClient(
 			clientID,
 			public.WithAuthority(authority),
 			public.WithHTTPClient(options.Transport.(*http.Client)),
+			public.WithInstanceDiscovery(!isWinfieldEnv),
 		)
 	} else {
 		client, err = public.New(
 			clientID,
 			public.WithAuthority(authority),
+			public.WithInstanceDiscovery(!isWinfieldEnv),
 		)
 	}
 	if err != nil {

@@ -123,6 +123,7 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 				tc.p.username,
 				tc.p.password,
 				&clientOpts,
+				false,
 			)
 			defer vcrRecorder.Stop()
 			if tc.expectedError != nil {
@@ -199,6 +200,7 @@ func TestGetPublicClient(t *testing.T) {
 				tc.authority,
 				testutils.ClientID,
 				tc.options,
+				false,
 			)
 
 			if tc.expectedError != nil {
