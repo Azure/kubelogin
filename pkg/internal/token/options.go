@@ -14,26 +14,27 @@ import (
 )
 
 type Options struct {
-	LoginMethod            string
-	ClientID               string
-	ClientSecret           string
-	ClientCert             string
-	ClientCertPassword     string
-	Username               string
-	Password               string
-	ServerID               string
-	TenantID               string
-	Environment            string
-	IsLegacy               bool
-	Timeout                time.Duration
-	TokenCacheDir          string
-	tokenCacheFile         string
-	IdentityResourceID     string
-	FederatedTokenFile     string
-	AuthorityHost          string
-	UseAzureRMTerraformEnv bool
-	IsPoPTokenEnabled      bool
-	PoPTokenClaims         string
+	LoginMethod                string
+	ClientID                   string
+	ClientSecret               string
+	ClientCert                 string
+	ClientCertPassword         string
+	Username                   string
+	Password                   string
+	ServerID                   string
+	TenantID                   string
+	Environment                string
+	IsLegacy                   bool
+	Timeout                    time.Duration
+	TokenCacheDir              string
+	tokenCacheFile             string
+	IdentityResourceID         string
+	FederatedTokenFile         string
+	AuthorityHost              string
+	UseAzureRMTerraformEnv     bool
+	IsPoPTokenEnabled          bool
+	PoPTokenClaims             string
+	DisableEnvironmentOverride bool
 }
 
 const (
@@ -108,6 +109,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.DurationVar(&o.Timeout, "timeout", 30*time.Second,
 		fmt.Sprintf("Timeout duration for Azure CLI token requests. It may be specified in %s environment variable", "AZURE_CLI_TIMEOUT"))
 	fs.StringVar(&o.PoPTokenClaims, "pop-claims", o.PoPTokenClaims, "contains a comma-separated list of claims to attach to the pop token in the format `key=val,key2=val2`. At minimum, specify the ARM ID of the cluster as `u=ARM_ID`")
+	fs.BoolVar(&o.DisableEnvironmentOverride, "disable-environment-override", o.DisableEnvironmentOverride, "Enable or disable the use of env-variables. Default false")
 }
 
 func (o *Options) Validate() error {
@@ -140,6 +142,10 @@ func (o *Options) Validate() error {
 
 func (o *Options) UpdateFromEnv() {
 	o.tokenCacheFile = getCacheFileName(o)
+
+	if o.DisableEnvironmentOverride {
+		return
+	}
 
 	if o.UseAzureRMTerraformEnv {
 		if v, ok := os.LookupEnv(env.TerraformClientID); ok {

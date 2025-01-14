@@ -1335,6 +1335,31 @@ func TestConvert(t *testing.T) {
 			},
 			command: execName,
 		},
+		{
+			name: "test with exec format kubeconfig, convert from devicecode to spn with environment override flag disabled.",
+			execArgItems: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argEnvironment, envName,
+				argLoginMethod, token.DeviceCodeLogin,
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod:                token.ServicePrincipalLogin,
+				flagDisableEnvironmentOverride: "true",
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argEnvironment, envName,
+				argServerID, serverID,
+				argTenantID, tenantID,
+				argClientID, clientID,
+				argLoginMethod, token.ServicePrincipalLogin,
+				argDisableEnvironmentOverride,
+			},
+			command: execName,
+		},
 	}
 	rootTmpDir, err := os.MkdirTemp("", "kubelogin-test")
 	if err != nil {

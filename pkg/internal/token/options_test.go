@@ -253,3 +253,25 @@ func TestParsePoPClaims(t *testing.T) {
 		})
 	}
 }
+
+func TestDisableEnvironmentOverride(t *testing.T) {
+	t.Run("TestDisableEnvironmentOverride", func(t *testing.T) {
+		t.Setenv(env.KubeloginClientID, "client-id from env")
+		o := Options{ClientID: "client-id from options"}
+		o.DisableEnvironmentOverride = true
+		o.UpdateFromEnv()
+		if o.ClientID != "client-id from options" {
+			t.Fatalf("expected client-id to be 'client-id from options', got %s", o.ClientID)
+		}
+	})
+
+	t.Run("TestEnableEnvironmentOverride", func(t *testing.T) {
+		t.Setenv(env.KubeloginClientID, "client-id from env")
+		o := Options{ClientID: "client-id from options"}
+		o.DisableEnvironmentOverride = false
+		o.UpdateFromEnv()
+		if o.ClientID != "client-id from env" {
+			t.Fatalf("expected client-id to be 'client-id from env', got %s", o.ClientID)
+		}
+	})
+}
