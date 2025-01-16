@@ -9,20 +9,24 @@ import (
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
 )
 
+type PublicClientOptions struct {
+	Authority                string
+	ClientID                 string
+	DisableInstanceDiscovery bool
+	Options                  *azcore.ClientOptions
+}
+
 // AcquirePoPTokenInteractive acquires a PoP token using MSAL's interactive login flow.
 // Requires user to authenticate via browser
 func AcquirePoPTokenInteractive(
 	context context.Context,
 	popClaims map[string]string,
 	scopes []string,
-	authority,
-	clientID string,
-	options *azcore.ClientOptions,
-	isWinfieldEnv bool,
+	pcOptions *PublicClientOptions,
 ) (string, int64, error) {
 	var client *public.Client
 	var err error
-	client, err = getPublicClient(authority, clientID, options, isWinfieldEnv)
+	client, err = getPublicClient(pcOptions)
 	if err != nil {
 		return "", -1, err
 	}
@@ -54,14 +58,11 @@ func AcquirePoPTokenByUsernamePassword(
 	context context.Context,
 	popClaims map[string]string,
 	scopes []string,
-	authority,
-	clientID,
 	username,
 	password string,
-	options *azcore.ClientOptions,
-	isWinfieldEnv bool,
+	pcOptions *PublicClientOptions,
 ) (string, int64, error) {
-	client, err := getPublicClient(authority, clientID, options, isWinfieldEnv)
+	client, err := getPublicClient(pcOptions)
 	if err != nil {
 		return "", -1, err
 	}
@@ -90,27 +91,25 @@ func AcquirePoPTokenByUsernamePassword(
 }
 
 // getPublicClient returns an instance of the msal `public` client based on the provided options
-// The instance discovery will be disable on Winfield environment
-func getPublicClient(
-	authority,
-	clientID string,
-	options *azcore.ClientOptions,
-	isWinfieldEnv bool,
-) (*public.Client, error) {
+// The instance discovery will be disable on private cloud
+func getPublicClient(pcOptions *PublicClientOptions) (*public.Client, error) {
 	var client public.Client
 	var err error
-	if options != nil && options.Transport != nil {
+	if pcOptions == nil {
+		return nil, fmt.Errorf("unable to create public client: publicClientOptions is empty")
+	}
+	if pcOptions.Options != nil && pcOptions.Options.Transport != nil {
 		client, err = public.New(
-			clientID,
-			public.WithAuthority(authority),
-			public.WithHTTPClient(options.Transport.(*http.Client)),
-			public.WithInstanceDiscovery(!isWinfieldEnv),
+			pcOptions.ClientID,
+			public.WithAuthority(pcOptions.Authority),
+			public.WithHTTPClient(pcOptions.Options.Transport.(*http.Client)),
+			public.WithInstanceDiscovery(!pcOptions.DisableInstanceDiscovery),
 		)
 	} else {
 		client, err = public.New(
-			clientID,
-			public.WithAuthority(authority),
-			public.WithInstanceDiscovery(!isWinfieldEnv),
+			pcOptions.ClientID,
+			public.WithAuthority(pcOptions.Authority),
+			public.WithInstanceDiscovery(!pcOptions.DisableInstanceDiscovery),
 		)
 	}
 	if err != nil {

@@ -37,8 +37,8 @@ type Options struct {
 }
 
 const (
-	defaultEnvironmentName  = "AzurePublicCloud"
-	winfieldEnvironmentName = "AzureStackCloud"
+	defaultEnvironmentName = "AzurePublicCloud"
+	privateEnvironmentName = "AzureStackCloud"
 
 	DeviceCodeLogin        = "devicecode"
 	InteractiveLogin       = "interactive"
