@@ -10,3 +10,5 @@ import (
 type PoPAuthenticationScheme = pop.PoPAuthenticationScheme
 
 type SwKey = pop.SwKey
+
+type MsalClientOptions = pop.MsalClientOptions

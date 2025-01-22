@@ -9,6 +9,14 @@ import (
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/confidential"
 )
 
+type MsalClientOptions struct {
+	Authority                string
+	ClientID                 string
+	TenantID                 string
+	DisableInstanceDiscovery bool
+	Options                  *azcore.ClientOptions
+}
+
 // AcquirePoPTokenConfidential acquires a PoP token using MSAL's confidential login flow.
 // This flow does not require user interaction as the credentials for the request have
 // already been provided
@@ -18,11 +26,7 @@ func AcquirePoPTokenConfidential(
 	popClaims map[string]string,
 	scopes []string,
 	cred confidential.Credential,
-	authority,
-	clientID,
-	tenantID string,
-	instanceDiscovery bool,
-	options *azcore.ClientOptions,
+	msalOptions *MsalClientOptions,
 	popKeyFunc func() (*SwKey, error),
 ) (string, int64, error) {
 	if popKeyFunc == nil {
@@ -38,22 +42,27 @@ func AcquirePoPTokenConfidential(
 		PoPKey: popKey,
 	}
 	var client confidential.Client
-	if options != nil && options.Transport != nil {
+
+	if msalOptions == nil {
+		return "", -1, fmt.Errorf("unable to create confidential client: msalClientOptions is empty")
+	}
+
+	if msalOptions.Options != nil && msalOptions.Options.Transport != nil {
 		client, err = confidential.New(
-			authority,
-			clientID,
+			msalOptions.Authority,
+			msalOptions.ClientID,
 			cred,
-			confidential.WithHTTPClient(options.Transport.(*http.Client)),
+			confidential.WithHTTPClient(msalOptions.Options.Transport.(*http.Client)),
 			confidential.WithX5C(),
-			confidential.WithInstanceDiscovery(instanceDiscovery),
+			confidential.WithInstanceDiscovery(!msalOptions.DisableInstanceDiscovery),
 		)
 	} else {
 		client, err = confidential.New(
-			authority,
-			clientID,
+			msalOptions.Authority,
+			msalOptions.ClientID,
 			cred,
 			confidential.WithX5C(),
-			confidential.WithInstanceDiscovery(instanceDiscovery),
+			confidential.WithInstanceDiscovery(!msalOptions.DisableInstanceDiscovery),
 		)
 	}
 	if err != nil {
@@ -63,14 +72,14 @@ func AcquirePoPTokenConfidential(
 		context,
 		scopes,
 		confidential.WithAuthenticationScheme(authnScheme),
-		confidential.WithTenantID(tenantID),
+		confidential.WithTenantID(msalOptions.TenantID),
 	)
 	if err != nil {
 		result, err = client.AcquireTokenByCredential(
 			context,
 			scopes,
 			confidential.WithAuthenticationScheme(authnScheme),
-			confidential.WithTenantID(tenantID),
+			confidential.WithTenantID(msalOptions.TenantID),
 		)
 		if err != nil {
 			return "", -1, fmt.Errorf("failed to create service principal PoP token using secret: %w", err)

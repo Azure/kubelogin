@@ -112,11 +112,13 @@ func TestAcquirePoPTokenConfidential(t *testing.T) {
 				tc.p.popClaims,
 				scopes,
 				cred,
-				authority,
-				tc.p.clientID,
-				tc.p.tenantID,
-				true,
-				&clientOpts,
+				&MsalClientOptions{
+					Authority:                authority,
+					ClientID:                 tc.p.clientID,
+					TenantID:                 tc.p.tenantID,
+					Options:                  &clientOpts,
+					DisableInstanceDiscovery: false,
+				},
 				GetSwPoPKey,
 			)
 			defer vcrRecorder.Stop()
