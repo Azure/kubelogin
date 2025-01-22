@@ -39,7 +39,7 @@ func NewTokenProvider(o *Options) (TokenProvider, error) {
 		if o.IsLegacy {
 			return newLegacyServicePrincipalToken(*oAuthConfig, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID)
 		}
-		return newServicePrincipalTokenProvider(cloudConfiguration, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID, popClaimsMap)
+		return newServicePrincipalTokenProvider(cloudConfiguration, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID, false, popClaimsMap)
 	case ROPCLogin:
 		return newResourceOwnerTokenProvider(*oAuthConfig, o.ClientID, o.Username, o.Password, o.ServerID, o.TenantID, popClaimsMap)
 	case MSILogin:

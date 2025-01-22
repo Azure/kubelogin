@@ -70,7 +70,7 @@ func (p *servicePrincipalToken) getPoPTokenWithClientSecret(
 			Authority:                p.cloud.ActiveDirectoryAuthorityHost,
 			ClientID:                 p.clientID,
 			TenantID:                 p.tenantID,
-			DisableInstanceDiscovery: false,
+			DisableInstanceDiscovery: p.disableInstanceDiscovery,
 			Options:                  options,
 		},
 		pop.GetSwPoPKey,
