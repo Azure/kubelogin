@@ -18,14 +18,15 @@ const (
 )
 
 type servicePrincipalToken struct {
-	clientID           string
-	clientSecret       string
-	clientCert         string
-	clientCertPassword string
-	resourceID         string
-	tenantID           string
-	cloud              cloud.Configuration
-	popClaims          map[string]string
+	clientID                 string
+	clientSecret             string
+	clientCert               string
+	clientCertPassword       string
+	resourceID               string
+	tenantID                 string
+	cloud                    cloud.Configuration
+	disableInstanceDiscovery bool
+	popClaims                map[string]string
 }
 
 func newServicePrincipalTokenProvider(
@@ -36,6 +37,7 @@ func newServicePrincipalTokenProvider(
 	clientCertPassword,
 	resourceID,
 	tenantID string,
+	disableInstanceDiscovery bool,
 	popClaims map[string]string,
 ) (TokenProvider, error) {
 	if clientID == "" {
@@ -55,14 +57,15 @@ func newServicePrincipalTokenProvider(
 	}
 
 	return &servicePrincipalToken{
-		clientID:           clientID,
-		clientSecret:       clientSecret,
-		clientCert:         clientCert,
-		clientCertPassword: clientCertPassword,
-		resourceID:         resourceID,
-		tenantID:           tenantID,
-		cloud:              cloud,
-		popClaims:          popClaims,
+		clientID:                 clientID,
+		clientSecret:             clientSecret,
+		clientCert:               clientCert,
+		clientCertPassword:       clientCertPassword,
+		resourceID:               resourceID,
+		tenantID:                 tenantID,
+		cloud:                    cloud,
+		popClaims:                popClaims,
+		disableInstanceDiscovery: disableInstanceDiscovery,
 	}, nil
 }
 

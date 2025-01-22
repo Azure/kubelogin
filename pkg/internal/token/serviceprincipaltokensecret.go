@@ -66,10 +66,13 @@ func (p *servicePrincipalToken) getPoPTokenWithClientSecret(
 		p.popClaims,
 		scopes,
 		cred,
-		p.cloud.ActiveDirectoryAuthorityHost,
-		p.clientID,
-		p.tenantID,
-		options,
+		&pop.MsalClientOptions{
+			Authority:                p.cloud.ActiveDirectoryAuthorityHost,
+			ClientID:                 p.clientID,
+			TenantID:                 p.tenantID,
+			DisableInstanceDiscovery: p.disableInstanceDiscovery,
+			Options:                  options,
+		},
 		pop.GetSwPoPKey,
 	)
 	if err != nil {

@@ -92,6 +92,7 @@ func TestNewServicePrincipalTokenProvider(t *testing.T) {
 				tc.clientCertPassword,
 				tc.resourceID,
 				tc.tenantID,
+				false,
 				tc.popClaims,
 			)
 
