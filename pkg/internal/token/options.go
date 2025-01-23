@@ -14,31 +14,31 @@ import (
 )
 
 type Options struct {
-	LoginMethod            string
-	ClientID               string
-	ClientSecret           string
-	ClientCert             string
-	ClientCertPassword     string
-	Username               string
-	Password               string
-	ServerID               string
-	TenantID               string
-	Environment            string
-	IsLegacy               bool
-	Timeout                time.Duration
-	TokenCacheDir          string
-	tokenCacheFile         string
-	IdentityResourceID     string
-	FederatedTokenFile     string
-	AuthorityHost          string
-	UseAzureRMTerraformEnv bool
-	IsPoPTokenEnabled      bool
-	PoPTokenClaims         string
+	LoginMethod              string
+	ClientID                 string
+	ClientSecret             string
+	ClientCert               string
+	ClientCertPassword       string
+	Username                 string
+	Password                 string
+	ServerID                 string
+	TenantID                 string
+	Environment              string
+	IsLegacy                 bool
+	Timeout                  time.Duration
+	TokenCacheDir            string
+	tokenCacheFile           string
+	IdentityResourceID       string
+	FederatedTokenFile       string
+	AuthorityHost            string
+	UseAzureRMTerraformEnv   bool
+	IsPoPTokenEnabled        bool
+	PoPTokenClaims           string
+	DisableInstanceDiscovery bool
 }
 
 const (
 	defaultEnvironmentName = "AzurePublicCloud"
-	privateEnvironmentName = "AzureStackCloud"
 
 	DeviceCodeLogin        = "devicecode"
 	InteractiveLogin       = "interactive"
@@ -109,6 +109,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.DurationVar(&o.Timeout, "timeout", 30*time.Second,
 		fmt.Sprintf("Timeout duration for Azure CLI token requests. It may be specified in %s environment variable", "AZURE_CLI_TIMEOUT"))
 	fs.StringVar(&o.PoPTokenClaims, "pop-claims", o.PoPTokenClaims, "contains a comma-separated list of claims to attach to the pop token in the format `key=val,key2=val2`. At minimum, specify the ARM ID of the cluster as `u=ARM_ID`")
+	fs.BoolVar(&o.DisableInstanceDiscovery, "disbale-instance-discovery", o.DisableInstanceDiscovery, "set to true to disable instance discovery in environments with their own simple Identity Provider (not AAD) that do not have instance metadata discovery endpoint.")
 }
 
 func (o *Options) Validate() error {
