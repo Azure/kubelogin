@@ -17,6 +17,7 @@
 * Fix install link for golangci-lint by @albers in https://github.com/Azure/kubelogin/pull/585
 * use bingo to manage golangci-lint by @weinong in https://github.com/Azure/kubelogin/pull/590
 * default codeql does not allow uploading 3rd party scanning result by @weinong in https://github.com/Azure/kubelogin/pull/591
+* fixed the default target in makefile by @weinong in https://github.com/Azure/kubelogin/pull/601
 
 ### New Contributors
 
