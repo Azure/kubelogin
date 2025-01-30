@@ -1,5 +1,31 @@
 # Change Log
 
+## [0.1.7]
+
+### What's Changed
+
+* Improve shell completion for convert-config by @albers in https://github.com/Azure/kubelogin/pull/582
+* Shell completion enhancements by @albers in https://github.com/Azure/kubelogin/pull/586
+* Adding an option to disable instance discovery in AcquirePoPTokenConfidential by @bganapa in https://github.com/Azure/kubelogin/pull/595
+* Add disable environment override option. by @dpersson in https://github.com/Azure/kubelogin/pull/594
+
+### Maintenance
+
+* chore: bump golang.org/x/net to v0.33.0 to mitigate CVE-2024-45338 by @bcho in https://github.com/Azure/kubelogin/pull/584
+* address codeql issues by @weinong in https://github.com/Azure/kubelogin/pull/588
+* Update website.yaml by @weinong in https://github.com/Azure/kubelogin/pull/589
+* Fix install link for golangci-lint by @albers in https://github.com/Azure/kubelogin/pull/585
+* use bingo to manage golangci-lint by @weinong in https://github.com/Azure/kubelogin/pull/590
+* default codeql does not allow uploading 3rd party scanning result by @weinong in https://github.com/Azure/kubelogin/pull/591
+
+### New Contributors
+
+* @albers made their first contribution in https://github.com/Azure/kubelogin/pull/582
+* @bganapa made their first contribution in https://github.com/Azure/kubelogin/pull/595
+* @dpersson made their first contribution in https://github.com/Azure/kubelogin/pull/594
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.1.6...v0.1.7
+
 ## [0.1.6]
 
 ### Enhancements
