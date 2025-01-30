@@ -1,3 +1,5 @@
+.DEFAULT_GOAL := all
+
 include .bingo/Variables.mk
 
 TARGET     := kubelogin
