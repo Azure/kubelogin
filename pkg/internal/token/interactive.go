@@ -16,16 +16,17 @@ import (
 )
 
 type InteractiveToken struct {
-	clientID    string
-	resourceID  string
-	tenantID    string
-	oAuthConfig adal.OAuthConfig
-	popClaims   map[string]string
+	clientID                 string
+	resourceID               string
+	tenantID                 string
+	oAuthConfig              adal.OAuthConfig
+	popClaims                map[string]string
+	disableInstanceDiscovery bool
 }
 
 // newInteractiveTokenProvider returns a TokenProvider that will fetch a token for the user currently logged into the Interactive.
 // Required arguments include an oAuthConfiguration object and the resourceID (which is used as the scope)
-func newInteractiveTokenProvider(oAuthConfig adal.OAuthConfig, clientID, resourceID, tenantID string, popClaims map[string]string) (TokenProvider, error) {
+func newInteractiveTokenProvider(oAuthConfig adal.OAuthConfig, clientID, resourceID, tenantID string, popClaims map[string]string, disableInstanceDiscovery bool) (TokenProvider, error) {
 	if clientID == "" {
 		return nil, errors.New("clientID cannot be empty")
 	}
@@ -37,11 +38,12 @@ func newInteractiveTokenProvider(oAuthConfig adal.OAuthConfig, clientID, resourc
 	}
 
 	return &InteractiveToken{
-		clientID:    clientID,
-		resourceID:  resourceID,
-		tenantID:    tenantID,
-		oAuthConfig: oAuthConfig,
-		popClaims:   popClaims,
+		clientID:                 clientID,
+		resourceID:               resourceID,
+		tenantID:                 tenantID,
+		oAuthConfig:              oAuthConfig,
+		popClaims:                popClaims,
+		disableInstanceDiscovery: disableInstanceDiscovery,
 	}, nil
 }
 
@@ -73,18 +75,22 @@ func (p *InteractiveToken) TokenWithOptions(ctx context.Context, options *azcore
 			ctx,
 			p.popClaims,
 			scopes,
-			authorityFromConfig.String(),
-			p.clientID,
-			&clientOpts,
+			&pop.PublicClientOptions{
+				Authority:                authorityFromConfig.String(),
+				ClientID:                 p.clientID,
+				DisableInstanceDiscovery: p.disableInstanceDiscovery,
+				Options:                  &clientOpts,
+			},
 		)
 		if err != nil {
 			return emptyToken, fmt.Errorf("failed to create PoP token using interactive login: %w", err)
 		}
 	} else {
 		cred, err := azidentity.NewInteractiveBrowserCredential(&azidentity.InteractiveBrowserCredentialOptions{
-			ClientOptions: clientOpts,
-			TenantID:      p.tenantID,
-			ClientID:      p.clientID,
+			ClientOptions:            clientOpts,
+			TenantID:                 p.tenantID,
+			ClientID:                 p.clientID,
+			DisableInstanceDiscovery: p.disableInstanceDiscovery,
 		})
 		if err != nil {
 			return emptyToken, fmt.Errorf("unable to create credential. Received: %w", err)
