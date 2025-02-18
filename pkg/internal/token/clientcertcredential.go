@@ -52,14 +52,21 @@ func newClientCertificateCredential(opts *Options) (CredentialProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode pkcs12 certificate while creating spt: %w", err)
 	}
+
+	azOpts := &azidentity.ClientCertificateCredentialOptions{
+		ClientOptions:        azcore.ClientOptions{Cloud: opts.GetCloudConfiguration()},
+		Cache:                c,
+		SendCertificateChain: true,
+	}
+
+	if opts.httpClient != nil {
+		azOpts.ClientOptions.Transport = opts.httpClient
+	}
+
 	cred, err := azidentity.NewClientCertificateCredential(
 		opts.TenantID, opts.ClientID,
 		[]*x509.Certificate{cert}, rsaPrivateKey,
-		&azidentity.ClientCertificateCredentialOptions{
-			ClientOptions:        azcore.ClientOptions{Cloud: opts.GetCloudConfiguration()},
-			Cache:                c,
-			SendCertificateChain: true,
-		})
+		azOpts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create client certificate credential: %s", err)
 	}

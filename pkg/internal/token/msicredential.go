@@ -22,10 +22,17 @@ func newManagedIdentityCredential(opts *Options) (CredentialProvider, error) {
 	} else if opts.IdentityResourceID != "" {
 		id = azidentity.ResourceID(opts.IdentityResourceID)
 	}
-	cred, err := azidentity.NewManagedIdentityCredential(&azidentity.ManagedIdentityCredentialOptions{
+
+	azOpts := &azidentity.ManagedIdentityCredentialOptions{
 		ClientOptions: azcore.ClientOptions{Cloud: opts.GetCloudConfiguration()},
 		ID:            id,
-	})
+	}
+
+	if opts.httpClient != nil {
+		azOpts.ClientOptions.Transport = opts.httpClient
+	}
+
+	cred, err := azidentity.NewManagedIdentityCredential(azOpts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create managed identity credential: %s", err)
 	}

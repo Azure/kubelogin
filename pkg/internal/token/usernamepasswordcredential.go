@@ -40,13 +40,19 @@ func newUsernamePasswordCredential(opts *Options, record azidentity.Authenticati
 		}
 	}
 
+	azOpts := &azidentity.UsernamePasswordCredentialOptions{
+		ClientOptions:        azcore.ClientOptions{Cloud: opts.GetCloudConfiguration()},
+		AuthenticationRecord: record,
+		Cache:                c,
+	}
+
+	if opts.httpClient != nil {
+		azOpts.ClientOptions.Transport = opts.httpClient
+	}
+
 	cred, err := azidentity.NewUsernamePasswordCredential(
 		opts.TenantID, opts.ClientID, opts.Username, opts.Password,
-		&azidentity.UsernamePasswordCredentialOptions{
-			ClientOptions:        azcore.ClientOptions{Cloud: opts.GetCloudConfiguration()},
-			AuthenticationRecord: record,
-			Cache:                c,
-		})
+		azOpts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create username password credential: %s", err)
 	}

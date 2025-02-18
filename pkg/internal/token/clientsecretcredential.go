@@ -37,12 +37,17 @@ func newClientSecretCredential(opts *Options) (CredentialProvider, error) {
 		}
 	}
 
+	azOpts := &azidentity.ClientSecretCredentialOptions{
+		ClientOptions: azcore.ClientOptions{Cloud: opts.GetCloudConfiguration()},
+		Cache:         c,
+	}
+
+	if opts.httpClient != nil {
+		azOpts.ClientOptions.Transport = opts.httpClient
+	}
+
 	cred, err := azidentity.NewClientSecretCredential(
-		opts.TenantID, opts.ClientID, opts.ClientSecret,
-		&azidentity.ClientSecretCredentialOptions{
-			ClientOptions: azcore.ClientOptions{Cloud: opts.GetCloudConfiguration()},
-			Cache:         c,
-		})
+		opts.TenantID, opts.ClientID, opts.ClientSecret, azOpts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create client secret credential: %s", err)
 	}

@@ -34,13 +34,19 @@ func newInteractiveBrowserCredential(opts *Options, record azidentity.Authentica
 		}
 	}
 
-	cred, err := azidentity.NewInteractiveBrowserCredential(&azidentity.InteractiveBrowserCredentialOptions{
+	azOpts := &azidentity.InteractiveBrowserCredentialOptions{
 		ClientOptions:        azcore.ClientOptions{Cloud: opts.GetCloudConfiguration()},
 		AuthenticationRecord: record,
 		Cache:                c,
 		ClientID:             opts.ClientID,
 		TenantID:             opts.TenantID,
-	})
+	}
+
+	if opts.httpClient != nil {
+		azOpts.ClientOptions.Transport = opts.httpClient
+	}
+
+	cred, err := azidentity.NewInteractiveBrowserCredential(azOpts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create interactive browser credential: %s", err)
 	}

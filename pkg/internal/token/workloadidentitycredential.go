@@ -43,13 +43,20 @@ func newWorkloadIdentityCredential(opts *Options) (CredentialProvider, error) {
 			return nil, fmt.Errorf("failed to create cache: %s", err)
 		}
 	}
-	cred, err := azidentity.NewWorkloadIdentityCredential(&azidentity.WorkloadIdentityCredentialOptions{
+
+	azOpts := &azidentity.WorkloadIdentityCredentialOptions{
 		ClientOptions: azcore.ClientOptions{Cloud: opts.GetCloudConfiguration()},
 		Cache:         c,
 		ClientID:      opts.ClientID,
 		TenantID:      opts.TenantID,
 		TokenFilePath: opts.FederatedTokenFile,
-	})
+	}
+
+	if opts.httpClient != nil {
+		azOpts.ClientOptions.Transport = opts.httpClient
+	}
+
+	cred, err := azidentity.NewWorkloadIdentityCredential(azOpts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create workload identity credential: %s", err)
 	}

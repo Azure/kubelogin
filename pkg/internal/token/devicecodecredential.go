@@ -34,13 +34,19 @@ func newDeviceCodeCredential(opts *Options, record azidentity.AuthenticationReco
 		}
 	}
 
-	cred, err := azidentity.NewDeviceCodeCredential(&azidentity.DeviceCodeCredentialOptions{
+	azOpts := &azidentity.DeviceCodeCredentialOptions{
 		ClientOptions:        azcore.ClientOptions{Cloud: opts.GetCloudConfiguration()},
 		AuthenticationRecord: record,
 		Cache:                c,
 		ClientID:             opts.ClientID,
 		TenantID:             opts.TenantID,
-	})
+	}
+
+	if opts.httpClient != nil {
+		azOpts.ClientOptions.Transport = opts.httpClient
+	}
+
+	cred, err := azidentity.NewDeviceCodeCredential(azOpts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create device code credential: %s", err)
 	}

@@ -2,6 +2,7 @@ package token
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -38,6 +39,7 @@ type Options struct {
 	IsPoPTokenEnabled      bool
 	PoPTokenClaims         string
 	UsePersistentCache     bool
+	httpClient             *http.Client
 }
 
 const (
