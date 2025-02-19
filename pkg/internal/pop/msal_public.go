@@ -14,6 +14,7 @@ type PublicClientOptions struct {
 	ClientID                 string
 	DisableInstanceDiscovery bool
 	Options                  *azcore.ClientOptions
+	TenantID                 string
 }
 
 // AcquirePoPTokenInteractive acquires a PoP token using MSAL's interactive login flow.
@@ -44,6 +45,7 @@ func AcquirePoPTokenInteractive(
 				PoPKey: popKey,
 			},
 		),
+		public.WithTenantID(pcOptions.TenantID),
 	)
 	if err != nil {
 		return "", -1, fmt.Errorf("failed to create PoP token with interactive flow: %w", err)
@@ -82,6 +84,7 @@ func AcquirePoPTokenByUsernamePassword(
 				PoPKey: popKey,
 			},
 		),
+		public.WithTenantID(pcOptions.TenantID),
 	)
 	if err != nil {
 		return "", -1, fmt.Errorf("failed to create PoP token with username/password flow: %w", err)
@@ -91,7 +94,7 @@ func AcquirePoPTokenByUsernamePassword(
 }
 
 // getPublicClient returns an instance of the msal `public` client based on the provided options
-// The instance discovery will be disable on private cloud
+// The instance discovery should be disabled on private cloud
 func getPublicClient(pcOptions *PublicClientOptions) (*public.Client, error) {
 	var client public.Client
 	var err error

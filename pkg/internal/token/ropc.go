@@ -92,6 +92,7 @@ func (p *resourceOwnerToken) tokenWithOptions(ctx context.Context, options *azco
 				ClientID:                 p.clientID,
 				DisableInstanceDiscovery: p.disableInstanceDiscovery,
 				Options:                  &clientOpts,
+				TenantID:                 p.tenantID,
 			},
 		)
 		if err != nil {

@@ -124,6 +124,7 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 					Authority: authority,
 					ClientID:  tc.p.clientID,
 					Options:   &clientOpts,
+					TenantID:  tc.p.tenantID,
 				},
 			)
 			defer vcrRecorder.Stop()
@@ -171,6 +172,7 @@ func TestGetPublicClient(t *testing.T) {
 					Cloud:     cloud.AzurePublic,
 					Transport: httpClient,
 				},
+				TenantID: testutils.TenantID,
 			},
 			expectedError: nil,
 		},
@@ -183,6 +185,7 @@ func TestGetPublicClient(t *testing.T) {
 				Options: &azcore.ClientOptions{
 					Cloud: cloud.AzurePublic,
 				},
+				TenantID: testutils.TenantID,
 			},
 			expectedError: nil,
 		},
@@ -195,6 +198,7 @@ func TestGetPublicClient(t *testing.T) {
 				Options: &azcore.ClientOptions{
 					Cloud: cloud.AzurePublic,
 				},
+				TenantID: testutils.TenantID,
 			},
 			expectedError: fmt.Errorf("unable to create public client"),
 		},

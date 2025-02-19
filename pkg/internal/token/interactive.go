@@ -80,6 +80,7 @@ func (p *InteractiveToken) TokenWithOptions(ctx context.Context, options *azcore
 				ClientID:                 p.clientID,
 				DisableInstanceDiscovery: p.disableInstanceDiscovery,
 				Options:                  &clientOpts,
+				TenantID:                 p.tenantID,
 			},
 		)
 		if err != nil {
