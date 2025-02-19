@@ -120,7 +120,7 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 				scopes,
 				tc.p.username,
 				tc.p.password,
-				&PublicClientOptions{
+				&MsalClientOptions{
 					Authority: authority,
 					ClientID:  tc.p.clientID,
 					Options:   &clientOpts,
@@ -159,13 +159,13 @@ func TestGetPublicClient(t *testing.T) {
 
 	testCase := []struct {
 		testName      string
-		pcOptions     *PublicClientOptions
+		msalOptions   *MsalClientOptions
 		expectedError error
 	}{
 		{
 			// Test using custom HTTP transport
 			testName: "TestGetPublicClientWithCustomTransport",
-			pcOptions: &PublicClientOptions{
+			msalOptions: &MsalClientOptions{
 				Authority: authority,
 				ClientID:  testutils.ClientID,
 				Options: &azcore.ClientOptions{
@@ -179,7 +179,7 @@ func TestGetPublicClient(t *testing.T) {
 		{
 			// Test using default HTTP transport
 			testName: "TestGetPublicClientWithDefaultTransport",
-			pcOptions: &PublicClientOptions{
+			msalOptions: &MsalClientOptions{
 				Authority: authority,
 				ClientID:  testutils.ClientID,
 				Options: &azcore.ClientOptions{
@@ -192,7 +192,7 @@ func TestGetPublicClient(t *testing.T) {
 		{
 			// Test using incorrectly formatted authority
 			testName: "TestGetPublicClientWithBadAuthority",
-			pcOptions: &PublicClientOptions{
+			msalOptions: &MsalClientOptions{
 				Authority: "login.microsoft.com",
 				ClientID:  testutils.ClientID,
 				Options: &azcore.ClientOptions{
@@ -209,7 +209,7 @@ func TestGetPublicClient(t *testing.T) {
 
 	for _, tc := range testCase {
 		t.Run(tc.testName, func(t *testing.T) {
-			client, err = getPublicClient(tc.pcOptions)
+			client, err = getPublicClient(tc.msalOptions)
 
 			if tc.expectedError != nil {
 				if !testutils.ErrorContains(err, tc.expectedError.Error()) {

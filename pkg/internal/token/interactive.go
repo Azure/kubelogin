@@ -75,7 +75,7 @@ func (p *InteractiveToken) TokenWithOptions(ctx context.Context, options *azcore
 			ctx,
 			p.popClaims,
 			scopes,
-			&pop.PublicClientOptions{
+			&pop.MsalClientOptions{
 				Authority:                authorityFromConfig.String(),
 				ClientID:                 p.clientID,
 				DisableInstanceDiscovery: p.disableInstanceDiscovery,

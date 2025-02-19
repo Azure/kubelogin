@@ -5,17 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
 )
-
-type PublicClientOptions struct {
-	Authority                string
-	ClientID                 string
-	DisableInstanceDiscovery bool
-	Options                  *azcore.ClientOptions
-	TenantID                 string
-}
 
 // AcquirePoPTokenInteractive acquires a PoP token using MSAL's interactive login flow.
 // Requires user to authenticate via browser
@@ -23,11 +14,11 @@ func AcquirePoPTokenInteractive(
 	context context.Context,
 	popClaims map[string]string,
 	scopes []string,
-	pcOptions *PublicClientOptions,
+	msalOptions *MsalClientOptions,
 ) (string, int64, error) {
 	var client *public.Client
 	var err error
-	client, err = getPublicClient(pcOptions)
+	client, err = getPublicClient(msalOptions)
 	if err != nil {
 		return "", -1, err
 	}
@@ -45,7 +36,7 @@ func AcquirePoPTokenInteractive(
 				PoPKey: popKey,
 			},
 		),
-		public.WithTenantID(pcOptions.TenantID),
+		public.WithTenantID(msalOptions.TenantID),
 	)
 	if err != nil {
 		return "", -1, fmt.Errorf("failed to create PoP token with interactive flow: %w", err)
@@ -62,9 +53,9 @@ func AcquirePoPTokenByUsernamePassword(
 	scopes []string,
 	username,
 	password string,
-	pcOptions *PublicClientOptions,
+	msalOptions *MsalClientOptions,
 ) (string, int64, error) {
-	client, err := getPublicClient(pcOptions)
+	client, err := getPublicClient(msalOptions)
 	if err != nil {
 		return "", -1, err
 	}
@@ -84,7 +75,7 @@ func AcquirePoPTokenByUsernamePassword(
 				PoPKey: popKey,
 			},
 		),
-		public.WithTenantID(pcOptions.TenantID),
+		public.WithTenantID(msalOptions.TenantID),
 	)
 	if err != nil {
 		return "", -1, fmt.Errorf("failed to create PoP token with username/password flow: %w", err)
@@ -95,24 +86,24 @@ func AcquirePoPTokenByUsernamePassword(
 
 // getPublicClient returns an instance of the msal `public` client based on the provided options
 // The instance discovery should be disabled on private cloud
-func getPublicClient(pcOptions *PublicClientOptions) (*public.Client, error) {
+func getPublicClient(msalOptions *MsalClientOptions) (*public.Client, error) {
 	var client public.Client
 	var err error
-	if pcOptions == nil {
-		return nil, fmt.Errorf("unable to create public client: publicClientOptions is empty")
+	if msalOptions == nil {
+		return nil, fmt.Errorf("unable to create public client: MsalClientOptions is empty")
 	}
-	if pcOptions.Options != nil && pcOptions.Options.Transport != nil {
+	if msalOptions.Options != nil && msalOptions.Options.Transport != nil {
 		client, err = public.New(
-			pcOptions.ClientID,
-			public.WithAuthority(pcOptions.Authority),
-			public.WithHTTPClient(pcOptions.Options.Transport.(*http.Client)),
-			public.WithInstanceDiscovery(!pcOptions.DisableInstanceDiscovery),
+			msalOptions.ClientID,
+			public.WithAuthority(msalOptions.Authority),
+			public.WithHTTPClient(msalOptions.Options.Transport.(*http.Client)),
+			public.WithInstanceDiscovery(!msalOptions.DisableInstanceDiscovery),
 		)
 	} else {
 		client, err = public.New(
-			pcOptions.ClientID,
-			public.WithAuthority(pcOptions.Authority),
-			public.WithInstanceDiscovery(!pcOptions.DisableInstanceDiscovery),
+			msalOptions.ClientID,
+			public.WithAuthority(msalOptions.Authority),
+			public.WithInstanceDiscovery(!msalOptions.DisableInstanceDiscovery),
 		)
 	}
 	if err != nil {

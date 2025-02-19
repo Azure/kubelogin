@@ -87,7 +87,7 @@ func (p *resourceOwnerToken) tokenWithOptions(ctx context.Context, options *azco
 			scopes,
 			p.username,
 			p.password,
-			&pop.PublicClientOptions{
+			&pop.MsalClientOptions{
 				Authority:                authorityFromConfig.String(),
 				ClientID:                 p.clientID,
 				DisableInstanceDiscovery: p.disableInstanceDiscovery,
