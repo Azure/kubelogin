@@ -406,6 +406,12 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 				exec.Args = append(exec.Args, argIsLegacy)
 			}
 
+			// PoP token flags are optional but must be provided together
+			exec.Args, err = validatePoPClaims(exec.Args, isPoPTokenEnabled, argPoPTokenClaims, argPoPTokenClaimsVal)
+			if err != nil {
+				return err
+			}
+
 		case token.WorkloadIdentityLogin:
 
 			if o.isSet(flagClientID) {
