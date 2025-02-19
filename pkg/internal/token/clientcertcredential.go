@@ -7,6 +7,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
@@ -42,15 +43,10 @@ func newClientCertificateCredential(opts *Options) (CredentialProvider, error) {
 		}
 	}
 
-	certData, err := os.ReadFile(opts.ClientCert)
+	// Get the certificate and private key from file
+	cert, rsaPrivateKey, err := readCertificate(opts.ClientCert, opts.ClientCertPassword)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read the certificate file (%s): %w", opts.ClientCert, err)
-	}
-
-	// Get the certificate and private key from pfx file
-	cert, rsaPrivateKey, err := decodePkcs12(certData, opts.ClientCertPassword)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode pkcs12 certificate while creating spt: %w", err)
+		return nil, fmt.Errorf("failed to read certificate: %w", err)
 	}
 
 	azOpts := &azidentity.ClientCertificateCredentialOptions{
@@ -190,4 +186,20 @@ func decodePkcs12(pkcs []byte, password string) (*x509.Certificate, *rsa.Private
 	}
 
 	return parseKeyPairFromPEMBlock(pemData)
+}
+
+func readCertificate(certFile, password string) (*x509.Certificate, *rsa.PrivateKey, error) {
+	if strings.HasSuffix(".pfx", certFile) {
+		cert, err := os.ReadFile(certFile)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to read the certificate file (%s): %w", certFile, err)
+		}
+		return decodePkcs12(cert, password)
+	} else {
+		cert, err := os.ReadFile(certFile)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to read the certificate file (%s): %w", certFile, err)
+		}
+		return parseKeyPairFromPEMBlock(cert)
+	}
 }
