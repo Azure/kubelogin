@@ -35,6 +35,7 @@ type Options struct {
 	IsPoPTokenEnabled          bool
 	PoPTokenClaims             string
 	DisableEnvironmentOverride bool
+	DisableInstanceDiscovery   bool
 }
 
 const (
@@ -110,6 +111,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 		fmt.Sprintf("Timeout duration for Azure CLI token requests. It may be specified in %s environment variable", "AZURE_CLI_TIMEOUT"))
 	fs.StringVar(&o.PoPTokenClaims, "pop-claims", o.PoPTokenClaims, "contains a comma-separated list of claims to attach to the pop token in the format `key=val,key2=val2`. At minimum, specify the ARM ID of the cluster as `u=ARM_ID`")
 	fs.BoolVar(&o.DisableEnvironmentOverride, "disable-environment-override", o.DisableEnvironmentOverride, "Enable or disable the use of env-variables. Default false")
+	fs.BoolVar(&o.DisableInstanceDiscovery, "disable-instance-discovery", o.DisableInstanceDiscovery, "set to true to disable instance discovery in environments with their own simple Identity Provider (not AAD) that do not have instance metadata discovery endpoint. Default false")
 }
 
 func (o *Options) Validate() error {

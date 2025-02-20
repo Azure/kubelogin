@@ -91,6 +91,7 @@ func TestNewResourceOwnerTokenProvider(t *testing.T) {
 				tc.resourceID,
 				tc.tenantID,
 				tc.popClaims,
+				false,
 			)
 
 			if tc.expectedError != "" {

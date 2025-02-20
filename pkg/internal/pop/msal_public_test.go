@@ -118,11 +118,14 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 				ctx,
 				tc.p.popClaims,
 				scopes,
-				authority,
-				tc.p.clientID,
 				tc.p.username,
 				tc.p.password,
-				&clientOpts,
+				&MsalClientOptions{
+					Authority: authority,
+					ClientID:  tc.p.clientID,
+					Options:   &clientOpts,
+					TenantID:  tc.p.tenantID,
+				},
 			)
 			defer vcrRecorder.Stop()
 			if tc.expectedError != nil {
@@ -156,35 +159,46 @@ func TestGetPublicClient(t *testing.T) {
 
 	testCase := []struct {
 		testName      string
-		authority     string
-		options       *azcore.ClientOptions
+		msalOptions   *MsalClientOptions
 		expectedError error
 	}{
 		{
 			// Test using custom HTTP transport
-			testName:  "TestGetPublicClientWithCustomTransport",
-			authority: authority,
-			options: &azcore.ClientOptions{
-				Cloud:     cloud.AzurePublic,
-				Transport: httpClient,
+			testName: "TestGetPublicClientWithCustomTransport",
+			msalOptions: &MsalClientOptions{
+				Authority: authority,
+				ClientID:  testutils.ClientID,
+				Options: &azcore.ClientOptions{
+					Cloud:     cloud.AzurePublic,
+					Transport: httpClient,
+				},
+				TenantID: testutils.TenantID,
 			},
 			expectedError: nil,
 		},
 		{
 			// Test using default HTTP transport
-			testName:  "TestGetPublicClientWithDefaultTransport",
-			authority: authority,
-			options: &azcore.ClientOptions{
-				Cloud: cloud.AzurePublic,
+			testName: "TestGetPublicClientWithDefaultTransport",
+			msalOptions: &MsalClientOptions{
+				Authority: authority,
+				ClientID:  testutils.ClientID,
+				Options: &azcore.ClientOptions{
+					Cloud: cloud.AzurePublic,
+				},
+				TenantID: testutils.TenantID,
 			},
 			expectedError: nil,
 		},
 		{
 			// Test using incorrectly formatted authority
-			testName:  "TestGetPublicClientWithBadAuthority",
-			authority: "login.microsoft.com",
-			options: &azcore.ClientOptions{
-				Cloud: cloud.AzurePublic,
+			testName: "TestGetPublicClientWithBadAuthority",
+			msalOptions: &MsalClientOptions{
+				Authority: "login.microsoft.com",
+				ClientID:  testutils.ClientID,
+				Options: &azcore.ClientOptions{
+					Cloud: cloud.AzurePublic,
+				},
+				TenantID: testutils.TenantID,
 			},
 			expectedError: fmt.Errorf("unable to create public client"),
 		},
@@ -195,11 +209,7 @@ func TestGetPublicClient(t *testing.T) {
 
 	for _, tc := range testCase {
 		t.Run(tc.testName, func(t *testing.T) {
-			client, err = getPublicClient(
-				tc.authority,
-				testutils.ClientID,
-				tc.options,
-			)
+			client, err = getPublicClient(tc.msalOptions)
 
 			if tc.expectedError != nil {
 				if !testutils.ErrorContains(err, tc.expectedError.Error()) {

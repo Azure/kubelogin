@@ -34,14 +34,14 @@ func NewTokenProvider(o *Options) (TokenProvider, error) {
 	case DeviceCodeLogin:
 		return newDeviceCodeTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID)
 	case InteractiveLogin:
-		return newInteractiveTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID, popClaimsMap)
+		return newInteractiveTokenProvider(*oAuthConfig, o.ClientID, o.ServerID, o.TenantID, popClaimsMap, o.DisableInstanceDiscovery)
 	case ServicePrincipalLogin:
 		if o.IsLegacy {
 			return newLegacyServicePrincipalToken(*oAuthConfig, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID)
 		}
 		return newServicePrincipalTokenProvider(cloudConfiguration, o.ClientID, o.ClientSecret, o.ClientCert, o.ClientCertPassword, o.ServerID, o.TenantID, false, popClaimsMap)
 	case ROPCLogin:
-		return newResourceOwnerTokenProvider(*oAuthConfig, o.ClientID, o.Username, o.Password, o.ServerID, o.TenantID, popClaimsMap)
+		return newResourceOwnerTokenProvider(*oAuthConfig, o.ClientID, o.Username, o.Password, o.ServerID, o.TenantID, popClaimsMap, o.DisableInstanceDiscovery)
 	case MSILogin:
 		return newManagedIdentityToken(o.ClientID, o.IdentityResourceID, o.ServerID)
 	case AzureCLILogin:

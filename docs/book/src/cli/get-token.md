@@ -20,6 +20,7 @@ ZURE_CLIENT_CERTIFICATE_PASSWORD environment variable
       --client-id string                     AAD client application ID. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_ID or AZURE_CLIENT_ID environment variable
       --client-secret string                 AAD client application secret. Used in spn login. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_SECRET or AZURE_CLIENT_S
 ECRET environment variable
+      --disable-instance-discovery           set to true to disable instance discovery in environments with their own Identity Provider (not Entra ID/AAD) that does not have instance metadata discovery endpoint.
   -e, --environment string                   Azure environment name (default "AzurePublicCloud")
       --federated-token-file string          Workload Identity federated token file. It may be specified in AZURE_FEDERATED_TOKEN_FILE environment variable
   -h, --help                                 help for get-token
