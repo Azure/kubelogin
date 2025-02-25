@@ -2,6 +2,7 @@ package token
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
@@ -77,4 +78,36 @@ func TestDefaultCachedRecordProvider(t *testing.T) {
 	storedRecord, err := provider.Retrieve()
 	assert.NoError(t, err)
 	assert.Equal(t, record, storedRecord)
+}
+
+func TestDefaultCachedRecordProvider_NonExistentDirectory(t *testing.T) {
+	tempDir, err := os.MkdirTemp("", "test-record-*")
+	assert.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	nonExistentDir := filepath.Join(tempDir, "subdir", "nested")
+	filePath := filepath.Join(nonExistentDir, "record.json")
+
+	record := azidentity.AuthenticationRecord{
+		TenantID:      "test-tenant-id",
+		ClientID:      "test-client-id",
+		Authority:     "https://login.microsoftonline.com/",
+		HomeAccountID: "test-home-account-id",
+		Username:      "test-username",
+		Version:       "1.0",
+	}
+
+	provider := &defaultCachedRecordProvider{file: filePath}
+	err = provider.Store(record)
+	assert.NoError(t, err)
+
+	// Verify the file was created and can be read
+	storedRecord, err := provider.Retrieve()
+	assert.NoError(t, err)
+	assert.Equal(t, record, storedRecord)
+
+	// Verify the directory was created with correct permissions
+	fileInfo, err := os.Stat(nonExistentDir)
+	assert.NoError(t, err)
+	assert.True(t, fileInfo.IsDir())
 }

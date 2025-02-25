@@ -21,23 +21,23 @@ func TestOptions(t *testing.T) {
 		if err := o.Validate(); err != nil {
 			t.Fatalf("option validation failed: %s", err)
 		}
-		dir, _ := filepath.Split(o.tokenCacheFile)
-		if dir != DefaultTokenCacheDir {
-			t.Fatalf("token cache directory is expected to be %s, got %s", DefaultTokenCacheDir, dir)
+		dir, _ := filepath.Split(o.authRecordCacheFile)
+		if dir != DefaultAuthRecordCacheDir {
+			t.Fatalf("token cache directory is expected to be %s, got %s", DefaultAuthRecordCacheDir, dir)
 		}
 	})
 
 	t.Run("option with customized token cache dir should produce token cache file under specified token cache directory", func(t *testing.T) {
 		o := defaultOptions()
-		o.TokenCacheDir = "/tmp/foo/"
+		o.AuthRecordCacheDir = "/tmp/foo/"
 		o.AddFlags(&pflag.FlagSet{})
 		o.UpdateFromEnv()
 		if err := o.Validate(); err != nil {
 			t.Fatalf("option validation failed: %s", err)
 		}
-		dir, _ := filepath.Split(o.tokenCacheFile)
-		if dir != o.TokenCacheDir {
-			t.Fatalf("token cache directory is expected to be %s, got %s", o.TokenCacheDir, dir)
+		dir, _ := filepath.Split(o.authRecordCacheFile)
+		if dir != o.AuthRecordCacheDir {
+			t.Fatalf("token cache directory is expected to be %s, got %s", o.AuthRecordCacheDir, dir)
 		}
 	})
 
@@ -162,16 +162,16 @@ func TestOptionsWithEnvVars(t *testing.T) {
 				env.LoginMethod:                        DeviceCodeLogin,
 			},
 			expected: Options{
-				ClientID:           clientID,
-				ClientSecret:       clientSecret,
-				ClientCert:         certPath,
-				ClientCertPassword: certPassword,
-				Username:           username,
-				Password:           password,
-				TenantID:           tenantID,
-				LoginMethod:        DeviceCodeLogin,
-				tokenCacheFile:     "---.json",
-				Timeout:            30 * time.Second,
+				ClientID:            clientID,
+				ClientSecret:        clientSecret,
+				ClientCert:          certPath,
+				ClientCertPassword:  certPassword,
+				Username:            username,
+				Password:            password,
+				TenantID:            tenantID,
+				LoginMethod:         DeviceCodeLogin,
+				authRecordCacheFile: "auth.json",
+				Timeout:             30 * time.Second,
 			},
 		},
 		{
@@ -193,7 +193,7 @@ func TestOptionsWithEnvVars(t *testing.T) {
 				ClientCertPassword:     certPassword,
 				TenantID:               tenantID,
 				LoginMethod:            DeviceCodeLogin,
-				tokenCacheFile:         "---.json",
+				authRecordCacheFile:    "auth.json",
 				Timeout:                30 * time.Second,
 			},
 		},
@@ -212,18 +212,18 @@ func TestOptionsWithEnvVars(t *testing.T) {
 				env.AzureAuthorityHost:             authorityHost,
 			},
 			expected: Options{
-				ClientID:           clientID,
-				ClientSecret:       clientSecret,
-				ClientCert:         certPath,
-				ClientCertPassword: certPassword,
-				Username:           username,
-				Password:           password,
-				TenantID:           tenantID,
-				LoginMethod:        WorkloadIdentityLogin,
-				AuthorityHost:      authorityHost,
-				FederatedTokenFile: tokenFile,
-				tokenCacheFile:     "---.json",
-				Timeout:            30 * time.Second,
+				ClientID:            clientID,
+				ClientSecret:        clientSecret,
+				ClientCert:          certPath,
+				ClientCertPassword:  certPassword,
+				Username:            username,
+				Password:            password,
+				TenantID:            tenantID,
+				LoginMethod:         WorkloadIdentityLogin,
+				AuthorityHost:       authorityHost,
+				FederatedTokenFile:  tokenFile,
+				authRecordCacheFile: "auth.json",
+				Timeout:             30 * time.Second,
 			},
 		},
 	}
@@ -443,98 +443,6 @@ func TestAuthorityHostValidation(t *testing.T) {
 			}
 			if !tc.shouldError && err != nil {
 				t.Errorf("expected no error but got: %v", err)
-			}
-		})
-	}
-}
-
-func TestSanitizeFileName(t *testing.T) {
-	testCases := []struct {
-		name     string
-		input    string
-		expected string
-	}{
-		{
-			name:     "normal filename",
-			input:    "normal-file-name",
-			expected: "normal-file-name",
-		},
-		{
-			name:     "filename with invalid characters",
-			input:    "file<>:\"/\\|?*name",
-			expected: "file_________name",
-		},
-		{
-			name:     "filename with spaces",
-			input:    " file name ",
-			expected: "file name",
-		},
-		{
-			name:     "filename with control characters",
-			input:    "file\x00\x1Fname",
-			expected: "file__name",
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			result := sanitizeFileName(tc.input)
-			if result != tc.expected {
-				t.Errorf("expected %q, got %q", tc.expected, result)
-			}
-		})
-	}
-}
-
-func TestGetCacheFileName(t *testing.T) {
-	testCases := []struct {
-		name     string
-		options  Options
-		expected string
-	}{
-		{
-			name: "normal cache file name",
-			options: Options{
-				Environment:   "env",
-				ServerID:      "server",
-				ClientID:      "client",
-				TenantID:      "tenant",
-				IsLegacy:      false,
-				TokenCacheDir: "/cache/dir",
-			},
-			expected: "/cache/dir/env-server-client-tenant.json",
-		},
-		{
-			name: "legacy cache file name",
-			options: Options{
-				Environment:   "env",
-				ServerID:      "server",
-				ClientID:      "client",
-				TenantID:      "tenant",
-				IsLegacy:      true,
-				TokenCacheDir: "/cache/dir",
-			},
-			expected: "/cache/dir/env-server-client-tenant_legacy.json",
-		},
-		{
-			name: "cache file name with special characters",
-			options: Options{
-				Environment:   "env<>",
-				ServerID:      "ser/ver",
-				ClientID:      "cli\\ent",
-				TenantID:      "ten:ant",
-				IsLegacy:      false,
-				TokenCacheDir: "/cache/dir",
-			},
-			expected: "/cache/dir/env__-ser_ver-cli_ent-ten_ant.json",
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			result := getCacheFileName(&tc.options)
-			if result != tc.expected {
-				t.Errorf("expected %q, got %q", tc.expected, result)
 			}
 		})
 	}

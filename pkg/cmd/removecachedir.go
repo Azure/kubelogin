@@ -9,11 +9,11 @@ import (
 )
 
 // newRemoveAuthRecordCacheCmd provides a cobra command for removing token cache sub command
-func newRemoveAuthRecordCacheCmdDeprecated() *cobra.Command {
+func newRemoveAuthRecordCacheCmd() *cobra.Command {
 	var authRecordCacheDir string
 
 	cmd := &cobra.Command{
-		Use:          "remove-tokens",
+		Use:          "remove-cache-dir",
 		Short:        "Remove all cached authentication record from filesystem",
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) error {
@@ -23,9 +23,8 @@ func newRemoveAuthRecordCacheCmdDeprecated() *cobra.Command {
 			return nil
 		},
 		ValidArgsFunction: cobra.NoFileCompletions,
-		Deprecated:        "remove-tokens is deprecated, use remove-cache-dir instead",
 	}
 
-	cmd.Flags().StringVar(&authRecordCacheDir, "token-cache-dir", token.DefaultAuthRecordCacheDir, "directory to cache authentication record")
+	cmd.Flags().StringVar(&authRecordCacheDir, "cache-dir", token.DefaultAuthRecordCacheDir, "directory to cache authentication record")
 	return cmd
 }

@@ -31,7 +31,7 @@ func New(o *Options) (ExecCredentialPlugin, error) {
 		o:                    o,
 		execCredentialWriter: &execCredentialWriter{},
 		cachedRecord: &defaultCachedRecordProvider{
-			file: o.tokenCacheFile,
+			file: o.authRecordCacheFile,
 		},
 		newCredentialFunc: NewAzIdentityCredential,
 	}, nil

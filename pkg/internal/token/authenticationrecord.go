@@ -3,6 +3,7 @@ package token
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 )
@@ -29,8 +30,14 @@ func (c *defaultCachedRecordProvider) Retrieve() (azidentity.AuthenticationRecor
 
 func (c *defaultCachedRecordProvider) Store(record azidentity.AuthenticationRecord) error {
 	b, err := json.Marshal(record)
-	if err == nil {
-		err = os.WriteFile(c.file, b, 0600)
+	if err != nil {
+		return err
 	}
-	return err
+
+	dir := filepath.Dir(c.file)
+	if err := os.MkdirAll(dir, 0700); err != nil {
+		return err
+	}
+
+	return os.WriteFile(c.file, b, 0600)
 }
