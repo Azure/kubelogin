@@ -49,6 +49,12 @@ jobs:
       - name: Check out code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
+      - name: Install cross-compilation toolchains
+        run: |
+          sudo apt-get update && sudo apt-get install -y \
+            gcc-aarch64-linux-gnu \
+            gcc-arm-linux-gnueabihf
+
       - name: Set up Go
         uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
@@ -66,6 +72,7 @@ jobs:
         env:
           GOOS: linux
           GOARCH: arm64
+          CC: aarch64-linux-gnu-gcc
 
       - name: Build Linux ARMv7
         run: make
@@ -73,6 +80,7 @@ jobs:
           GOOS: linux
           GOARCH: arm
           GOARM: "7"
+          CC: arm-linux-gnueabihf-gcc
 
   build-macos:
     name: Build macOS
