@@ -52,7 +52,7 @@ func (p *execCredentialPlugin) Do(ctx context.Context) error {
 
 	cred, err := p.newCredentialFunc(record, p.o)
 	if err != nil {
-		return fmt.Errorf("failed to create azidentity credential: %s", err)
+		return fmt.Errorf("failed to create azidentity credential: %w", err)
 	}
 
 	klog.V(5).Infof("using credential: %s", cred.Name())
@@ -68,19 +68,17 @@ func (p *execCredentialPlugin) Do(ctx context.Context) error {
 		klog.V(5).Info("no stored record; calling Authenticate")
 		record, err = cred.Authenticate(ctx, &tokenRequestOptions)
 		if err != nil {
-			return fmt.Errorf("failed to authenticate: %s", err)
-			// TODO: handle error
+			return fmt.Errorf("failed to authenticate: %w", err)
 		}
 		err = p.cachedRecord.Store(record)
 		if err != nil {
-			// TODO: handle error
-			return fmt.Errorf("failed to store record: %s", err)
+			return fmt.Errorf("failed to store record: %w", err)
 		}
 	}
 	klog.V(5).Infof("getting token with scopes: %v", scopes)
 	token, err := cred.GetToken(ctx, tokenRequestOptions)
 	if err != nil {
-		return fmt.Errorf("failed to get token: %s", err)
+		return fmt.Errorf("failed to get token: %w", err)
 	}
 
 	return p.execCredentialWriter.Write(token, os.Stdout)

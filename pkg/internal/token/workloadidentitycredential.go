@@ -40,7 +40,7 @@ func newWorkloadIdentityCredential(opts *Options) (CredentialProvider, error) {
 	if opts.UsePersistentCache {
 		c, err = cache.New(nil)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create cache: %s", err)
+			return nil, fmt.Errorf("failed to create cache: %w", err)
 		}
 	}
 
@@ -59,7 +59,7 @@ func newWorkloadIdentityCredential(opts *Options) (CredentialProvider, error) {
 
 	cred, err := azidentity.NewWorkloadIdentityCredential(azOpts)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create workload identity credential: %s", err)
+		return nil, fmt.Errorf("failed to create workload identity credential: %w", err)
 	}
 	return &WorkloadIdentityCredential{cred: cred}, nil
 }

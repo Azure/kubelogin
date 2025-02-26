@@ -63,7 +63,7 @@ func (*execCredentialWriter) Write(accessToken azcore.AccessToken, writer io.Wri
 
 	e := json.NewEncoder(writer)
 	if err := e.Encode(ec); err != nil {
-		return fmt.Errorf("could not write the ExecCredential: %s", err)
+		return fmt.Errorf("could not write the ExecCredential: %w", err)
 	}
 	return nil
 }

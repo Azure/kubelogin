@@ -30,7 +30,7 @@ func newDeviceCodeCredential(opts *Options, record azidentity.AuthenticationReco
 	if opts.UsePersistentCache {
 		c, err = cache.New(nil)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create cache: %s", err)
+			return nil, fmt.Errorf("failed to create cache: %w", err)
 		}
 	}
 
@@ -49,7 +49,7 @@ func newDeviceCodeCredential(opts *Options, record azidentity.AuthenticationReco
 
 	cred, err := azidentity.NewDeviceCodeCredential(azOpts)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create device code credential: %s", err)
+		return nil, fmt.Errorf("failed to create device code credential: %w", err)
 	}
 	return &DeviceCodeCredential{cred: cred}, nil
 }

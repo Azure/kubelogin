@@ -39,7 +39,7 @@ func newClientCertificateCredential(opts *Options) (CredentialProvider, error) {
 	if opts.UsePersistentCache {
 		c, err = cache.New(nil)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create cache: %s", err)
+			return nil, fmt.Errorf("failed to create cache: %w", err)
 		}
 	}
 
@@ -65,7 +65,7 @@ func newClientCertificateCredential(opts *Options) (CredentialProvider, error) {
 		[]*x509.Certificate{cert}, rsaPrivateKey,
 		azOpts)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create client certificate credential: %s", err)
+		return nil, fmt.Errorf("failed to create client certificate credential: %w", err)
 	}
 	return &ClientCertificateCredential{cred: cred}, nil
 }
@@ -130,7 +130,7 @@ func parseRsaPrivateKey(privateKeyPEM []byte) (*rsa.PrivateKey, error) {
 		return privatePkcs8RsaKey, nil
 	}
 
-	return nil, fmt.Errorf("failed to parse private key as Pkcs#1 or Pkcs#8. (%s). (%s)", errPkcs1, errPkcs8)
+	return nil, fmt.Errorf("failed to parse private key as Pkcs#1 or Pkcs#8. (%w), (%w)", errPkcs1, errPkcs8)
 }
 
 func parseKeyPairFromPEMBlock(pemBlock []byte) (*x509.Certificate, *rsa.PrivateKey, error) {
@@ -153,7 +153,7 @@ func parseKeyPairFromPEMBlock(pemBlock []byte) (*x509.Certificate, *rsa.PrivateK
 
 		cert, err = x509.ParseCertificate(certBlock.Bytes)
 		if err != nil {
-			return nil, nil, fmt.Errorf("unable to parse certificate. %w", err)
+			return nil, nil, fmt.Errorf("unable to parse certificate: %w", err)
 		}
 
 		certPublicKey, ok := cert.PublicKey.(*rsa.PublicKey)
@@ -178,10 +178,7 @@ func decodePkcs12(pkcs []byte, password string) (*x509.Certificate, *rsa.Private
 		return nil, nil, err
 	}
 
-	var (
-		pemData []byte
-	)
-
+	var pemData []byte
 	for _, b := range blocks {
 		pemData = append(pemData, pem.EncodeToMemory(b)...)
 	}

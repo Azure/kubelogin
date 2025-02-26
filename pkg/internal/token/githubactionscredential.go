@@ -47,7 +47,7 @@ func newGithubActionsCredential(opts *Options) (CredentialProvider, error) {
 		fmt.Sprintf("%s%s/", opts.GetCloudConfiguration().ActiveDirectoryAuthorityHost, opts.TenantID),
 		opts.ClientID, cred, o...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create github actions credential: %s", err)
+		return nil, fmt.Errorf("failed to create github actions credential: %w", err)
 	}
 
 	return &GithubActionsCredential{client: client}, nil

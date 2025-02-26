@@ -27,7 +27,7 @@ func newInteractiveBrowserCredentialWithPoP(opts *Options) (CredentialProvider, 
 	}
 	popClaimsMap, err := parsePoPClaims(opts.PoPTokenClaims)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse PoP claims: %s", err)
+		return nil, fmt.Errorf("unable to parse PoP claims: %w", err)
 	}
 	if len(popClaimsMap) == 0 {
 		return nil, fmt.Errorf("number of pop claims is invalid: %d", len(popClaimsMap))

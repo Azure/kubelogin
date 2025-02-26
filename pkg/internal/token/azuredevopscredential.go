@@ -23,7 +23,7 @@ func newAzureDeveloperCLICredential(opts *Options) (CredentialProvider, error) {
 		TenantID: opts.TenantID,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to create azure developer cli credential: %s", err)
+		return nil, fmt.Errorf("failed to create azure developer cli credential: %w", err)
 	}
 	return &AzureDeveloperCLICredential{cred: cred}, nil
 }

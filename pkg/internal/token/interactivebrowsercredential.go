@@ -30,7 +30,7 @@ func newInteractiveBrowserCredential(opts *Options, record azidentity.Authentica
 	if opts.UsePersistentCache {
 		c, err = cache.New(nil)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create cache: %s", err)
+			return nil, fmt.Errorf("failed to create cache: %w", err)
 		}
 	}
 
@@ -49,7 +49,7 @@ func newInteractiveBrowserCredential(opts *Options, record azidentity.Authentica
 
 	cred, err := azidentity.NewInteractiveBrowserCredential(azOpts)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create interactive browser credential: %s", err)
+		return nil, fmt.Errorf("failed to create interactive browser credential: %w", err)
 	}
 	return &InteractiveBrowserCredential{cred: cred}, nil
 }

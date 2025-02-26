@@ -33,7 +33,7 @@ func newADALDeviceCodeCredential(opts *Options) (CredentialProvider, error) {
 	cloud := opts.GetCloudConfiguration()
 	oAuthConfig, err := adal.NewOAuthConfig(cloud.ActiveDirectoryAuthorityHost, opts.TenantID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create OAuth config: %s", err)
+		return nil, fmt.Errorf("failed to create OAuth config: %w", err)
 	}
 	return &ADALDeviceCodeCredential{
 		oAuthConfig: *oAuthConfig,
@@ -57,16 +57,16 @@ func (c *ADALDeviceCodeCredential) GetToken(ctx context.Context, opts policy.Tok
 	resource := strings.Replace(opts.Scopes[0], "/.default", "", 1)
 	deviceCode, err := adal.InitiateDeviceAuth(client, c.oAuthConfig, c.clientID, resource)
 	if err != nil {
-		return azcore.AccessToken{}, fmt.Errorf("initialing the device code authentication: %s", err)
+		return azcore.AccessToken{}, fmt.Errorf("initialing the device code authentication: %w", err)
 	}
 
 	if _, err := fmt.Fprintln(os.Stderr, *deviceCode.Message); err != nil {
-		return azcore.AccessToken{}, fmt.Errorf("prompting the device code message: %s", err)
+		return azcore.AccessToken{}, fmt.Errorf("prompting the device code message: %w", err)
 	}
 
 	token, err := adal.WaitForUserCompletionWithContext(ctx, client, deviceCode)
 	if err != nil {
-		return azcore.AccessToken{}, fmt.Errorf("waiting for device code authentication to complete: %s", err)
+		return azcore.AccessToken{}, fmt.Errorf("waiting for device code authentication to complete: %w", err)
 	}
 
 	return azcore.AccessToken{Token: token.AccessToken, ExpiresOn: token.Expires()}, nil

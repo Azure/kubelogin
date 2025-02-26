@@ -36,7 +36,7 @@ func newADALClientCertCredential(opts *Options) (CredentialProvider, error) {
 	cloud := opts.GetCloudConfiguration()
 	oAuthConfig, err := adal.NewOAuthConfig(cloud.ActiveDirectoryAuthorityHost, opts.TenantID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create OAuth config: %s", err)
+		return nil, fmt.Errorf("failed to create OAuth config: %w", err)
 	}
 	return &ADALClientCertCredential{
 		oAuthConfig:        *oAuthConfig,
@@ -72,7 +72,7 @@ func (c *ADALClientCertCredential) GetToken(ctx context.Context, opts policy.Tok
 		rsaPrivateKey,
 		resource)
 	if err != nil {
-		return azcore.AccessToken{}, fmt.Errorf("failed to create service principal token using secret: %s", err)
+		return azcore.AccessToken{}, fmt.Errorf("failed to create service principal token using secret: %w", err)
 	}
 
 	if err := spt.EnsureFreshWithContext(ctx); err != nil {

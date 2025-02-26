@@ -36,7 +36,7 @@ func newUsernamePasswordCredential(opts *Options, record azidentity.Authenticati
 	if opts.UsePersistentCache {
 		c, err = cache.New(nil)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create cache: %s", err)
+			return nil, fmt.Errorf("failed to create cache: %w", err)
 		}
 	}
 
@@ -55,7 +55,7 @@ func newUsernamePasswordCredential(opts *Options, record azidentity.Authenticati
 		opts.TenantID, opts.ClientID, opts.Username, opts.Password,
 		azOpts)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create username password credential: %s", err)
+		return nil, fmt.Errorf("failed to create username password credential: %w", err)
 	}
 	return &UsernamePasswordCredential{cred: cred}, nil
 }

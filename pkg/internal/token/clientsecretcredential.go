@@ -33,7 +33,7 @@ func newClientSecretCredential(opts *Options) (CredentialProvider, error) {
 	if opts.UsePersistentCache {
 		c, err = cache.New(nil)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create cache: %s", err)
+			return nil, fmt.Errorf("failed to create cache: %w", err)
 		}
 	}
 
@@ -50,7 +50,7 @@ func newClientSecretCredential(opts *Options) (CredentialProvider, error) {
 	cred, err := azidentity.NewClientSecretCredential(
 		opts.TenantID, opts.ClientID, opts.ClientSecret, azOpts)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create client secret credential: %s", err)
+		return nil, fmt.Errorf("failed to create client secret credential: %w", err)
 	}
 	return &ClientSecretCredential{cred: cred}, nil
 }

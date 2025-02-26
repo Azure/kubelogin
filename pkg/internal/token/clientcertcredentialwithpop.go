@@ -33,7 +33,7 @@ func newClientCertificateCredentialWithPoP(opts *Options) (CredentialProvider, e
 	}
 	popClaimsMap, err := parsePoPClaims(opts.PoPTokenClaims)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse PoP claims: %s", err)
+		return nil, fmt.Errorf("unable to parse PoP claims: %w", err)
 	}
 	if len(popClaimsMap) == 0 {
 		return nil, fmt.Errorf("number of pop claims is invalid: %d", len(popClaimsMap))
@@ -47,7 +47,7 @@ func newClientCertificateCredentialWithPoP(opts *Options) (CredentialProvider, e
 
 	cred, err := confidential.NewCredFromCert([]*x509.Certificate{cert}, rsaPrivateKey)
 	if err != nil {
-		return nil, fmt.Errorf("unable to create credential from certificate. Received: %w", err)
+		return nil, fmt.Errorf("unable to create credential from certificate: %w", err)
 	}
 	msalOpts := &pop.MsalClientOptions{
 		Authority:                opts.GetCloudConfiguration().ActiveDirectoryAuthorityHost,

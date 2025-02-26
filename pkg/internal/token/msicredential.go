@@ -34,7 +34,7 @@ func newManagedIdentityCredential(opts *Options) (CredentialProvider, error) {
 
 	cred, err := azidentity.NewManagedIdentityCredential(azOpts)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create managed identity credential: %s", err)
+		return nil, fmt.Errorf("failed to create managed identity credential: %w", err)
 	}
 	return &ManagedIdentityCredential{cred: cred}, nil
 }
