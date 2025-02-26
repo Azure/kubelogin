@@ -60,7 +60,7 @@ func (c *ClientSecretCredential) Name() string {
 }
 
 func (c *ClientSecretCredential) Authenticate(ctx context.Context, opts *policy.TokenRequestOptions) (azidentity.AuthenticationRecord, error) {
-	panic("not implemented")
+	return azidentity.AuthenticationRecord{}, errAuthenticateNotSupported
 }
 
 func (c *ClientSecretCredential) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {

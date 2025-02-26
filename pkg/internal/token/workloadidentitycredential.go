@@ -69,7 +69,7 @@ func (c *WorkloadIdentityCredential) Name() string {
 }
 
 func (c *WorkloadIdentityCredential) Authenticate(ctx context.Context, opts *policy.TokenRequestOptions) (azidentity.AuthenticationRecord, error) {
-	panic("not implemented")
+	return azidentity.AuthenticationRecord{}, errAuthenticateNotSupported
 }
 
 func (c *WorkloadIdentityCredential) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {

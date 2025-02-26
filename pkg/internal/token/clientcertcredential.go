@@ -75,7 +75,7 @@ func (c *ClientCertificateCredential) Name() string {
 }
 
 func (c *ClientCertificateCredential) Authenticate(ctx context.Context, opts *policy.TokenRequestOptions) (azidentity.AuthenticationRecord, error) {
-	panic("not implemented")
+	return azidentity.AuthenticationRecord{}, errAuthenticateNotSupported
 }
 
 func (c *ClientCertificateCredential) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
@@ -157,11 +157,9 @@ func parseKeyPairFromPEMBlock(pemBlock []byte) (*x509.Certificate, *rsa.PrivateK
 		}
 
 		certPublicKey, ok := cert.PublicKey.(*rsa.PublicKey)
-		if ok {
-			if isPublicKeyEqual(certPublicKey, &privateKey.PublicKey) {
-				found = true
-				break
-			}
+		if ok && isPublicKeyEqual(certPublicKey, &privateKey.PublicKey) {
+			found = true
+			break
 		}
 	}
 

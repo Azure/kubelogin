@@ -70,7 +70,7 @@ func (c *ClientCertificateCredentialWithPoP) Name() string {
 }
 
 func (c *ClientCertificateCredentialWithPoP) Authenticate(ctx context.Context, opts *policy.TokenRequestOptions) (azidentity.AuthenticationRecord, error) {
-	panic("not implemented")
+	return azidentity.AuthenticationRecord{}, errAuthenticateNotSupported
 }
 
 func (c *ClientCertificateCredentialWithPoP) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {

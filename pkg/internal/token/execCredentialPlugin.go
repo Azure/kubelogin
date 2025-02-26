@@ -25,6 +25,8 @@ type execCredentialPlugin struct {
 	newCredentialFunc    func(record azidentity.AuthenticationRecord, o *Options) (CredentialProvider, error)
 }
 
+var errAuthenticateNotSupported = errors.New("authenticate is not supported")
+
 func New(o *Options) (ExecCredentialPlugin, error) {
 	klog.V(10).Info(o.ToString())
 	return &execCredentialPlugin{

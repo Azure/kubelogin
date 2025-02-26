@@ -52,7 +52,7 @@ func (c *InteractiveBrowserCredentialWithPoP) Name() string {
 }
 
 func (c *InteractiveBrowserCredentialWithPoP) Authenticate(ctx context.Context, opts *policy.TokenRequestOptions) (azidentity.AuthenticationRecord, error) {
-	panic("not implemented")
+	return azidentity.AuthenticationRecord{}, errAuthenticateNotSupported
 }
 
 func (c *InteractiveBrowserCredentialWithPoP) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
