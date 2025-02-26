@@ -10,30 +10,24 @@ import (
 )
 
 func TestDefaultCachedRecordProvider(t *testing.T) {
-
 	testCases := []struct {
-		name        string
-		fileContent string
-		expectError bool
-		expectNil   bool
+		name           string
+		fileContent    string
+		expectErrorMsg string
 	}{
 		{
 			name:        "valid record",
 			fileContent: `{"tenantID":"test-tenant-id","clientID":"test-client-id","authority":"https://login.microsoftonline.com/","homeAccountID":"test-home-account-id","username":"test-username","version":"1.0"}`,
-			expectError: false,
-			expectNil:   false,
 		},
 		{
-			name:        "invalid JSON",
-			fileContent: `invalid-json-content`,
-			expectError: true,
-			expectNil:   true,
+			name:           "invalid JSON",
+			fileContent:    `invalid-json-content`,
+			expectErrorMsg: "invalid character",
 		},
 		{
-			name:        "empty file",
-			fileContent: ``,
-			expectError: true,
-			expectNil:   true,
+			name:           "empty file",
+			fileContent:    ``,
+			expectErrorMsg: "unexpected end of JSON input",
 		},
 	}
 
@@ -49,8 +43,9 @@ func TestDefaultCachedRecordProvider(t *testing.T) {
 
 			provider := &defaultCachedRecordProvider{file: file.Name()}
 			record, err := provider.Retrieve()
-			if tc.expectError {
+			if tc.expectErrorMsg != "" {
 				assert.Error(t, err)
+				assert.Contains(t, err.Error(), tc.expectErrorMsg)
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, record)

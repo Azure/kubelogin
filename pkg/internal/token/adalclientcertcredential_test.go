@@ -10,9 +10,7 @@ func TestNewADALClientCertCredential(t *testing.T) {
 	testCases := []struct {
 		name           string
 		opts           *Options
-		expectError    bool
 		expectErrorMsg string
-		expectNil      bool
 		expectName     string
 	}{
 		{
@@ -24,9 +22,7 @@ func TestNewADALClientCertCredential(t *testing.T) {
 				ClientCertPassword: "test-cert-password",
 				IsLegacy:           true,
 			},
-			expectError: false,
-			expectNil:   false,
-			expectName:  "ADALClientCertCredential",
+			expectName: "ADALClientCertCredential",
 		},
 		{
 			name: "missing client ID",
@@ -36,9 +32,7 @@ func TestNewADALClientCertCredential(t *testing.T) {
 				ClientCertPassword: "test-cert-password",
 				IsLegacy:           true,
 			},
-			expectError:    true,
 			expectErrorMsg: "client ID cannot be empty",
-			expectNil:      true,
 		},
 		{
 			name: "missing tenant ID",
@@ -48,9 +42,7 @@ func TestNewADALClientCertCredential(t *testing.T) {
 				ClientCertPassword: "test-cert-password",
 				IsLegacy:           true,
 			},
-			expectError:    true,
 			expectErrorMsg: "tenant ID cannot be empty",
-			expectNil:      true,
 		},
 		{
 			name: "missing client certificate",
@@ -60,9 +52,7 @@ func TestNewADALClientCertCredential(t *testing.T) {
 				ClientCertPassword: "test-cert-password",
 				IsLegacy:           true,
 			},
-			expectError:    true,
 			expectErrorMsg: "client certificate cannot be empty",
-			expectNil:      true,
 		},
 		{
 			name: "non-legacy mode",
@@ -73,24 +63,19 @@ func TestNewADALClientCertCredential(t *testing.T) {
 				ClientCertPassword: "test-cert-password",
 				IsLegacy:           false,
 			},
-			expectError:    true,
 			expectErrorMsg: "ADALClientCertCredential is not supported in non-legacy mode",
-			expectNil:      true,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			cred, err := newADALClientCertCredential(tc.opts)
-			if tc.expectError {
+			if tc.expectErrorMsg != "" {
 				assert.Error(t, err)
 				assert.Equal(t, tc.expectErrorMsg, err.Error())
-			} else {
-				assert.NoError(t, err)
-			}
-			if tc.expectNil {
 				assert.Nil(t, cred)
 			} else {
+				assert.NoError(t, err)
 				assert.NotNil(t, cred)
 				assert.Equal(t, tc.expectName, cred.Name())
 			}

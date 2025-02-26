@@ -10,7 +10,6 @@ func TestNewInteractiveBrowserCredentialWithPoP(t *testing.T) {
 	testCases := []struct {
 		name           string
 		opts           *Options
-		expectError    bool
 		expectErrorMsg string
 		expectName     string
 	}{
@@ -22,8 +21,7 @@ func TestNewInteractiveBrowserCredentialWithPoP(t *testing.T) {
 				IsPoPTokenEnabled: true,
 				PoPTokenClaims:    "u=test-cluster",
 			},
-			expectError: false,
-			expectName:  "InteractiveBrowserCredentialWithPoP",
+			expectName: "InteractiveBrowserCredentialWithPoP",
 		},
 		{
 			name: "missing client ID",
@@ -32,7 +30,6 @@ func TestNewInteractiveBrowserCredentialWithPoP(t *testing.T) {
 				IsPoPTokenEnabled: true,
 				PoPTokenClaims:    "u=test-cluster",
 			},
-			expectError:    true,
 			expectErrorMsg: "client ID cannot be empty",
 		},
 		{
@@ -42,7 +39,6 @@ func TestNewInteractiveBrowserCredentialWithPoP(t *testing.T) {
 				IsPoPTokenEnabled: true,
 				PoPTokenClaims:    "u=test-cluster",
 			},
-			expectError:    true,
 			expectErrorMsg: "tenant ID cannot be empty",
 		},
 		{
@@ -52,7 +48,6 @@ func TestNewInteractiveBrowserCredentialWithPoP(t *testing.T) {
 				TenantID:          "test-tenant-id",
 				IsPoPTokenEnabled: true,
 			},
-			expectError:    true,
 			expectErrorMsg: "unable to parse PoP claims: failed to parse PoP token claims: no claims provided",
 		},
 		{
@@ -63,7 +58,6 @@ func TestNewInteractiveBrowserCredentialWithPoP(t *testing.T) {
 				IsPoPTokenEnabled: true,
 				PoPTokenClaims:    "invalid-format",
 			},
-			expectError:    true,
 			expectErrorMsg: "unable to parse PoP claims: failed to parse PoP token claims. Ensure the claims are formatted as `key=value` with no extra whitespace",
 		},
 		{
@@ -74,7 +68,6 @@ func TestNewInteractiveBrowserCredentialWithPoP(t *testing.T) {
 				IsPoPTokenEnabled: true,
 				PoPTokenClaims:    "key=value",
 			},
-			expectError:    true,
 			expectErrorMsg: "unable to parse PoP claims: required u-claim not provided for PoP token flow. Please provide the ARM ID of the cluster in the format `u=<ARM_ID>`",
 		},
 	}
@@ -82,8 +75,7 @@ func TestNewInteractiveBrowserCredentialWithPoP(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			cred, err := newInteractiveBrowserCredentialWithPoP(tc.opts)
-
-			if tc.expectError {
+			if tc.expectErrorMsg != "" {
 				assert.Error(t, err)
 				assert.Equal(t, tc.expectErrorMsg, err.Error())
 				assert.Nil(t, cred)
