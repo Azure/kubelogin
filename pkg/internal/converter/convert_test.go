@@ -1463,13 +1463,13 @@ func TestConvert(t *testing.T) {
 				if o.context != "" {
 					// when --context is specified, convert-kubeconfig will convert only the targeted context
 					// hence, we expect the second auth info not to change
-					validate(t, clusterName1, config.AuthInfos[clusterName1], data.authProviderConfig, data.expectedArgs, data.expectedExecName, data.expectedInstallHint, data.expectedEnv)
+					validate(t, clusterName1, config.AuthInfos[clusterName1], data.expectedArgs, data.expectedExecName, data.expectedInstallHint, data.expectedEnv)
 					validateAuthInfoThatShouldNotChange(t, clusterName2, config.AuthInfos[clusterName2], data.authProviderConfig)
 				} else {
 					// when --context is not specified, convert-kubeconfig will convert every auth info in the kubeconfig
 					// hence, we expect the second auth info to be converted in the same way as the first one
-					validate(t, clusterName1, config.AuthInfos[clusterName1], data.authProviderConfig, data.expectedArgs, data.expectedExecName, data.expectedInstallHint, data.expectedEnv)
-					validate(t, clusterName2, config.AuthInfos[clusterName2], data.authProviderConfig, data.expectedArgs, data.expectedExecName, data.expectedInstallHint, data.expectedEnv)
+					validate(t, clusterName1, config.AuthInfos[clusterName1], data.expectedArgs, data.expectedExecName, data.expectedInstallHint, data.expectedEnv)
+					validate(t, clusterName2, config.AuthInfos[clusterName2], data.expectedArgs, data.expectedExecName, data.expectedInstallHint, data.expectedEnv)
 				}
 			}
 		})
@@ -1521,7 +1521,6 @@ func validate(
 	t *testing.T,
 	clusterName string,
 	authInfo *clientcmdapi.AuthInfo,
-	authProviderConfig map[string]string,
 	expectedArgs []string,
 	expectedExecName string,
 	expectedInstallHint string,

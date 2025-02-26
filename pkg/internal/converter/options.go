@@ -83,7 +83,7 @@ func completeContexts(o *Options) func(cmd *cobra.Command, args []string, toComp
 		}
 
 		contexts := make([]string, 0, len(config.Contexts))
-		for name, _ := range config.Contexts {
+		for name := range config.Contexts {
 			contexts = append(contexts, name)
 		}
 
