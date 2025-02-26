@@ -8,8 +8,6 @@
 > It also does not work when MFA policy is enabled
 > Personal accounts that are invited to an Azure AD tenant can't use ROPC
 
-In this login mode, the access token and refresh token will be cached at `${HOME}/.kube/cache/kubelogin` directory. This path can be overriden by `--token-cache-dir`.
-
 ## Usage Examples
 
 ```sh

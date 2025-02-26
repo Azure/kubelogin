@@ -1,19 +1,19 @@
-# remove-tokens
+# remove-cache-dir
 
 This subcommand removes the cached access/refresh token from filesystem. Note that only `devicelogin`, `interactive`, and `ropc` login modes will cache the token.
 
 ## Usage
 
 ```sh
-kubelogin remove-tokens -h
-Remove all cached tokens from filesystem
+kubelogin remove-cache-dir -h
+Remove all cached authentication record from filesystem
 
 Usage:
-  kubelogin remove-tokens [flags]
+  kubelogin remove-cache-dir [flags]
 
 Flags:
-  -h, --help                     help for remove-tokens
-      --token-cache-dir string   directory to cache token (default "${HOME}/.kube/cache/kubelogin/")
+      --cache-dir string   directory to cache authentication record (default "/home/weinongw/.kube/cache/kubelogin/")
+  -h, --help               help for remove-cache-dir
 
 Global Flags:
       --logtostderr   log to standard error instead of files (default true)
