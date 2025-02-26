@@ -3,39 +3,36 @@ package token
 import (
 	"context"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/kubelogin/pkg/internal/token"
 )
 
 type tokenProviderShim struct {
-	impl token.TokenProvider
+	opts *token.Options
+	cred token.CredentialProvider
 }
 
 var _ TokenProvider = (*tokenProviderShim)(nil)
 
 func (tp *tokenProviderShim) GetAccessToken(ctx context.Context) (AccessToken, error) {
-	t, err := tp.impl.Token(ctx)
-	if err != nil {
-		return AccessToken{}, err
+	tro := policy.TokenRequestOptions{
+		TenantID: tp.opts.TenantID,
+		Scopes:   []string{token.GetScope(tp.opts.ServerID)},
 	}
-
-	rv := AccessToken{
-		Token:     t.AccessToken,
-		ExpiresOn: t.Expires(),
-	}
-
-	return rv, nil
+	return tp.cred.GetToken(ctx, tro)
 }
 
 // GetTokenProvider returns a token provider based on the given options.
 func GetTokenProvider(options *Options) (TokenProvider, error) {
-	impl, err := token.NewTokenProvider(options.toInternalOptions())
+	opts := options.toInternalOptions()
+	cred, err := token.NewAzIdentityCredential(azidentity.AuthenticationRecord{}, opts)
 	if err != nil {
 		return nil, err
 	}
 
-	rv := &tokenProviderShim{
-		impl: impl,
-	}
-
-	return rv, nil
+	return &tokenProviderShim{
+		cred: cred,
+		opts: opts,
+	}, nil
 }

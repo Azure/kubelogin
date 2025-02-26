@@ -11,7 +11,7 @@ import (
 
 // newTokenCmd provides a cobra command for convert sub command
 func newTokenCmd() *cobra.Command {
-	o := token.NewOptions()
+	o := token.NewOptions(true)
 
 	cmd := &cobra.Command{
 		Use:          "get-token",

@@ -28,7 +28,7 @@ func New() Options {
 }
 
 func (o *Options) AddFlags(fs *pflag.FlagSet) {
-	o.TokenOptions = token.NewOptions()
+	o.TokenOptions = token.NewOptions(true)
 	if cf, ok := o.configFlags.(*genericclioptions.ConfigFlags); ok {
 		cf.AddFlags(fs)
 	}
@@ -83,7 +83,7 @@ func completeContexts(o *Options) func(cmd *cobra.Command, args []string, toComp
 		}
 
 		contexts := make([]string, 0, len(config.Contexts))
-		for name, _ := range config.Contexts {
+		for name := range config.Contexts {
 			contexts = append(contexts, name)
 		}
 

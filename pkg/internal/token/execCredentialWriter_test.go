@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Azure/go-autorest/autorest/adal"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"k8s.io/client-go/pkg/apis/clientauthentication"
 )
 
@@ -48,9 +48,11 @@ func TestExecCredentialWriterAPIVersion(t *testing.T) {
 			os.Setenv("KUBERNETES_EXEC_INFO", data.execInfoEnvTest)
 			defer os.Unsetenv("KUBERNETES_EXEC_INFO")
 			ecw := execCredentialWriter{}
-			tokenTest := adal.Token{}
 			stringBufferTest := new(bytes.Buffer)
-			ecw.Write(tokenTest, stringBufferTest)
+			azToken := azcore.AccessToken{
+				Token: "access-token",
+			}
+			ecw.Write(azToken, stringBufferTest)
 			var execCredential clientauthentication.ExecCredential
 			json.Unmarshal(stringBufferTest.Bytes(), &execCredential)
 			if execCredential.TypeMeta.APIVersion != data.expectedAPIVersion {

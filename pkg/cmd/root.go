@@ -19,7 +19,8 @@ func NewRootCmd(version string) *cobra.Command {
 
 	cmd.AddCommand(newConvertCmd())
 	cmd.AddCommand(newTokenCmd())
-	cmd.AddCommand(newRemoveTokenCacheCmd())
+	cmd.AddCommand(newRemoveAuthRecordCacheCmdDeprecated())
+	cmd.AddCommand(newRemoveAuthRecordCacheCmd())
 
 	return cmd
 }

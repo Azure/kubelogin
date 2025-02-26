@@ -33,6 +33,7 @@ const (
 	argAuthorityHost              = "--authority-host"
 	argFederatedTokenFile         = "--federated-token-file"
 	argTokenCacheDir              = "--token-cache-dir"
+	argAuthRecordCacheDir         = "--cache-dir"
 	argIsPoPTokenEnabled          = "--pop-enabled"
 	argPoPTokenClaims             = "--pop-claims"
 	argDisableEnvironmentOverride = "--disable-environment-override"
@@ -54,6 +55,7 @@ const (
 	flagAuthorityHost              = "authority-host"
 	flagFederatedTokenFile         = "federated-token-file"
 	flagTokenCacheDir              = "token-cache-dir"
+	flagAuthRecordCacheDir         = "cache-dir"
 	flagIsPoPTokenEnabled          = "pop-enabled"
 	flagPoPTokenClaims             = "pop-claims"
 	flagDisableEnvironmentOverride = "disable-environment-override"
@@ -75,7 +77,7 @@ func getArgValues(o Options, authInfo *api.AuthInfo) (
 	argClientIDVal,
 	argEnvironmentVal,
 	argTenantIDVal,
-	argTokenCacheDirVal,
+	argAuthRecordCacheDirVal,
 	argPoPTokenClaimsVal string,
 	argIsLegacyConfigModeVal,
 	argIsPoPTokenEnabledVal bool,
@@ -138,10 +140,14 @@ func getArgValues(o Options, authInfo *api.AuthInfo) (
 		}
 	}
 
-	if o.isSet(flagTokenCacheDir) {
-		argTokenCacheDirVal = o.TokenOptions.TokenCacheDir
+	if o.isSet(flagAuthRecordCacheDir) || o.isSet(flagTokenCacheDir) {
+		argAuthRecordCacheDirVal = o.TokenOptions.AuthRecordCacheDir
 	} else {
-		argTokenCacheDirVal = getExecArg(authInfo, argTokenCacheDir)
+		if val := getExecArg(authInfo, argAuthRecordCacheDir); val != "" {
+			argAuthRecordCacheDirVal = val
+		} else {
+			argAuthRecordCacheDirVal = getExecArg(authInfo, argTokenCacheDir)
+		}
 	}
 
 	if o.isSet(flagIsPoPTokenEnabled) {
@@ -227,7 +233,7 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 
 		klog.V(5).Info("converting...")
 
-		argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal, argTokenCacheDirVal, argPoPTokenClaimsVal, isLegacyConfigMode, isPoPTokenEnabled := getArgValues(o, authInfo)
+		argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal, argAuthRecordCacheDirVal, argPoPTokenClaimsVal, isLegacyConfigMode, isPoPTokenEnabled := getArgValues(o, authInfo)
 		exec := &api.ExecConfig{
 			Command: execName,
 			Args: []string{
@@ -250,8 +256,8 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 		}
 		exec.Args = append(exec.Args, argServerID, argServerIDVal)
 
-		if argTokenCacheDirVal != "" {
-			exec.Args = append(exec.Args, argTokenCacheDir, argTokenCacheDirVal)
+		if argAuthRecordCacheDirVal != "" {
+			exec.Args = append(exec.Args, argAuthRecordCacheDir, argAuthRecordCacheDirVal)
 		}
 
 		switch o.TokenOptions.LoginMethod {

@@ -25,6 +25,6 @@ stage('Run kubectl') {
 
 ## Using Device Code, Web Browser, and ROPC Login Modes
 
-Since `kubelogin` by default caches tokens at `${HOME}/.kube/cache/kubelogin` in [device code](../concepts/login-modes/devicecode.md),
+Since `kubelogin` by default caches authentication record (a json file containing user identification such as object ID and tenant ID) at `${HOME}/.kube/cache/kubelogin/auth.json` in [device code](../concepts/login-modes/devicecode.md),
 [web browser interactive](../concepts/login-modes/interactive.md), and [ropc](../concepts/login-modes/ropc.md) [login modes](../concepts/login-modes.md),
-`kubelogin covert-kubeconfig --token-cache-dir` should be specified to a directory under Jenkins workspace such as `${WORKSPACE}/.kube/cache/kubelogin`.
+`kubelogin covert-kubeconfig --cache-dir` should be specified to a directory under Jenkins workspace such as `${WORKSPACE}/.kube/cache/kubelogin`.
