@@ -9,12 +9,7 @@ import (
 )
 
 func TestNewAzIdentityCredential(t *testing.T) {
-	// Create a temporary certificate for testing
-	tempDir, certFile, err := createSelfSignedCertificatePEM()
-	if err != nil {
-		t.Fatalf("failed to create certificate: %v", err)
-	}
-	defer os.RemoveAll(tempDir)
+	certFile := "fixtures/cert.pem"
 
 	tests := []struct {
 		name       string

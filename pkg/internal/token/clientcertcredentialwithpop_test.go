@@ -8,14 +8,10 @@ import (
 )
 
 func TestNewClientCertificateCredentialWithPoP(t *testing.T) {
-	// Create a temporary certificate for testing
-	tempDir, certFile, err := createSelfSignedCertificatePEM()
-	if err != nil {
-		t.Fatalf("failed to create certificate: %v", err)
+	certFile := os.Getenv("KUBELOGIN_LIVETEST_CERTIFICATE_FILE")
+	if certFile == "" {
+		certFile = "fixtures/cert.pem"
 	}
-	defer func() {
-		_ = os.RemoveAll(tempDir)
-	}()
 
 	testCases := []struct {
 		name           string
