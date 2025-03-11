@@ -1,5 +1,23 @@
 # Change Log
 
+## [0.1.9]
+
+### What's Changed
+
+* Add disable-instance-discovery option in interactive pop mode by @Aijing2333 in https://github.com/Azure/kubelogin/pull/593
+
+### Maintenance
+
+* Bump codecov/codecov-action from 3.1.5 to 5.1.2 by @dependabot in https://github.com/Azure/kubelogin/pull/583
+* Bump mukunku/tag-exists-action from 1.1.0 to 1.6.0 by @dependabot in https://github.com/Azure/kubelogin/pull/405
+* Bump go.uber.org/mock from 0.4.0 to 0.5.0 by @dependabot in https://github.com/Azure/kubelogin/pull/545
+* chore: bump go to 1.23.7 by @bcho in https://github.com/Azure/kubelogin/pull/611
+
+### New Contributors
+* @Aijing2333 made their first contribution in https://github.com/Azure/kubelogin/pull/593
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.1.7...v0.1.9
+
 ## [0.1.7]
 
 ### What's Changed
