@@ -12,6 +12,7 @@
 ### Maintenance
 
 * Bump golang.org/x/net from 0.33.0 to 0.36.0 by @dependabot in https://github.com/Azure/kubelogin/pull/618
+* added missing checkout to fix release by @weinong in https://github.com/Azure/kubelogin/pull/620
 
 **Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.1.9...v0.2.0
 
