@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.2.1]
+
+### What's Changed
+
+* updated artifact actions by @weinong in https://github.com/Azure/kubelogin/pull/622
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.0...v0.2.1
+
 ## [0.2.0]
 
 ### What's Changed
