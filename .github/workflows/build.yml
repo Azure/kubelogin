@@ -15,8 +15,8 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build
+  test:
+    name: Test
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -26,7 +26,7 @@ jobs:
     env:
       GO111MODULE: on
     steps:
-      - name: Check out code into the Go module directory
+      - name: Check out code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Set up Go
@@ -34,56 +34,102 @@ jobs:
         with:
           go-version-file: "go.mod"
           cache: false
-        id: go
 
-      - name: Build
-        run: make
-
-      - name: Test
+      - name: Run tests
         run: make test
 
-      - name: Build (linux)
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@1e68e06f1dbfde0e4cefc87efeba9e4643565303 # v5.1.2
+
+  build-linux:
+    name: Build Linux
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Check out code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Install cross-compilation toolchains
+        run: |
+          sudo apt-get update && sudo apt-get install -y \
+            gcc-aarch64-linux-gnu \
+            gcc-arm-linux-gnueabihf
+
+      - name: Set up Go
+        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+        with:
+          go-version-file: "go.mod"
+          cache: false
+
+      - name: Build Linux AMD64
+        run: make
         env:
           GOOS: linux
           GOARCH: amd64
-        run: make
 
-      - name: Build (linux/arm64)
+      - name: Build Linux ARM64
+        run: make
         env:
           GOOS: linux
           GOARCH: arm64
-        run: make
+          CC: aarch64-linux-gnu-gcc
 
-      - name: Build (linux/armv7)
+      - name: Build Linux ARMv7
+        run: make
         env:
           GOOS: linux
           GOARCH: arm
           GOARM: "7"
-        run: make
+          CC: arm-linux-gnueabihf-gcc
 
-      - name: Build (darwin)
+  build-macos:
+    name: Build macOS
+    runs-on: macos-latest
+    needs: test
+    steps:
+      - name: Check out code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Set up Go
+        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+        with:
+          go-version-file: "go.mod"
+          cache: false
+
+      - name: Build macOS AMD64
+        run: make
         env:
           GOOS: darwin
           GOARCH: amd64
-        run: make
 
-      - name: Build (darwin/arm)
+      - name: Build macOS ARM64
+        run: make
         env:
           GOOS: darwin
           GOARCH: arm64
-        run: make
 
-      - name: Build (windows)
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+    needs: test
+    steps:
+      - name: Check out code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Set up Go
+        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+        with:
+          go-version-file: "go.mod"
+          cache: false
+
+      - name: Build Windows AMD64
+        run: make
         env:
           GOOS: windows
           GOARCH: amd64
-        run: make
 
-      - name: Build (windows/arm)
+      - name: Build Windows ARM64
+        run: make
         env:
           GOOS: windows
           GOARCH: arm64
-        run: make
-
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@1e68e06f1dbfde0e4cefc87efeba9e4643565303 # v5.1.2

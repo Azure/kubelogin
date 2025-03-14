@@ -14,7 +14,7 @@ type MsalClientOptions struct {
 	ClientID                 string
 	TenantID                 string
 	DisableInstanceDiscovery bool
-	Options                  *azcore.ClientOptions
+	Options                  azcore.ClientOptions
 }
 
 // AcquirePoPTokenConfidential acquires a PoP token using MSAL's confidential login flow.
@@ -47,7 +47,7 @@ func AcquirePoPTokenConfidential(
 		return "", -1, fmt.Errorf("unable to create confidential client: msalClientOptions is empty")
 	}
 
-	if msalOptions.Options != nil && msalOptions.Options.Transport != nil {
+	if msalOptions.Options.Transport != nil {
 		client, err = confidential.New(
 			msalOptions.Authority,
 			msalOptions.ClientID,

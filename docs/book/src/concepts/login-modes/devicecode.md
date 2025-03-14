@@ -10,8 +10,6 @@ If it's desired to keep the old behavior, add `--legacy`.
 
 If you are using kubeconfig from AKS Legacy AAD (AADv1) clusters, `kubelogin` will automatically add `--legacy` flag.
 
-In this login mode, the access token and refresh token will be cached at `${HOME}/.kube/cache/kubelogin` directory. This path can be overriden by `--token-cache-dir`.
-
 ## Usage Examples
 
 ```sh
@@ -21,8 +19,6 @@ kubelogin convert-kubeconfig
 
 kubectl get nodes
 
-# clean up cached token
-kubelogin remove-tokens
 ```
 
 ## Restrictions

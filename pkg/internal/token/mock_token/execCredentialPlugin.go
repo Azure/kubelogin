@@ -5,6 +5,7 @@
 //
 //	mockgen -destination mock_token/execCredentialPlugin.go github.com/Azure/kubelogin/pkg/internal/token ExecCredentialPlugin
 //
+
 // Package mock_token is a generated GoMock package.
 package mock_token
 

@@ -19,7 +19,7 @@
 - [Command-Line Tool](./cli-reference.md)
   - [convert-kubeconfig](./cli/convert-kubeconfig.md)
   - [get-token](./cli/get-token.md)
-  - [remove-tokens](./cli/remove-tokens.md)
+  - [remove-cache-dir](./cli/remove-cache-dir.md)
 - [Topics](./topics.md)
   - [Using in different environments](./topics/environments.md)
   - [Using Service Principal](./topics/sp.md)

@@ -15,7 +15,7 @@ Available Commands:
   convert-kubeconfig convert kubeconfig to use exec auth module
   get-token          get AAD token
   help               Help about any command
-  remove-tokens      Remove all cached tokens from filesystem
+  remove-cache-dir   Remove all cached authentication record from filesystem
 
 Flags:
   -h, --help          help for kubelogin
@@ -31,4 +31,6 @@ Following sections provide in-depth information on these subcommands:
 
 * [`kubelogin convert-kubeconfig`](./cli/convert-kubeconfig.md) - converts the kubeconfig to different login mode
 * [`kubelogin get-token`](./cli/get-token.md) - gets the Azure AD token based on configured login mode. This subcommand is typically used in kubeconfig via [exec plugin](./concepts/exec-plugin.md) and is invoked by kubectl or any command-line tool, such as helm, implementing exec plugin.
-* [`kubelogin remove-tokens`](./cli/remove-tokens.md) - removes the cached token on the filesystem
+* [`kubelogin remove-cache-dir`](./cli/remove-cache-dir.md) - remove all cached authentication record from filesystem.
+* [DEPRECATED] [`kubelogin remove-tokens`](./cli/remove-cache-dir.md) - remove all cached authentication record from filesystem.
+
