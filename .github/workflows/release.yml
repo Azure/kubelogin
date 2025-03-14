@@ -18,6 +18,9 @@ jobs:
       release_id: ${{ steps.create_release.outputs.id }}
       version: ${{ steps.changelog_reader.outputs.version }}
     steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        
       # Read changelog and read versions etc.
       - name: Check version is mentioned in Changelog.md
         id: changelog_reader
