@@ -16,7 +16,6 @@ jobs:
       packages: none
     outputs:
       release_id: ${{ steps.create_release.outputs.id }}
-      version: ${{ steps.changelog_reader.outputs.version }}
     steps:
       - name: Check out code into the Go module directory
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -38,8 +37,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Create Release
-      - name: Create Kubelogin Release
+      # Create Draft Release
+      - name: Create Kubelogin Draft Release
         id: create_release
         if: ${{ steps.check-tag-exists.outputs.exists == 'false'}}
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
@@ -49,6 +48,7 @@ jobs:
           tag_name: "v${{ steps.changelog_reader.outputs.version }}"
           name: "v${{ steps.changelog_reader.outputs.version }} release"
           body: ${{ steps.changelog_reader.outputs.changes }}
+          draft: true
 
   build-linux:
     name: Build Linux
@@ -176,6 +176,8 @@ jobs:
   package-and-publish:
     name: Package and Publish
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     needs: [create-release, build-linux, build-macos, build-windows]
     if: ${{ needs.create-release.outputs.release_id != '' }}
     steps:
