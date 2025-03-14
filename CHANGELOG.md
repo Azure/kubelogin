@@ -1,5 +1,20 @@
 # Change Log
 
+## [0.2.0]
+
+### What's Changed
+
+* rewrote token implementation and added official cache support by @weinong in https://github.com/Azure/kubelogin/pull/608
+  **This change includes breaking change so that the minor version is bumped**:
+  - Previous caching implementation is removed. Now we are using caching provided by azidentity. This also means any credential flows not implemented by azidentity will not have any caching. Notably, interactive with pop, device code with legacy and ropc with pop will NOT have cache.
+  - The binary is now built with CGO enabled to allow secure token caching on the host
+
+### Maintenance
+
+* Bump golang.org/x/net from 0.33.0 to 0.36.0 by @dependabot in https://github.com/Azure/kubelogin/pull/618
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.1.9...v0.2.0
+
 ## [0.1.9]
 
 ### What's Changed
