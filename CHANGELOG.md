@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.2.2]
+
+### What's Changed
+
+* fixed broken release assets by @weinong in https://github.com/Azure/kubelogin/pull/625
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.1...v0.2.2
+
 ## [0.2.1]
 
 ### What's Changed
