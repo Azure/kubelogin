@@ -96,7 +96,7 @@ jobs:
           CC: arm-linux-gnueabihf-gcc
 
       - name: Upload Linux artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: linux-binaries
           path: bin/linux_*
@@ -132,7 +132,7 @@ jobs:
           GOARCH: arm64
 
       - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: macos-binaries
           path: bin/darwin_*
@@ -168,7 +168,7 @@ jobs:
           GOARCH: arm64
 
       - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows-binaries
           path: bin/windows_*
@@ -180,7 +180,7 @@ jobs:
     if: ${{ needs.create-release.outputs.release_id != '' }}
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: bin
 
