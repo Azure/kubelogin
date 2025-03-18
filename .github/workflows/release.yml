@@ -50,8 +50,8 @@ jobs:
           body: ${{ steps.changelog_reader.outputs.changes }}
           draft: true
 
-  build-linux:
-    name: Build Linux
+  build-linux-and-windows:
+    name: Build Linux and Windows
     runs-on: ubuntu-latest
     needs: create-release
     if: ${{ needs.create-release.outputs.release_id != '' }}
@@ -61,12 +61,6 @@ jobs:
 
       - name: Get tags
         run: git fetch --tags
-
-      - name: Install cross-compilation toolchains
-        run: |
-          sudo apt-get update && sudo apt-get install -y \
-            gcc-aarch64-linux-gnu \
-            gcc-arm-linux-gnueabihf
 
       - name: Set up Go
         uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
@@ -79,13 +73,14 @@ jobs:
         env:
           GOOS: linux
           GOARCH: amd64
+          CGO_ENABLED: 0
 
       - name: Build Linux ARM64
         run: make
         env:
           GOOS: linux
           GOARCH: arm64
-          CC: aarch64-linux-gnu-gcc
+          CGO_ENABLED: 0
 
       - name: Build Linux ARMv7
         run: make
@@ -93,17 +88,41 @@ jobs:
           GOOS: linux
           GOARCH: arm
           GOARM: "7"
-          CC: arm-linux-gnueabihf-gcc
+          CGO_ENABLED: 0
+      
+      - name: Build Windows AMD64
+        run: make
+        env:
+          GOOS: windows
+          GOARCH: amd64
+          CGO_ENABLED: 0
+    
+      - name: Build Windows ARM64
+        run: make
+        env:
+          GOOS: windows
+          GOARCH: arm64
+          CGO_ENABLED: 0
 
       - name: tarball Linux binaries
         run: |
           tar -czf linux-kubelogin.tar.gz bin/linux_*
+      
+      - name: tarball windows binaries
+        run: |
+          tar -czf windows-kubelogin.tar.gz bin/windows_*
 
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v4
         with:
           name: linux-binaries
           path: linux-kubelogin.tar.gz
+      
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-binaries
+          path: windows-kubelogin.tar.gz
 
   build-macos:
     name: Build macOS
@@ -128,12 +147,14 @@ jobs:
         env:
           GOOS: darwin
           GOARCH: amd64
+          CGO_ENABLED: 1
 
       - name: Build macOS ARM64
         run: make
         env:
           GOOS: darwin
           GOARCH: arm64
+          CGO_ENABLED: 1
 
       - name: tarball macos binaries
         run: |
@@ -145,48 +166,12 @@ jobs:
           name: macos-binaries
           path: macos-kubelogin.tar.gz
 
-  build-windows:
-    name: Build Windows
-    runs-on: windows-latest
-    needs: create-release
-    if: ${{ needs.create-release.outputs.release_id != '' }}
-    steps:
-      - name: Check out code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Get tags
-        run: git fetch --tags
-
-      - name: Set up Go
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
-        with:
-          go-version-file: "go.mod"
-          cache: false
-
-      - name: Build Windows AMD64
-        run: make
-        env:
-          GOOS: windows
-          GOARCH: amd64
-
-      - name: Build Windows ARM64
-        run: make
-        env:
-          GOOS: windows
-          GOARCH: arm64
-
-      - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-binaries
-          path: bin/windows_*
-
   package-and-publish:
     name: Package and Publish
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    needs: [create-release, build-linux, build-macos, build-windows]
+    needs: [create-release, build-linux-and-windows, build-macos]
     if: ${{ needs.create-release.outputs.release_id != '' }}
     steps:
       - name: Download all artifacts
@@ -198,13 +183,13 @@ jobs:
         run: |
           tar -xzf bin/linux-binaries/linux-kubelogin.tar.gz
           tar -xzf bin/macos-binaries/macos-kubelogin.tar.gz
+          tar -xzf bin/windows-binaries/windows-kubelogin.tar.gz
 
       - name: Move binaries to correct locations
         run: |
           mkdir -p bin/linux_amd64 bin/linux_arm64 bin/linux_armv7 \
                  bin/darwin_amd64 bin/darwin_arm64 \
                  bin/windows_amd64 bin/windows_arm64
-          mv bin/windows-binaries/windows_* bin/
           rm -rf bin/linux-binaries bin/macos-binaries bin/windows-binaries
 
       - name: Zip
