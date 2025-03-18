@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.2.3]
+
+### What's Changed
+
+* use tar to retain executable bit in released assets by @weinong in https://github.com/Azure/kubelogin/pull/628
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.2...v0.2.3
+
 ## [0.2.2]
 
 ### What's Changed
