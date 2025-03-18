@@ -95,11 +95,15 @@ jobs:
           GOARM: "7"
           CC: arm-linux-gnueabihf-gcc
 
+      - name: tarball Linux binaries
+        run: |
+          tar -czf linux-kubelogin.tar.gz bin/linux_*
+
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v4
         with:
           name: linux-binaries
-          path: bin/linux_*
+          path: linux-kubelogin.tar.gz
 
   build-macos:
     name: Build macOS
@@ -131,11 +135,15 @@ jobs:
           GOOS: darwin
           GOARCH: arm64
 
+      - name: tarball macos binaries
+        run: |
+          tar -czf macos-kubelogin.tar.gz bin/darwin_*
+
       - name: Upload macOS artifacts
         uses: actions/upload-artifact@v4
         with:
           name: macos-binaries
-          path: bin/darwin_*
+          path: macos-kubelogin.tar.gz
 
   build-windows:
     name: Build Windows
@@ -186,13 +194,16 @@ jobs:
         with:
           path: bin
 
+      - name: untar binaries
+        run: |
+          tar -xzf bin/linux-binaries/linux-kubelogin.tar.gz
+          tar -xzf bin/macos-binaries/macos-kubelogin.tar.gz
+
       - name: Move binaries to correct locations
         run: |
           mkdir -p bin/linux_amd64 bin/linux_arm64 bin/linux_armv7 \
                  bin/darwin_amd64 bin/darwin_arm64 \
                  bin/windows_amd64 bin/windows_arm64
-          mv bin/linux-binaries/linux_* bin/
-          mv bin/macos-binaries/darwin_* bin/
           mv bin/windows-binaries/windows_* bin/
           rm -rf bin/linux-binaries bin/macos-binaries bin/windows-binaries
 
