@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.2.4]
+
+### What's Changed
+
+* disable cgo for linux and windows by @weinong in https://github.com/Azure/kubelogin/pull/631
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.3...v0.2.4
+
 ## [0.2.3]
 
 ### What's Changed
