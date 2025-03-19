@@ -73,14 +73,6 @@ func TestOptions(t *testing.T) {
 		}
 	})
 
-	t.Run("missing server id should return error", func(t *testing.T) {
-		o := defaultOptions()
-		o.ServerID = ""
-		if err := o.Validate(); err == nil || !strings.Contains(err.Error(), "server-id is required") {
-			t.Fatalf("missing server id should return missing server id error. got: %s", err)
-		}
-	})
-
 	t.Run("setting authority host will set cloud.Configuration properly", func(t *testing.T) {
 		o := defaultOptions()
 		o.AuthorityHost = "https://login.example.com/"
@@ -126,7 +118,6 @@ func TestOptions(t *testing.T) {
 
 func defaultOptions() Options {
 	o := NewOptions(true)
-	o.ServerID = "https://example.com"
 	o.Timeout = 30 * time.Second
 	return o
 }
