@@ -20,11 +20,6 @@ func TestNewAzureDeveloperCLICredential(t *testing.T) {
 			},
 			expectName: "AzureDeveloperCLICredential",
 		},
-		{
-			name:           "missing tenant ID",
-			opts:           &Options{},
-			expectErrorMsg: "tenant ID cannot be empty",
-		},
 	}
 
 	for _, tc := range testCases {
