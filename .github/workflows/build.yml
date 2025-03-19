@@ -41,19 +41,13 @@ jobs:
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@1e68e06f1dbfde0e4cefc87efeba9e4643565303 # v5.1.2
 
-  build-linux:
-    name: Build Linux
+  build-linux-and-windows:
+    name: Build Linux and Windows
     runs-on: ubuntu-latest
     needs: test
     steps:
       - name: Check out code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Install cross-compilation toolchains
-        run: |
-          sudo apt-get update && sudo apt-get install -y \
-            gcc-aarch64-linux-gnu \
-            gcc-arm-linux-gnueabihf
 
       - name: Set up Go
         uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
@@ -66,13 +60,14 @@ jobs:
         env:
           GOOS: linux
           GOARCH: amd64
+          CGO_ENABLED: 0
 
       - name: Build Linux ARM64
         run: make
         env:
           GOOS: linux
           GOARCH: arm64
-          CC: aarch64-linux-gnu-gcc
+          CGO_ENABLED: 0
 
       - name: Build Linux ARMv7
         run: make
@@ -80,7 +75,21 @@ jobs:
           GOOS: linux
           GOARCH: arm
           GOARM: "7"
-          CC: arm-linux-gnueabihf-gcc
+          CGO_ENABLED: 0
+      
+      - name: Build Windows AMD64
+        run: make
+        env:
+          GOOS: windows
+          GOARCH: amd64
+          CGO_ENABLED: 0
+  
+      - name: Build Windows ARM64
+        run: make
+        env:
+          GOOS: windows
+          GOARCH: arm64
+          CGO_ENABLED: 0
 
   build-macos:
     name: Build macOS
@@ -101,35 +110,11 @@ jobs:
         env:
           GOOS: darwin
           GOARCH: amd64
+          CGO_ENABLED: 1
 
       - name: Build macOS ARM64
         run: make
         env:
           GOOS: darwin
           GOARCH: arm64
-
-  build-windows:
-    name: Build Windows
-    runs-on: windows-latest
-    needs: test
-    steps:
-      - name: Check out code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Set up Go
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
-        with:
-          go-version-file: "go.mod"
-          cache: false
-
-      - name: Build Windows AMD64
-        run: make
-        env:
-          GOOS: windows
-          GOARCH: amd64
-
-      - name: Build Windows ARM64
-        run: make
-        env:
-          GOOS: windows
-          GOARCH: arm64
+          CGO_ENABLED: 1
