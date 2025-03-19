@@ -16,9 +16,6 @@ type AzureDeveloperCLICredential struct {
 var _ CredentialProvider = (*AzureDeveloperCLICredential)(nil)
 
 func newAzureDeveloperCLICredential(opts *Options) (CredentialProvider, error) {
-	if opts.TenantID == "" {
-		return nil, fmt.Errorf("tenant ID cannot be empty")
-	}
 	cred, err := azidentity.NewAzureDeveloperCLICredential(&azidentity.AzureDeveloperCLICredentialOptions{
 		TenantID: opts.TenantID,
 	})
