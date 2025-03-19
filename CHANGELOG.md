@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.2.5]
+
+### What's Changed
+
+* fixed a bug where server-id flag is always required by @weinong in https://github.com/Azure/kubelogin/pull/634
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.4...v0.2.5
+
 ## [0.2.4]
 
 ### What's Changed
