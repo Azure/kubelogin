@@ -133,10 +133,6 @@ func (o *Options) Validate() error {
 		return fmt.Errorf("'%s' is not a supported login method. Supported method is one of %s", o.LoginMethod, GetSupportedLogins())
 	}
 
-	if o.ServerID == "" {
-		return fmt.Errorf("server-id is required")
-	}
-
 	if o.AuthorityHost != "" {
 		u, err := url.ParseRequestURI(o.AuthorityHost)
 		if err != nil {
