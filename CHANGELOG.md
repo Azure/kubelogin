@@ -1,5 +1,14 @@
 # Change Log
 
+## [0.2.6]
+
+### What's Changed
+
+* fixed the unneeded tenant id validation in azurecli login by @weinong in https://github.com/Azure/kubelogin/pull/637
+* remove tenant id validation for azuredevops login by @weinong in https://github.com/Azure/kubelogin/pull/638
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.5...v0.2.6
+
 ## [0.2.5]
 
 ### What's Changed
