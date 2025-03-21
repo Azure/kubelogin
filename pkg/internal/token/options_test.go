@@ -162,7 +162,7 @@ func TestOptionsWithEnvVars(t *testing.T) {
 				TenantID:            tenantID,
 				LoginMethod:         DeviceCodeLogin,
 				authRecordCacheFile: "auth.json",
-				Timeout:             30 * time.Second,
+				Timeout:             60 * time.Second,
 			},
 		},
 		{
@@ -185,7 +185,7 @@ func TestOptionsWithEnvVars(t *testing.T) {
 				TenantID:               tenantID,
 				LoginMethod:            DeviceCodeLogin,
 				authRecordCacheFile:    "auth.json",
-				Timeout:                30 * time.Second,
+				Timeout:                60 * time.Second,
 			},
 		},
 		{
@@ -214,7 +214,7 @@ func TestOptionsWithEnvVars(t *testing.T) {
 				AuthorityHost:       authorityHost,
 				FederatedTokenFile:  tokenFile,
 				authRecordCacheFile: "auth.json",
-				Timeout:             30 * time.Second,
+				Timeout:             60 * time.Second,
 			},
 		},
 	}

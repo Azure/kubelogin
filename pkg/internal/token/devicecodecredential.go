@@ -3,6 +3,7 @@ package token
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
@@ -41,6 +42,10 @@ func newDeviceCodeCredential(opts *Options, record azidentity.AuthenticationReco
 		ClientID:                 opts.ClientID,
 		TenantID:                 opts.TenantID,
 		DisableInstanceDiscovery: opts.DisableInstanceDiscovery,
+		UserPrompt: func(ctx context.Context, dcm azidentity.DeviceCodeMessage) error {
+			_, err := fmt.Fprintln(os.Stderr, dcm.Message)
+			return err
+		},
 	}
 
 	if opts.httpClient != nil {
