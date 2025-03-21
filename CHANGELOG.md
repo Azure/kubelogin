@@ -1,5 +1,15 @@
 # Change Log
 
+## [0.2.7]
+
+### What's Changed
+
+* fix missing prompt and increase default timeout to 60s by @weinong in https://github.com/Azure/kubelogin/pull/643
+* ignore cache create failure by @weinong in https://github.com/Azure/kubelogin/pull/644
+* fix missing build tag in --version by @weinong in https://github.com/Azure/kubelogin/pull/645
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.6...v0.2.7
+
 ## [0.2.6]
 
 ### What's Changed
