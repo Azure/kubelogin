@@ -14,6 +14,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity/cache"
 	"golang.org/x/crypto/pkcs12"
+	"k8s.io/klog/v2"
 )
 
 type ClientCertificateCredential struct {
@@ -39,7 +40,7 @@ func newClientCertificateCredential(opts *Options) (CredentialProvider, error) {
 	if opts.UsePersistentCache {
 		c, err = cache.New(nil)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create cache: %w", err)
+			klog.V(5).Infof("failed to create cache: %v", err)
 		}
 	}
 
