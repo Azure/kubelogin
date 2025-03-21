@@ -9,6 +9,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity/cache"
+	"k8s.io/klog/v2"
 )
 
 type DeviceCodeCredential struct {
@@ -31,7 +32,7 @@ func newDeviceCodeCredential(opts *Options, record azidentity.AuthenticationReco
 	if opts.UsePersistentCache {
 		c, err = cache.New(nil)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create cache: %w", err)
+			klog.V(5).Infof("failed to create cache: %v", err)
 		}
 	}
 
