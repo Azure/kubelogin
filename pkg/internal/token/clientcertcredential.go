@@ -186,7 +186,7 @@ func decodePkcs12(pkcs []byte, password string) (*x509.Certificate, *rsa.Private
 }
 
 func readCertificate(certFile, password string) (*x509.Certificate, *rsa.PrivateKey, error) {
-	if strings.HasSuffix(certFile, ".pfx") {
+	if strings.HasSuffix(certFile, ".pfx") || strings.HasSuffix(certFile, ".p12") {
 		cert, err := os.ReadFile(certFile)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to read the certificate file (%s): %w", certFile, err)
