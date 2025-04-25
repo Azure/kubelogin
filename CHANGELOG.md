@@ -1,5 +1,14 @@
 # Change Log
 
+## [0.2.8]
+
+### Maintenance
+
+* Bump github.com/golang-jwt/jwt/v4 from 4.5.1 to 4.5.2 by @dependabot in https://github.com/Azure/kubelogin/pull/648
+* Bump golang.org/x/net from 0.36.0 to 0.38.0 by @dependabot in https://github.com/Azure/kubelogin/pull/651
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.7...v0.2.8
+
 ## [0.2.7]
 
 ### What's Changed
