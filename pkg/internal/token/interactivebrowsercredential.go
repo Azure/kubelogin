@@ -42,6 +42,7 @@ func newInteractiveBrowserCredential(opts *Options, record azidentity.Authentica
 		ClientID:                 opts.ClientID,
 		TenantID:                 opts.TenantID,
 		DisableInstanceDiscovery: opts.DisableInstanceDiscovery,
+		RedirectURL:              opts.RedirectURL,
 	}
 
 	if opts.httpClient != nil {
