@@ -147,13 +147,21 @@
                     <main>
                         <h1 id="web-browser-interactive"><a class="header" href="#web-browser-interactive">Web Browser Interactive</a></h1>
 <p>This login mode will automatically open a browser to login the user. 
-Once authenticated, the browser will redirect back to a local web server with the credentials. 
+Once authenticated, the browser will redirect back to a local web server with access token.
+The redirect URL can be set via <code>--redirect-url</code>.
 This login mode complies with Conditional Access policy.</p>
 <h2 id="usage-examples"><a class="header" href="#usage-examples">Usage Examples</a></h2>
 <h3 id="bearer-token-with-interactive-flow"><a class="header" href="#bearer-token-with-interactive-flow">Bearer token with interactive flow</a></h3>
 <pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
 
 kubelogin convert-kubeconfig -l interactive
+
+kubectl get nodes
+</code></pre>
+<h3 id="specifying-redirect-url"><a class="header" href="#specifying-redirect-url">Specifying Redirect URL</a></h3>
+<pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l interactive --redirect-url http://localhost:8080
 
 kubectl get nodes
 </code></pre>

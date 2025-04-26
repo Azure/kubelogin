@@ -356,13 +356,21 @@ kubectl get nodes
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="web-browser-interactive"><a class="header" href="#web-browser-interactive">Web Browser Interactive</a></h1>
 <p>This login mode will automatically open a browser to login the user. 
-Once authenticated, the browser will redirect back to a local web server with the credentials. 
+Once authenticated, the browser will redirect back to a local web server with access token.
+The redirect URL can be set via <code>--redirect-url</code>.
 This login mode complies with Conditional Access policy.</p>
 <h2 id="usage-examples-3"><a class="header" href="#usage-examples-3">Usage Examples</a></h2>
 <h3 id="bearer-token-with-interactive-flow"><a class="header" href="#bearer-token-with-interactive-flow">Bearer token with interactive flow</a></h3>
 <pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
 
 kubelogin convert-kubeconfig -l interactive
+
+kubectl get nodes
+</code></pre>
+<h3 id="specifying-redirect-url"><a class="header" href="#specifying-redirect-url">Specifying Redirect URL</a></h3>
+<pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l interactive --redirect-url http://localhost:8080
 
 kubectl get nodes
 </code></pre>
@@ -600,6 +608,7 @@ Flags:
       --password string                      password for ropc login flow. It may be specified in AAD_USER_PRINCIPAL_PASSWORD or AZURE_PASSWORD environment variable
       --pop-claims key=val,key2=val2         contains a comma-separated list of claims to attach to the pop token in the format key=val,key2=val2. At minimum, specify the ARM ID of the cluster as `u=ARM_ID`
       --pop-enabled                          set to true to use a PoP token for authentication or false to use a regular bearer token
+      --redirect-url string                  The URL Microsoft Entra ID will redirect to with the access token. This is only used for interactive login. This is an optional parameter.
       --server-id string                     AAD server application ID
   -t, --tenant-id string                     AAD tenant ID. It may be specified in AZURE_TENANT_ID environment variable
       --timeout duration                     Timeout duration for Azure CLI token requests. It may be specified in AZURE_CLI_TIMEOUT environment variable (default 30s)
@@ -637,6 +646,7 @@ Flags:
       --password string                      password for ropc login flow. It may be specified in AAD_USER_PRINCIPAL_PASSWORD or AZURE_PASSWORD environment variable
       --pop-claims key=val,key2=val2         contains a comma-separated list of claims to attach to the pop token in the format key=val,key2=val2. At minimum, specify the ARM ID of the cluster as `u=ARM_ID`
       --pop-enabled                          set to true to use a PoP token for authentication or false to use a regular bearer token
+      --redirect-url string                  The URL Microsoft Entra ID will redirect to with the access token. This is only used for interactive login. This is an optional parameter.
       --server-id string                     AAD server application ID
   -t, --tenant-id string                     AAD tenant ID. It may be specified in AZURE_TENANT_ID environment variable
       --timeout duration                     Timeout duration for Azure CLI token requests. It may be specified in AZURE_CLI_TIMEOUT environment variable (default 30s)
