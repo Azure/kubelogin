@@ -41,6 +41,7 @@ type Options struct {
 	UsePersistentCache         bool
 	DisableInstanceDiscovery   bool
 	httpClient                 *http.Client
+	RedirectURL                string
 }
 
 const (
@@ -119,6 +120,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&o.PoPTokenClaims, "pop-claims", o.PoPTokenClaims, "contains a comma-separated list of claims to attach to the pop token in the format `key=val,key2=val2`. At minimum, specify the ARM ID of the cluster as `u=ARM_ID`")
 	fs.BoolVar(&o.DisableEnvironmentOverride, "disable-environment-override", o.DisableEnvironmentOverride, "Enable or disable the use of env-variables. Default false")
 	fs.BoolVar(&o.DisableInstanceDiscovery, "disable-instance-discovery", o.DisableInstanceDiscovery, "set to true to disable instance discovery in environments with their own simple Identity Provider (not AAD) that do not have instance metadata discovery endpoint. Default false")
+	fs.StringVar(&o.RedirectURL, "redirect-url", o.RedirectURL, "The URL Microsoft Entra ID will redirect to with the access token. This is only used for interactive login. This is an optional parameter.")
 }
 
 func (o *Options) Validate() error {
@@ -275,19 +277,23 @@ func (o *Options) GetCloudConfiguration() cloud.Configuration {
 
 func (o *Options) ToString() string {
 	azureConfigDir := os.Getenv("AZURE_CONFIG_DIR")
-	return fmt.Sprintf("Login Method: %s, Environment: %s, TenantID: %s, ServerID: %s, ClientID: %s, IsLegacy: %t, msiResourceID: %s, Timeout: %v, authRecordCacheDir: %s, tokenauthRecordFile: %s, AZURE_CONFIG_DIR: %s",
-		o.LoginMethod,
-		o.Environment,
-		o.TenantID,
-		o.ServerID,
-		o.ClientID,
-		o.IsLegacy,
-		o.IdentityResourceID,
-		o.Timeout,
-		o.AuthRecordCacheDir,
-		o.authRecordCacheFile,
-		azureConfigDir,
-	)
+
+	parts := []string{
+		fmt.Sprintf("Login Method: %s", o.LoginMethod),
+		fmt.Sprintf("Environment: %s", o.Environment),
+		fmt.Sprintf("TenantID: %s", o.TenantID),
+		fmt.Sprintf("ServerID: %s", o.ServerID),
+		fmt.Sprintf("ClientID: %s", o.ClientID),
+		fmt.Sprintf("IsLegacy: %t", o.IsLegacy),
+		fmt.Sprintf("msiResourceID: %s", o.IdentityResourceID),
+		fmt.Sprintf("Timeout: %v", o.Timeout),
+		fmt.Sprintf("authRecordCacheDir: %s", o.AuthRecordCacheDir),
+		fmt.Sprintf("tokenauthRecordFile: %s", o.authRecordCacheFile),
+		fmt.Sprintf("AZURE_CONFIG_DIR: %s", azureConfigDir),
+		fmt.Sprintf("RedirectURL: %s", o.RedirectURL),
+	}
+
+	return strings.Join(parts, ", ")
 }
 
 func getAuthenticationRecordFileName(o *Options) string {

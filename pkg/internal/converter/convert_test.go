@@ -32,6 +32,7 @@ func TestConvert(t *testing.T) {
 		federatedTokenFile = "/tmp/file"
 		authRecordCacheDir = "/tmp/token_dir"
 		azureCLIDir        = "/tmp/foo"
+		redirectURL        = "http://localhost:8000"
 	)
 	testData := []struct {
 		name                string
@@ -1205,6 +1206,35 @@ func TestConvert(t *testing.T) {
 				argTenantID, tenantID,
 				argEnvironment, envName,
 				argLoginMethod, token.InteractiveLogin,
+			},
+			command: execName,
+		},
+		{
+			name: "with exec format kubeconfig, convert from devicecode to interactive with redirect url override",
+			execArgItems: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argEnvironment, envName,
+				argLoginMethod, token.DeviceCodeLogin,
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.InteractiveLogin,
+				flagServerID:    serverID,
+				flagClientID:    clientID,
+				flagTenantID:    tenantID,
+				flagEnvironment: envName,
+				flagRedirectURL: redirectURL,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argEnvironment, envName,
+				argLoginMethod, token.InteractiveLogin,
+				argRedirectURL, redirectURL,
 			},
 			command: execName,
 		},

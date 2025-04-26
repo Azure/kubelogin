@@ -34,6 +34,7 @@ Flags:
       --password string                      password for ropc login flow. It may be specified in AAD_USER_PRINCIPAL_PASSWORD or AZURE_PASSWORD environment variable
       --pop-claims key=val,key2=val2         contains a comma-separated list of claims to attach to the pop token in the format key=val,key2=val2. At minimum, specify the ARM ID of the cluster as `u=ARM_ID`
       --pop-enabled                          set to true to use a PoP token for authentication or false to use a regular bearer token
+      --redirect-url string                  The URL Microsoft Entra ID will redirect to with the access token. This is only used for interactive login. This is an optional parameter.
       --server-id string                     AAD server application ID
   -t, --tenant-id string                     AAD tenant ID. It may be specified in AZURE_TENANT_ID environment variable
       --timeout duration                     Timeout duration for Azure CLI token requests. It may be specified in AZURE_CLI_TIMEOUT environment variable (default 30s)
