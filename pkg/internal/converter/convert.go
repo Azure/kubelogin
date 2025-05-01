@@ -37,6 +37,7 @@ const (
 	argIsPoPTokenEnabled          = "--pop-enabled"
 	argPoPTokenClaims             = "--pop-claims"
 	argDisableEnvironmentOverride = "--disable-environment-override"
+	argRedirectURL                = "--redirect-url"
 
 	flagAzureConfigDir             = "azure-config-dir"
 	flagClientID                   = "client-id"
@@ -59,6 +60,7 @@ const (
 	flagIsPoPTokenEnabled          = "pop-enabled"
 	flagPoPTokenClaims             = "pop-claims"
 	flagDisableEnvironmentOverride = "disable-environment-override"
+	flagRedirectURL                = "redirect-url"
 
 	execName        = "kubelogin"
 	getTokenCommand = "get-token"
@@ -78,7 +80,8 @@ func getArgValues(o Options, authInfo *api.AuthInfo) (
 	argEnvironmentVal,
 	argTenantIDVal,
 	argAuthRecordCacheDirVal,
-	argPoPTokenClaimsVal string,
+	argPoPTokenClaimsVal,
+	argRedirectURLVal string,
 	argIsLegacyConfigModeVal,
 	argIsPoPTokenEnabledVal bool,
 ) {
@@ -164,6 +167,12 @@ func getArgValues(o Options, authInfo *api.AuthInfo) (
 		argPoPTokenClaimsVal = getExecArg(authInfo, argPoPTokenClaims)
 	}
 
+	if o.isSet(flagRedirectURL) {
+		argRedirectURLVal = o.TokenOptions.RedirectURL
+	} else {
+		argRedirectURLVal = getExecArg(authInfo, argRedirectURL)
+	}
+
 	return
 }
 
@@ -233,7 +242,15 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 
 		klog.V(5).Info("converting...")
 
-		argServerIDVal, argClientIDVal, argEnvironmentVal, argTenantIDVal, argAuthRecordCacheDirVal, argPoPTokenClaimsVal, isLegacyConfigMode, isPoPTokenEnabled := getArgValues(o, authInfo)
+		argServerIDVal,
+			argClientIDVal,
+			argEnvironmentVal,
+			argTenantIDVal,
+			argAuthRecordCacheDirVal,
+			argPoPTokenClaimsVal,
+			argRedirectURLVal,
+			isLegacyConfigMode,
+			isPoPTokenEnabled := getArgValues(o, authInfo)
 		exec := &api.ExecConfig{
 			Command: execName,
 			Args: []string{
@@ -326,6 +343,10 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 			exec.Args, err = validatePoPClaims(exec.Args, isPoPTokenEnabled, argPoPTokenClaims, argPoPTokenClaimsVal)
 			if err != nil {
 				return err
+			}
+
+			if argRedirectURLVal != "" {
+				exec.Args = append(exec.Args, argRedirectURL, argRedirectURLVal)
 			}
 
 		case token.ServicePrincipalLogin:
