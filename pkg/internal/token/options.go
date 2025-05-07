@@ -42,6 +42,7 @@ type Options struct {
 	DisableInstanceDiscovery   bool
 	httpClient                 *http.Client
 	RedirectURL                string
+	LoginHint                  string
 }
 
 const (
@@ -121,6 +122,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.BoolVar(&o.DisableEnvironmentOverride, "disable-environment-override", o.DisableEnvironmentOverride, "Enable or disable the use of env-variables. Default false")
 	fs.BoolVar(&o.DisableInstanceDiscovery, "disable-instance-discovery", o.DisableInstanceDiscovery, "set to true to disable instance discovery in environments with their own simple Identity Provider (not AAD) that do not have instance metadata discovery endpoint. Default false")
 	fs.StringVar(&o.RedirectURL, "redirect-url", o.RedirectURL, "The URL Microsoft Entra ID will redirect to with the access token. This is only used for interactive login. This is an optional parameter.")
+	fs.StringVar(&o.LoginHint, "login-hint", o.LoginHint, "The login hint to pre-fill the username in the interactive login flow.")
 }
 
 func (o *Options) Validate() error {
@@ -291,6 +293,7 @@ func (o *Options) ToString() string {
 		fmt.Sprintf("tokenauthRecordFile: %s", o.authRecordCacheFile),
 		fmt.Sprintf("AZURE_CONFIG_DIR: %s", azureConfigDir),
 		fmt.Sprintf("RedirectURL: %s", o.RedirectURL),
+		fmt.Sprintf("LoginHint: %s", o.LoginHint),
 	}
 
 	return strings.Join(parts, ", ")
