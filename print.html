@@ -374,12 +374,22 @@ kubelogin convert-kubeconfig -l interactive --redirect-url http://localhost:8080
 
 kubectl get nodes
 </code></pre>
+<h3 id="specifying-login-user-hint"><a class="header" href="#specifying-login-user-hint">Specifying login user hint</a></h3>
+<pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l interactive --login-hint user@example.com
+
+kubectl get nodes
+</code></pre>
 <h3 id="proof-of-possession-pop-token-with-interactive-flow"><a class="header" href="#proof-of-possession-pop-token-with-interactive-flow">Proof-of-possession (PoP) token with interactive flow</a></h3>
 <pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
 
 kubelogin convert-kubeconfig -l interactive --pop-enabled --pop-claims &quot;u=/ARM/ID/OF/CLUSTER&quot;
 
 kubectl get nodes
+</code></pre>
+<h3 id="clearing-the-cache"><a class="header" href="#clearing-the-cache">Clearing the cache</a></h3>
+<pre><code class="language-sh">kubelogin remove-cache-dir
 </code></pre>
 <h2 id="references-4"><a class="header" href="#references-4">References</a></h2>
 <ul>
@@ -605,6 +615,7 @@ Flags:
       --kubeconfig string                    Path to the kubeconfig file to use for CLI requests.
       --legacy                               set to true to get token with 'spn:' prefix in audience claim
   -l, --login string                         Login method. Supported methods: devicecode, interactive, spn, ropc, msi, azurecli, azd, workloadidentity. It may be specified in AAD_LOGIN_METHOD environment variable (default &quot;devicecode&quot;)
+      --login-hint string                    The login hint to pre-fill the username in the interactive login flow.
       --password string                      password for ropc login flow. It may be specified in AAD_USER_PRINCIPAL_PASSWORD or AZURE_PASSWORD environment variable
       --pop-claims key=val,key2=val2         contains a comma-separated list of claims to attach to the pop token in the format key=val,key2=val2. At minimum, specify the ARM ID of the cluster as `u=ARM_ID`
       --pop-enabled                          set to true to use a PoP token for authentication or false to use a regular bearer token
@@ -643,6 +654,7 @@ Flags:
       --identity-resource-id string          Managed Identity resource id.
       --legacy                               set to true to get token with 'spn:' prefix in audience claim
   -l, --login string                         Login method. Supported methods: devicecode, interactive, spn, ropc, msi, azurecli, azd, workloadidentity. It may be specified in AAD_LOGIN_METHOD environment variable (default &quot;devicecode&quot;)
+      --login-hint string                    The login hint to pre-fill the username in the interactive login flow.
       --password string                      password for ropc login flow. It may be specified in AAD_USER_PRINCIPAL_PASSWORD or AZURE_PASSWORD environment variable
       --pop-claims key=val,key2=val2         contains a comma-separated list of claims to attach to the pop token in the format key=val,key2=val2. At minimum, specify the ARM ID of the cluster as `u=ARM_ID`
       --pop-enabled                          set to true to use a PoP token for authentication or false to use a regular bearer token
