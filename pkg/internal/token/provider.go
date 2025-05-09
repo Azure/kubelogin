@@ -10,6 +10,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 )
 
 type CredentialProvider interface {
@@ -22,7 +23,7 @@ type CredentialProvider interface {
 	Name() string
 }
 
-func NewAzIdentityCredential(record azidentity.AuthenticationRecord, o *Options) (CredentialProvider, error) {
+func NewAzIdentityCredential(record azidentity.AuthenticationRecord, cache cache.ExportReplace, o *Options) (CredentialProvider, error) {
 	switch o.LoginMethod {
 	case AzureCLILogin:
 		return newAzureCLICredential(o)
@@ -41,7 +42,7 @@ func NewAzIdentityCredential(record azidentity.AuthenticationRecord, o *Options)
 	case InteractiveLogin:
 		switch {
 		case o.IsPoPTokenEnabled:
-			return newInteractiveBrowserCredentialWithPoP(o)
+			return newInteractiveBrowserCredentialWithPoP(o, cache)
 		default:
 			return newInteractiveBrowserCredential(o, record)
 		}

@@ -66,6 +66,7 @@ func (c *UsernamePasswordCredentialWithPoP) Authenticate(ctx context.Context, op
 }
 
 func (c *UsernamePasswordCredentialWithPoP) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
+	
 	token, expirationTimeUnix, err := pop.AcquirePoPTokenByUsernamePassword(
 		ctx,
 		c.popClaims,

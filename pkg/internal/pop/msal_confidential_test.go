@@ -103,21 +103,28 @@ func TestAcquirePoPTokenConfidential(t *testing.T) {
 				t.Errorf("expected no error creating credential but got: %s", err)
 			}
 
+			MsalClientOptions := &MsalClientOptions{
+				Authority: authority,
+				ClientID:  tc.p.clientID,
+				TenantID:  tc.p.tenantID,
+				Options: azcore.ClientOptions{
+					Cloud:     cloud.AzurePublic,
+					Transport: vcrRecorder.GetDefaultClient(),
+				},
+				DisableInstanceDiscovery: false,
+			}
+
+			client, err := NewConfidentialClient(cred, MsalClientOptions)
+			if err != nil {
+				t.Errorf("expected no error creating client but got: %s", err)
+			}
+
 			token, _, err = AcquirePoPTokenConfidential(
 				ctx,
 				tc.p.popClaims,
 				scopes,
-				cred,
-				&MsalClientOptions{
-					Authority: authority,
-					ClientID:  tc.p.clientID,
-					TenantID:  tc.p.tenantID,
-					Options: azcore.ClientOptions{
-						Cloud:     cloud.AzurePublic,
-						Transport: vcrRecorder.GetDefaultClient(),
-					},
-					DisableInstanceDiscovery: false,
-				},
+				client,
+				tc.p.tenantID,
 				GetSwPoPKey,
 			)
 			defer vcrRecorder.Stop()
