@@ -16,6 +16,7 @@ import (
 type ClientCertificateCredentialWithPoP struct {
 	popClaims map[string]string
 	cred      confidential.Credential
+	client    confidential.Client
 	options   *pop.MsalClientOptions
 }
 
@@ -58,9 +59,15 @@ func newClientCertificateCredentialWithPoP(opts *Options) (CredentialProvider, e
 	if opts.httpClient != nil {
 		msalOpts.Options.Transport = opts.httpClient
 	}
+	client, err := pop.NewConfidentialClient(cred, msalOpts)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create confidential client: %w", err)
+	}
+
 	return &ClientCertificateCredentialWithPoP{
 		popClaims: popClaimsMap,
 		cred:      cred,
+		client:    client,
 		options:   msalOpts,
 	}, nil
 }
@@ -78,8 +85,8 @@ func (c *ClientCertificateCredentialWithPoP) GetToken(ctx context.Context, opts 
 		ctx,
 		c.popClaims,
 		opts.Scopes,
-		c.cred,
-		c.options,
+		c.client,
+		c.options.TenantID,
 		pop.GetSwPoPKey,
 	)
 	if err != nil {
