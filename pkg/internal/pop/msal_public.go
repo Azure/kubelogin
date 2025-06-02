@@ -40,14 +40,14 @@ func NewPublicClient(
 	}
 
 	// Build public options
-	var confOptions []public.Option
-	confOptions = append(confOptions,
+	var publicOptions []public.Option
+	publicOptions = append(publicOptions,
 		public.WithInstanceDiscovery(!msalOptions.DisableInstanceDiscovery),
 	)
 
 	// Add HTTP client if present in msalOptions
 	if msalOptions.Options.Transport != nil {
-		confOptions = append(confOptions,
+		publicOptions = append(publicOptions,
 			public.WithHTTPClient(msalOptions.Options.Transport.(*http.Client)),
 			public.WithAuthority(msalOptions.Authority),
 		)
@@ -55,14 +55,14 @@ func NewPublicClient(
 
 	// Add cache if specified
 	if clientOpts.Cache != nil {
-		confOptions = append(confOptions, public.WithCache(clientOpts.Cache))
+		publicOptions = append(publicOptions, public.WithCache(clientOpts.Cache))
 	}
 
 	var client public.Client
 
 	client, err := public.New(
 		msalOptions.ClientID,
-		confOptions...,
+		publicOptions...,
 	)
 
 	if err != nil {

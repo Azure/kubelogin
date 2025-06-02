@@ -9,6 +9,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/kubelogin/pkg/internal/pop"
+	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 )
 
 type UsernamePasswordCredentialWithPoP struct {
@@ -20,7 +21,7 @@ type UsernamePasswordCredentialWithPoP struct {
 
 var _ CredentialProvider = (*UsernamePasswordCredentialWithPoP)(nil)
 
-func newUsernamePasswordCredentialWithPoP(opts *Options) (CredentialProvider, error) {
+func newUsernamePasswordCredentialWithPoP(opts *Options, cache cache.ExportReplace) (CredentialProvider, error) {
 	if opts.ClientID == "" {
 		return nil, fmt.Errorf("client ID cannot be empty")
 	}
@@ -66,7 +67,6 @@ func (c *UsernamePasswordCredentialWithPoP) Authenticate(ctx context.Context, op
 }
 
 func (c *UsernamePasswordCredentialWithPoP) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
-	
 	token, expirationTimeUnix, err := pop.AcquirePoPTokenByUsernamePassword(
 		ctx,
 		c.popClaims,

@@ -53,7 +53,7 @@ func NewAzIdentityCredential(record azidentity.AuthenticationRecord, cache cache
 	case ROPCLogin:
 		switch {
 		case o.IsPoPTokenEnabled:
-			return newUsernamePasswordCredentialWithPoP(o)
+			return newUsernamePasswordCredentialWithPoP(o, cache)
 		default:
 			return newUsernamePasswordCredential(o, record)
 		}
@@ -65,11 +65,11 @@ func NewAzIdentityCredential(record azidentity.AuthenticationRecord, cache cache
 		case o.IsLegacy:
 			return newADALClientSecretCredential(o)
 		case o.ClientCert != "" && o.IsPoPTokenEnabled:
-			return newClientCertificateCredentialWithPoP(o)
+			return newClientCertificateCredentialWithPoP(o, cache)
 		case o.ClientCert != "":
 			return newClientCertificateCredential(o)
 		case o.IsPoPTokenEnabled:
-			return newClientSecretCredentialWithPoP(o)
+			return newClientSecretCredentialWithPoP(o, cache)
 		default:
 			return newClientSecretCredential(o)
 		}
