@@ -1,5 +1,20 @@
 # Change Log
 
+## [0.2.9]
+
+## What's Changed
+
+* added redirect-url to interactive mode by @weinong in https://github.com/Azure/kubelogin/pull/661
+* added Interactive login hint by @weinong in https://github.com/Azure/kubelogin/pull/663
+* Add caching support for PoP token acquisition by @JorgeDaboub in https://github.com/Azure/kubelogin/pull/662
+* feat: update documentation by @jakangah in https://github.com/Azure/kubelogin/pull/669
+
+## New Contributors
+
+* @jakangah made their first contribution in https://github.com/Azure/kubelogin/pull/669
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.8...v0.2.9
+
 ## [0.2.8]
 
 ### Maintenance
