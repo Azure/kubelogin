@@ -27,6 +27,16 @@ kubelogin convert-kubeconfig -l interactive --redirect-url http://localhost:8080
 kubectl get nodes
 ```
 
+### Specifying login user hint
+
+```sh
+export KUBECONFIG=/path/to/kubeconfig
+
+kubelogin convert-kubeconfig -l interactive --login-hint user@example.com
+
+kubectl get nodes
+```
+
 
 ### Proof-of-possession (PoP) token with interactive flow
 
@@ -36,6 +46,12 @@ export KUBECONFIG=/path/to/kubeconfig
 kubelogin convert-kubeconfig -l interactive --pop-enabled --pop-claims "u=/ARM/ID/OF/CLUSTER"
 
 kubectl get nodes
+```
+
+### Clearing the cache
+
+```sh
+kubelogin remove-cache-dir
 ```
 
 ## References

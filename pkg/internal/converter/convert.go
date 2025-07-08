@@ -38,6 +38,7 @@ const (
 	argPoPTokenClaims             = "--pop-claims"
 	argDisableEnvironmentOverride = "--disable-environment-override"
 	argRedirectURL                = "--redirect-url"
+	argLoginHint                  = "--login-hint"
 
 	flagAzureConfigDir             = "azure-config-dir"
 	flagClientID                   = "client-id"
@@ -61,6 +62,7 @@ const (
 	flagPoPTokenClaims             = "pop-claims"
 	flagDisableEnvironmentOverride = "disable-environment-override"
 	flagRedirectURL                = "redirect-url"
+	flagLoginHint                  = "login-hint"
 
 	execName        = "kubelogin"
 	getTokenCommand = "get-token"
@@ -81,7 +83,8 @@ func getArgValues(o Options, authInfo *api.AuthInfo) (
 	argTenantIDVal,
 	argAuthRecordCacheDirVal,
 	argPoPTokenClaimsVal,
-	argRedirectURLVal string,
+	argRedirectURLVal,
+	argLoginHintVal string,
 	argIsLegacyConfigModeVal,
 	argIsPoPTokenEnabledVal bool,
 ) {
@@ -173,6 +176,12 @@ func getArgValues(o Options, authInfo *api.AuthInfo) (
 		argRedirectURLVal = getExecArg(authInfo, argRedirectURL)
 	}
 
+	if o.isSet(flagLoginHint) {
+		argLoginHintVal = o.TokenOptions.LoginHint
+	} else {
+		argLoginHintVal = getExecArg(authInfo, argLoginHint)
+	}
+
 	return
 }
 
@@ -249,6 +258,7 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 			argAuthRecordCacheDirVal,
 			argPoPTokenClaimsVal,
 			argRedirectURLVal,
+			argLoginHintVal,
 			isLegacyConfigMode,
 			isPoPTokenEnabled := getArgValues(o, authInfo)
 		exec := &api.ExecConfig{
@@ -347,6 +357,10 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 
 			if argRedirectURLVal != "" {
 				exec.Args = append(exec.Args, argRedirectURL, argRedirectURLVal)
+			}
+
+			if argLoginHintVal != "" {
+				exec.Args = append(exec.Args, argLoginHint, argLoginHintVal)
 			}
 
 		case token.ServicePrincipalLogin:
