@@ -10,12 +10,14 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/kubelogin/pkg/internal/pop"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
+	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
 )
 
 type UsernamePasswordCredentialWithPoP struct {
 	popClaims map[string]string
 	username  string
 	password  string
+	client    public.Client
 	options   *pop.MsalClientOptions
 }
 
@@ -71,6 +73,7 @@ func (c *UsernamePasswordCredentialWithPoP) GetToken(ctx context.Context, opts p
 		ctx,
 		c.popClaims,
 		opts.Scopes,
+		c.client,
 		c.username,
 		c.password,
 		c.options,
