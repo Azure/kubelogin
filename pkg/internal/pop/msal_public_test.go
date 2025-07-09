@@ -92,21 +92,28 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 				t.Fatalf("failed to create vcr recorder: %s", err)
 			}
 
+			msalClientOptions := &MsalClientOptions{
+				Authority: authority,
+				ClientID:  tc.p.clientID,
+				Options: azcore.ClientOptions{
+					Cloud:     cloud.AzurePublic,
+					Transport: vcrRecorder.GetDefaultClient(),
+				},
+				TenantID: tc.p.tenantID,
+			}
+			client, err := NewPublicClient(msalClientOptions)
+			if err != nil {
+				t.Errorf("expected no error creating client but got: %s", err)
+			}
+
 			token, _, err := AcquirePoPTokenByUsernamePassword(
 				ctx,
 				tc.p.popClaims,
 				scopes,
+				client,
 				tc.p.username,
 				tc.p.password,
-				&MsalClientOptions{
-					Authority: authority,
-					ClientID:  tc.p.clientID,
-					Options: azcore.ClientOptions{
-						Cloud:     cloud.AzurePublic,
-						Transport: vcrRecorder.GetDefaultClient(),
-					},
-					TenantID: tc.p.tenantID,
-				},
+				msalClientOptions,
 			)
 			defer vcrRecorder.Stop()
 			if tc.expectedError != nil {
