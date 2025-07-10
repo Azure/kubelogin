@@ -10,7 +10,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/kubelogin/pkg/internal/testutils"
-	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -190,23 +189,18 @@ func TestGetPublicClient(t *testing.T) {
 		},
 	}
 
-	var client *public.Client
-	var err error
-
 	for _, tc := range testCase {
 		t.Run(tc.testName, func(t *testing.T) {
-			client, err = getPublicClient(tc.msalOptions)
-
+			_, err := NewPublicClient(tc.msalOptions)
 			if tc.expectedError != nil {
 				if !testutils.ErrorContains(err, tc.expectedError.Error()) {
+					if err == nil {
+						t.Errorf("shizzzz")
+					}
 					t.Errorf("expected error %s, but got %s", tc.expectedError.Error(), err)
 				}
 			} else if err != nil {
-				t.Errorf("expected no error, but got: %s", err)
-			} else {
-				if client == nil {
-					t.Errorf("expected a client but got nil")
-				}
+				t.Errorf("expected no error creating client, but got: %s", err.Error())
 			}
 		})
 	}

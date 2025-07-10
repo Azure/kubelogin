@@ -43,13 +43,13 @@ func NewPublicClient(
 	var publicOptions []public.Option
 	publicOptions = append(publicOptions,
 		public.WithInstanceDiscovery(!msalOptions.DisableInstanceDiscovery),
+		public.WithAuthority(msalOptions.Authority),
 	)
 
 	// Add HTTP client if present in msalOptions
 	if msalOptions.Options.Transport != nil {
 		publicOptions = append(publicOptions,
 			public.WithHTTPClient(msalOptions.Options.Transport.(*http.Client)),
-			public.WithAuthority(msalOptions.Authority),
 		)
 	}
 
@@ -57,8 +57,6 @@ func NewPublicClient(
 	if clientOpts.Cache != nil {
 		publicOptions = append(publicOptions, public.WithCache(clientOpts.Cache))
 	}
-
-	var client public.Client
 
 	client, err := public.New(
 		msalOptions.ClientID,
