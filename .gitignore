@@ -6,6 +6,7 @@
 *.dylib
 *.cov
 bin
+kubelogin
 
 # Test binary, built with `go test -c`
 *.test
