@@ -1,5 +1,22 @@
 # Change Log
 
+## [0.2.10]
+
+## What's Changed
+
+* Add Docker Image Build and Publish Workflow by @Copilot in https://github.com/Azure/kubelogin/pull/680
+* Fix Docker registry name case issue in GitHub Actions workflow by @Copilot in https://github.com/Azure/kubelogin/pull/682
+
+### Maintenance
+
+* Fix CVE-2025-22871 and CVE-2025-22868: Update Go version and security dependencies by @Copilot in https://github.com/Azure/kubelogin/pull/678
+
+## New Contributors
+
+* @Copilot made their first contribution in https://github.com/Azure/kubelogin/pull/678
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.9...v0.2.10
+
 ## [0.2.9]
 
 ## What's Changed
