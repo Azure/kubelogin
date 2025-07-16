@@ -17,6 +17,24 @@ LDFLAGS    := -X main.gitTag=$(GIT_TAG)
 
 all: $(TARGET)
 
+help:
+	@echo "Available targets:"
+	@echo "  all          - Build the kubelogin binary (default)"
+	@echo "  $(TARGET)    - Build the kubelogin binary"
+	@echo "  lint         - Run linting checks"
+	@echo "  test         - Run tests (includes linting)"
+	@echo "  clean        - Remove built binaries"
+	@echo "  build-image  - Build Docker image with kubelogin binary"
+	@echo ""
+	@echo "Docker image build options:"
+	@echo "  make build-image                    # Build with 'latest' tag"
+	@echo "  GIT_TAG=v1.0.0 make build-image   # Build with specific tag"
+	@echo ""
+	@echo "Environment variables:"
+	@echo "  GOOS         - Target OS (default: $(OS))"
+	@echo "  GOARCH       - Target architecture (default: $(ARCH))"
+	@echo "  GIT_TAG      - Git tag for version info and Docker tagging"
+
 lint: $(GOLANGCI_LINT)
 	$(GOLANGCI_LINT) run
 

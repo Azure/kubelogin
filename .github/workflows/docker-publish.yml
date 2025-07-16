@@ -51,13 +51,17 @@ jobs:
         run: |
           # Build for amd64
           GOOS=linux GOARCH=amd64 CGO_ENABLED=0 GIT_TAG=${{ steps.extract_tag.outputs.tag }} make kubelogin
-          mkdir -p bin/linux_amd64
-          cp bin/linux_amd64/kubelogin bin/linux_amd64/kubelogin-amd64
           
           # Build for arm64  
           GOOS=linux GOARCH=arm64 CGO_ENABLED=0 GIT_TAG=${{ steps.extract_tag.outputs.tag }} make kubelogin
-          mkdir -p bin/linux_arm64
-          cp bin/linux_arm64/kubelogin bin/linux_arm64/kubelogin-arm64
+          
+          # Verify binaries were created
+          ls -la bin/linux_amd64/kubelogin
+          ls -la bin/linux_arm64/kubelogin
+          
+          # Test the binaries
+          file bin/linux_amd64/kubelogin
+          file bin/linux_arm64/kubelogin
 
       - name: Build and push Docker image
         uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
