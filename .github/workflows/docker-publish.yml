@@ -72,7 +72,7 @@ jobs:
           tags: |
             ghcr.io/azure/kubelogin:${{ steps.extract_tag.outputs.tag }}
             ghcr.io/azure/kubelogin:latest
-          file: Dockerfile.simple
+          file: Dockerfile
 
       - name: Generate Docker image summary
         run: |
