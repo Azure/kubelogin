@@ -1,0 +1,41 @@
+# Docker ignore file for kubelogin
+# Ignore development and build files that are not needed in Docker context
+
+# Version control
+.git
+.gitignore
+
+# Build artifacts (except the final binary)
+.bingo/
+hack/
+
+# Documentation
+docs/
+README.md
+CHANGELOG.md
+CODE_OF_CONDUCT.md
+SECURITY.md
+
+# Test files
+*_test.go
+**/*_test.go
+**/testdata/
+**/*VCR.yaml
+
+# Development files
+.github/dependabot.yml
+.github/workflows/golangci-lint.yml
+.github/workflows/website.yaml
+.github/workflows/dependency-review.yml
+.pre-commit-config.yaml
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
