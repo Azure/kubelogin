@@ -1,0 +1,11 @@
+# Simple multi-platform Dockerfile for kubelogin
+FROM scratch
+
+# Build arguments
+ARG TARGETARCH
+
+# Copy the binary for the correct architecture
+COPY bin/linux_${TARGETARCH}/kubelogin /usr/local/bin/kubelogin
+
+# Set entrypoint
+ENTRYPOINT ["/usr/local/bin/kubelogin"]

@@ -1,0 +1,38 @@
+# Multi-architecture Dockerfile for kubelogin
+# Build stage
+FROM --platform=$BUILDPLATFORM golang:1.23-alpine AS builder
+
+# Install git for version info
+RUN apk add --no-cache git
+
+WORKDIR /src
+
+# Copy go mod and sum files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Build args for cross-compilation
+ARG TARGETOS
+ARG TARGETARCH
+ARG GIT_TAG
+
+# Build the binary for the target platform
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
+    go build -o kubelogin -ldflags "-X main.gitTag=${GIT_TAG}" .
+
+# Final stage
+FROM scratch
+
+# Copy ca-certificates for HTTPS
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+# Copy the binary
+COPY --from=builder /src/kubelogin /usr/local/bin/kubelogin
+
+# Set entrypoint
+ENTRYPOINT ["/usr/local/bin/kubelogin"]
