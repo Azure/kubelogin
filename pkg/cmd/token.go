@@ -5,12 +5,21 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/Azure/kubelogin/pkg/internal/options"
 	"github.com/Azure/kubelogin/pkg/internal/token"
 	"github.com/spf13/cobra"
 )
 
-// newTokenCmd provides a cobra command for convert sub command
+// newTokenCmd provides a cobra command for get-token sub command
 func newTokenCmd() *cobra.Command {
+	if useUnifiedOptions() {
+		return options.NewUnifiedCommand(options.TokenCommand)
+	}
+	return newTokenCmdLegacy()
+}
+
+// newTokenCmdLegacy provides the legacy token command implementation
+func newTokenCmdLegacy() *cobra.Command {
 	o := token.NewOptions(true)
 
 	cmd := &cobra.Command{
