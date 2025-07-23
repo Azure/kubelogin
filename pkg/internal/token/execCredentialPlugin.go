@@ -11,6 +11,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 	klog "k8s.io/klog/v2"
 )
 
@@ -21,8 +22,9 @@ type ExecCredentialPlugin interface {
 type execCredentialPlugin struct {
 	o                    *Options
 	cachedRecord         CachedRecordProvider
+	msalCachedRecord     MSALCacheProvider
 	execCredentialWriter ExecCredentialWriter
-	newCredentialFunc    func(record azidentity.AuthenticationRecord, o *Options) (CredentialProvider, error)
+	newCredentialFunc    func(record azidentity.AuthenticationRecord, cache cache.ExportReplace, o *Options) (CredentialProvider, error)
 }
 
 var errAuthenticateNotSupported = errors.New("authenticate is not supported")
@@ -33,6 +35,9 @@ func New(o *Options) (ExecCredentialPlugin, error) {
 		o:                    o,
 		execCredentialWriter: &execCredentialWriter{},
 		cachedRecord: &defaultCachedRecordProvider{
+			file: o.authRecordCacheFile,
+		},
+		msalCachedRecord: &defaultMSALCacheProvider{
 			file: o.authRecordCacheFile,
 		},
 		newCredentialFunc: NewAzIdentityCredential,
@@ -52,7 +57,7 @@ func (p *execCredentialPlugin) Do(ctx context.Context) error {
 		klog.V(5).Infof("failed to retrieve cached record: %s", err)
 	}
 
-	cred, err := p.newCredentialFunc(record, p.o)
+	cred, err := p.newCredentialFunc(record, p.msalCachedRecord, p.o)
 	if err != nil {
 		return fmt.Errorf("failed to create azidentity credential: %w", err)
 	}
