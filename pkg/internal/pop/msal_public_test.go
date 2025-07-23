@@ -194,9 +194,6 @@ func TestGetPublicClient(t *testing.T) {
 			_, err := NewPublicClient(tc.msalOptions)
 			if tc.expectedError != nil {
 				if !testutils.ErrorContains(err, tc.expectedError.Error()) {
-					if err == nil {
-						t.Errorf("shizzzz")
-					}
 					t.Errorf("expected error %s, but got %s", tc.expectedError.Error(), err)
 				}
 			} else if err != nil {
