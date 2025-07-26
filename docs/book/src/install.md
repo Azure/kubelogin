@@ -46,13 +46,13 @@ _asdf and the asdf-kubelogin plugin are not maintained by Microsoft._
 # install
 asdf plugin add kubelogin
 asdf install kubelogin latest
-asdf global kubelogin latest
+asdf set kubelogin latest
 
 # upgrade
 asdf update
 asdf plugin update kubelogin
 asdf install kubelogin latest
-asdf global kubelogin latest
+asdf set kubelogin latest
 ```
 
 ## Windows
