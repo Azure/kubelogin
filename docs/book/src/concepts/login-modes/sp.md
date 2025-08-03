@@ -5,6 +5,11 @@ The supported credentials are password and pfx client certificate.
 
 The token will not be cached on the filesystem.
 
+```text
+When AAD_SERVICE_PRINCIPAL_CLIENT_ID and AZURE_CLIENT_ID both exists,
+AZURE_CLIENT_ID takes precedence.
+```
+
 ## Usage Examples
 
 ### Client secret in environment variable
