@@ -149,6 +149,9 @@
 <p>This login mode uses the service principal to login. The credential may be provided via environment variables or flag.
 The supported credentials are password and pfx client certificate.</p>
 <p>The token will not be cached on the filesystem.</p>
+<pre><code class="language-text">When AAD_SERVICE_PRINCIPAL_CLIENT_ID and AZURE_CLIENT_ID both exists,
+AZURE_CLIENT_ID takes precedence.
+</code></pre>
 <h2 id="usage-examples"><a class="header" href="#usage-examples">Usage Examples</a></h2>
 <h3 id="client-secret-in-environment-variable"><a class="header" href="#client-secret-in-environment-variable">Client secret in environment variable</a></h3>
 <pre><code class="language-sh">export KUBECONFIG=/path/to/kubeconfig
