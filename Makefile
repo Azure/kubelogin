@@ -52,7 +52,7 @@ IMAGE_NAME    := ghcr.io/azure/kubelogin
 IMAGE_TAG     := $(if $(GIT_TAG),$(GIT_TAG),latest)
 
 build-image: $(TARGET)
-	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
+	docker build --build-arg VERSION=$(IMAGE_TAG) -t $(IMAGE_NAME):$(IMAGE_TAG) .
 	@if [ "$(GIT_TAG)" != "" ]; then \
 		docker tag $(IMAGE_NAME):$(IMAGE_TAG) $(IMAGE_NAME):latest; \
 	fi
