@@ -10,6 +10,13 @@ FROM scratch
 
 # Build arguments for multi-architecture support
 ARG TARGETARCH=amd64
+ARG VERSION=""
+
+# OpenContainers Image Spec labels
+LABEL org.opencontainers.image.source="https://github.com/Azure/kubelogin"
+LABEL org.opencontainers.image.description="Kubernetes credential plugin for Azure authentication"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.version="${VERSION}"
 
 # Copy the pre-built binary from local build to /usr/local/bin
 COPY bin/linux_${TARGETARCH}/kubelogin /usr/local/bin/kubelogin
