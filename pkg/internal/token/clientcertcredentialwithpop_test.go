@@ -107,7 +107,7 @@ func TestNewClientCertificateCredentialWithPoP(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			cred, err := newClientCertificateCredentialWithPoP(tc.opts)
+			cred, err := newClientCertificateCredentialWithPoP(tc.opts, nil)
 
 			if tc.expectErrorMsg != "" {
 				assert.Error(t, err)
