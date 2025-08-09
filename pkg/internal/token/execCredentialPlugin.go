@@ -59,6 +59,7 @@ func (p *execCredentialPlugin) Do(ctx context.Context) error {
 
 	cred, err := p.newCredentialFunc(record, p.msalCachedRecord, p.o)
 	if err != nil {
+		klog.V(5).Infof("failed to create credential: %s", err)
 		return fmt.Errorf("failed to create azidentity credential: %w", err)
 	}
 

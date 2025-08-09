@@ -69,12 +69,12 @@ func (c *defaultMSALCacheProvider) Export(ctx context.Context, cache cache.Marsh
 	// Ensure the directory for the file exists
 	dir := filepath.Dir(c.file)
 	if err := os.MkdirAll(dir, 0700); err != nil {
-		return fmt.Errorf("failed to create cache directory: %w", err)
+		return fmt.Errorf("failed to create cache directory %q: %w", dir, err)
 	}
 
 	// Write the marshaled data to the file
 	if err := os.WriteFile(c.file, data, 0600); err != nil {
-		return fmt.Errorf("failed to write cache file: %w", err)
+		return fmt.Errorf("failed to write cache file %q: %w", c.file, err)
 	}
 
 	return nil
