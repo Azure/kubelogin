@@ -17,6 +17,27 @@ brew upgrade Azure/kubelogin/kubelogin
 
 ## Linux
 
+### Azure Linux 3
+
+```sh
+tdnf install -y kubelogin
+```
+
+### Using azure cli
+
+https://learn.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest#az-aks-install-cli
+
+```sh
+# install (May require using the command ‘sudo’)
+az aks install-cli
+```
+
+## Container image
+
+```sh
+docker pull ghcr.io/azure/kubelogin:latest # or by release tag
+```
+
 ### Using [asdf](https://asdf-vm.com/)
 
 _asdf and the asdf-kubelogin plugin are not maintained by Microsoft._
@@ -25,20 +46,13 @@ _asdf and the asdf-kubelogin plugin are not maintained by Microsoft._
 # install
 asdf plugin add kubelogin
 asdf install kubelogin latest
-asdf global kubelogin latest
+asdf set kubelogin latest
 
 # upgrade
 asdf update
 asdf plugin update kubelogin
 asdf install kubelogin latest
-asdf global kubelogin latest
-```
-### Using azure cli
-There is another option to install Kubectl and Kubectl login. Documentation on this is [here](https://learn.microsoft.com/en-us/cli/azure/aks?view=azure-cli-latest#az-aks-install-cli)
-
-```
-# install (May require using the command ‘sudo’)
-az aks install-cli
+asdf set kubelogin latest
 ```
 
 ## Windows
