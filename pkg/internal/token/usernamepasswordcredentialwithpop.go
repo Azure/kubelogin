@@ -52,11 +52,16 @@ func newUsernamePasswordCredentialWithPoP(opts *Options, cache cache.ExportRepla
 	if opts.httpClient != nil {
 		msalOpts.Options.Transport = opts.httpClient
 	}
+	client, err := pop.NewPublicClient(msalOpts, pop.WithCustomCachePublic(cache))
+	if err != nil {
+		return nil, fmt.Errorf("unable to create public client: %w", err)
+	}
 	return &UsernamePasswordCredentialWithPoP{
 		options:   msalOpts,
 		popClaims: popClaimsMap,
 		username:  opts.Username,
 		password:  opts.Password,
+		client:    client,
 	}, nil
 }
 
