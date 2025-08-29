@@ -31,15 +31,20 @@ var errAuthenticateNotSupported = errors.New("authenticate is not supported")
 
 func New(o *Options) (ExecCredentialPlugin, error) {
 	klog.V(10).Info(o.ToString())
+
+	// Create MSAL cache provider using the official library
+	msalCache, err := NewMSALCacheProvider(o.authRecordCacheFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create MSAL cache provider: %w", err)
+	}
+
 	return &execCredentialPlugin{
 		o:                    o,
 		execCredentialWriter: &execCredentialWriter{},
 		cachedRecord: &defaultCachedRecordProvider{
 			file: o.authRecordCacheFile,
 		},
-		msalCachedRecord: &defaultMSALCacheProvider{
-			file: o.authRecordCacheFile,
-		},
+		msalCachedRecord:  msalCache,
 		newCredentialFunc: NewAzIdentityCredential,
 	}, nil
 }

@@ -53,7 +53,11 @@ func newClientSecretCredentialWithPoP(opts *Options, cache cache.ExportReplace) 
 	if opts.httpClient != nil {
 		msalOpts.Options.Transport = opts.httpClient
 	}
-	client, err := pop.NewConfidentialClient(cred, msalOpts)
+	client, err := pop.NewConfidentialClient(
+		cred,
+		msalOpts,
+		pop.WithCustomCacheConfidential(cache),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create confidential client: %w", err)
 	}

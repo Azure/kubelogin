@@ -50,7 +50,7 @@ func newInteractiveBrowserCredentialWithPoP(opts *Options, cache cache.ExportRep
 		pop.WithCustomCachePublic(cache),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("unable to create public  client: %w", err)
+		return nil, fmt.Errorf("unable to create public client: %w", err)
 	}
 
 	return &InteractiveBrowserCredentialWithPoP{
