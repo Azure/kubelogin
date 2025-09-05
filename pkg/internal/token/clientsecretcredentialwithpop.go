@@ -45,13 +45,13 @@ func newClientSecretCredentialWithPoP(opts *Options, cache cache.ExportReplace) 
 	if err != nil {
 		return nil, fmt.Errorf("unable to create confidential credential: %w", err)
 	}
-	
+
 	// Construct authority URL properly to avoid malformation
 	authorityURL, err := url.JoinPath(opts.GetCloudConfiguration().ActiveDirectoryAuthorityHost, opts.TenantID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to construct authority URL: %w", err)
 	}
-	
+
 	msalOpts := &pop.MsalClientOptions{
 		Authority:                authorityURL,
 		ClientID:                 opts.ClientID,
