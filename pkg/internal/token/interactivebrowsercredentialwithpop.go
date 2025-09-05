@@ -36,7 +36,7 @@ func newInteractiveBrowserCredentialWithPoP(opts *Options, cache cache.ExportRep
 		return nil, fmt.Errorf("number of pop claims is invalid: %d", len(popClaimsMap))
 	}
 	msalOpts := &pop.MsalClientOptions{
-		Authority:                opts.GetCloudConfiguration().ActiveDirectoryAuthorityHost,
+		Authority:                opts.GetCloudConfiguration().ActiveDirectoryAuthorityHost + opts.TenantID,
 		ClientID:                 opts.ClientID,
 		TenantID:                 opts.TenantID,
 		DisableInstanceDiscovery: opts.DisableInstanceDiscovery,

@@ -45,7 +45,7 @@ func newClientSecretCredentialWithPoP(opts *Options, cache cache.ExportReplace) 
 		return nil, fmt.Errorf("unable to create confidential credential: %w", err)
 	}
 	msalOpts := &pop.MsalClientOptions{
-		Authority:                opts.GetCloudConfiguration().ActiveDirectoryAuthorityHost,
+		Authority:                opts.GetCloudConfiguration().ActiveDirectoryAuthorityHost + opts.TenantID,
 		ClientID:                 opts.ClientID,
 		TenantID:                 opts.TenantID,
 		DisableInstanceDiscovery: opts.DisableInstanceDiscovery,

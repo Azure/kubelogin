@@ -52,7 +52,7 @@ func newClientCertificateCredentialWithPoP(opts *Options, cache cache.ExportRepl
 		return nil, fmt.Errorf("unable to create credential from certificate: %w", err)
 	}
 	msalOpts := &pop.MsalClientOptions{
-		Authority:                opts.GetCloudConfiguration().ActiveDirectoryAuthorityHost,
+		Authority:                opts.GetCloudConfiguration().ActiveDirectoryAuthorityHost + opts.TenantID,
 		ClientID:                 opts.ClientID,
 		TenantID:                 opts.TenantID,
 		DisableInstanceDiscovery: opts.DisableInstanceDiscovery,

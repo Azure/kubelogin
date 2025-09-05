@@ -44,7 +44,7 @@ func newUsernamePasswordCredentialWithPoP(opts *Options, cache cache.ExportRepla
 		return nil, fmt.Errorf("number of pop claims is invalid: %d", len(popClaimsMap))
 	}
 	msalOpts := &pop.MsalClientOptions{
-		Authority:                opts.GetCloudConfiguration().ActiveDirectoryAuthorityHost,
+		Authority:                opts.GetCloudConfiguration().ActiveDirectoryAuthorityHost + opts.TenantID,
 		ClientID:                 opts.ClientID,
 		TenantID:                 opts.TenantID,
 		DisableInstanceDiscovery: opts.DisableInstanceDiscovery,
