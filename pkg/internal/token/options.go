@@ -10,39 +10,40 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
-	"github.com/Azure/kubelogin/pkg/internal/env"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/client-go/util/homedir"
+
+	"github.com/Azure/kubelogin/pkg/internal/env"
 )
 
 type Options struct {
-	LoginMethod                     string
-	ClientID                        string
-	ClientSecret                    string
-	ClientCert                      string
-	ClientCertPassword              string
-	Username                        string
-	Password                        string
-	ServerID                        string
-	TenantID                        string
-	Environment                     string
-	IsLegacy                        bool
-	Timeout                         time.Duration
-	AuthRecordCacheDir              string
-	authRecordCacheFile             string
-	IdentityResourceID              string
-	FederatedTokenFile              string
-	AuthorityHost                   string
-	UseAzureRMTerraformEnv          bool
-	IsPoPTokenEnabled               bool
-	PoPTokenClaims                  string
-	DisableEnvironmentOverride      bool
-	UsePersistentCache              bool
-	DisableInstanceDiscovery        bool
-	httpClient                      *http.Client
-	RedirectURL                     string
-	LoginHint                       string
+	LoginMethod                       string
+	ClientID                          string
+	ClientSecret                      string
+	ClientCert                        string
+	ClientCertPassword                string
+	Username                          string
+	Password                          string
+	ServerID                          string
+	TenantID                          string
+	Environment                       string
+	IsLegacy                          bool
+	Timeout                           time.Duration
+	AuthRecordCacheDir                string
+	authRecordCacheFile               string
+	IdentityResourceID                string
+	FederatedTokenFile                string
+	AuthorityHost                     string
+	UseAzureRMTerraformEnv            bool
+	IsPoPTokenEnabled                 bool
+	PoPTokenClaims                    string
+	DisableEnvironmentOverride        bool
+	UsePersistentCache                bool
+	DisableInstanceDiscovery          bool
+	httpClient                        *http.Client
+	RedirectURL                       string
+	LoginHint                         string
 	AzurePipelinesServiceConnectionID string
 }
 
