@@ -8,6 +8,7 @@ const (
 	ServicePrincipalLogin = token.ServicePrincipalLogin
 	MSILogin              = token.MSILogin
 	WorkloadIdentityLogin = token.WorkloadIdentityLogin
+	AzurePipelinesLogin   = token.AzurePipelinesLogin
 )
 
 // Options defines the options for getting token.
@@ -39,4 +40,8 @@ type Options struct {
 
 	AuthorityHost      string
 	FederatedTokenFile string
+
+	// for AzurePipelinesLogin
+
+	AzurePipelinesServiceConnectionID string
 }

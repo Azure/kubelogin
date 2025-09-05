@@ -39,6 +39,7 @@ const (
 	argDisableEnvironmentOverride = "--disable-environment-override"
 	argRedirectURL                = "--redirect-url"
 	argLoginHint                  = "--login-hint"
+	argAzurePipelinesServiceConnectionID = "--azure-pipelines-service-connection-id"
 
 	flagAzureConfigDir             = "azure-config-dir"
 	flagClientID                   = "client-id"
@@ -63,6 +64,7 @@ const (
 	flagDisableEnvironmentOverride = "disable-environment-override"
 	flagRedirectURL                = "redirect-url"
 	flagLoginHint                  = "login-hint"
+	flagAzurePipelinesServiceConnectionID = "azure-pipelines-service-connection-id"
 
 	execName        = "kubelogin"
 	getTokenCommand = "get-token"
@@ -463,6 +465,18 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 
 			if o.isSet(flagFederatedTokenFile) {
 				exec.Args = append(exec.Args, argFederatedTokenFile, o.TokenOptions.FederatedTokenFile)
+			}
+
+		case token.AzurePipelinesLogin:
+
+			if argTenantIDVal == "" {
+				return fmt.Errorf("%s is required", argTenantID)
+			}
+
+			exec.Args = append(exec.Args, argTenantID, argTenantIDVal)
+
+			if o.isSet(flagAzurePipelinesServiceConnectionID) {
+				exec.Args = append(exec.Args, argAzurePipelinesServiceConnectionID, o.TokenOptions.AzurePipelinesServiceConnectionID)
 			}
 		}
 

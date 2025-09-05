@@ -18,13 +18,14 @@ const (
 	TerraformTenantID                  = "ARM_TENANT_ID"
 
 	// env vars following azure sdk naming convention
-	AzureAuthorityHost             = "AZURE_AUTHORITY_HOST"
-	AzureClientCertificatePassword = "AZURE_CLIENT_CERTIFICATE_PASSWORD"
-	AzureClientCertificatePath     = "AZURE_CLIENT_CERTIFICATE_PATH"
-	AzureClientID                  = "AZURE_CLIENT_ID"
-	AzureClientSecret              = "AZURE_CLIENT_SECRET"
-	AzureFederatedTokenFile        = "AZURE_FEDERATED_TOKEN_FILE"
-	AzureTenantID                  = "AZURE_TENANT_ID"
-	AzureUsername                  = "AZURE_USERNAME"
-	AzurePassword                  = "AZURE_PASSWORD"
+	AzureAuthorityHost                  = "AZURE_AUTHORITY_HOST"
+	AzureClientCertificatePassword      = "AZURE_CLIENT_CERTIFICATE_PASSWORD"
+	AzureClientCertificatePath          = "AZURE_CLIENT_CERTIFICATE_PATH"
+	AzureClientID                       = "AZURE_CLIENT_ID"
+	AzureClientSecret                   = "AZURE_CLIENT_SECRET"
+	AzureFederatedTokenFile             = "AZURE_FEDERATED_TOKEN_FILE"
+	AzureTenantID                       = "AZURE_TENANT_ID"
+	AzureUsername                       = "AZURE_USERNAME"
+	AzurePassword                       = "AZURE_PASSWORD"
+	AzurePipelinesServiceConnectionID   = "AZURE_PIPELINES_SERVICE_CONNECTION_ID"
 )

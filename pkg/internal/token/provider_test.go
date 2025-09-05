@@ -11,6 +11,14 @@ import (
 func TestNewAzIdentityCredential(t *testing.T) {
 	certFile := "fixtures/cert.pem"
 
+	// Set up environment variables for Azure Pipelines test
+	os.Setenv("SYSTEM_ACCESSTOKEN", "test-system-access-token")
+	os.Setenv("SYSTEM_OIDCREQUESTURI", "https://test.oidc.request.uri")
+	defer func() {
+		os.Unsetenv("SYSTEM_ACCESSTOKEN")
+		os.Unsetenv("SYSTEM_OIDCREQUESTURI")
+	}()
+
 	tests := []struct {
 		name       string
 		options    *Options
@@ -99,6 +107,17 @@ func TestNewAzIdentityCredential(t *testing.T) {
 			},
 			wantErr:    true,
 			errMessage: "unsupported token provider",
+		},
+		{
+			name: "Azure Pipelines login",
+			options: &Options{
+				LoginMethod:                       AzurePipelinesLogin,
+				ServerID:                          "server-id",
+				TenantID:                          "tenant-id", 
+				ClientID:                          "client-id",
+				AzurePipelinesServiceConnectionID: "service-connection-id",
+			},
+			wantErr: false,
 		},
 	}
 
