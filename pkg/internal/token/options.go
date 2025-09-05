@@ -303,6 +303,12 @@ func getAuthenticationRecordFileName(o *Options) string {
 	return filepath.Join(o.AuthRecordCacheDir, "auth.json")
 }
 
+// getMSALCacheFileName returns the file path for the MSAL token cache.
+// This is separate from the authentication record cache file.
+func getMSALCacheFileName(o *Options) string {
+	return filepath.Join(o.AuthRecordCacheDir, "msal_cache.json")
+}
+
 // parsePoPClaims parses the pop token claims. Pop token claims are passed in as a
 // comma-separated string in the format "key1=val1,key2=val2"
 func parsePoPClaims(popClaims string) (map[string]string, error) {
