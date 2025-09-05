@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/x509"
 	"fmt"
+	"net/url"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -51,8 +52,15 @@ func newClientCertificateCredentialWithPoP(opts *Options, cache cache.ExportRepl
 	if err != nil {
 		return nil, fmt.Errorf("unable to create credential from certificate: %w", err)
 	}
+
+	// Construct authority URL properly to avoid malformation
+	authorityURL, err := url.JoinPath(opts.GetCloudConfiguration().ActiveDirectoryAuthorityHost, opts.TenantID)
+	if err != nil {
+		return nil, fmt.Errorf("unable to construct authority URL: %w", err)
+	}
+
 	msalOpts := &pop.MsalClientOptions{
-		Authority:                opts.GetCloudConfiguration().ActiveDirectoryAuthorityHost + opts.TenantID,
+		Authority:                authorityURL,
 		ClientID:                 opts.ClientID,
 		TenantID:                 opts.TenantID,
 		DisableInstanceDiscovery: opts.DisableInstanceDiscovery,
