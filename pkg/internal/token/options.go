@@ -111,7 +111,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&o.AuthorityHost, "authority-host", o.AuthorityHost,
 		fmt.Sprintf("Workload Identity authority host. It may be specified in %s environment variable", env.AzureAuthorityHost))
 	fs.StringVar(&o.AzurePipelinesServiceConnectionID, "azure-pipelines-service-connection-id", o.AzurePipelinesServiceConnectionID,
-		fmt.Sprintf("Service connection (resource) ID used by azurepipelines login method. It may be specified in %s environment variable", env.AzurePipelinesServiceConnectionID))
+		"Service connection (resource) ID used by azurepipelines login method")
 	fs.StringVar(&o.AuthRecordCacheDir, "token-cache-dir", o.AuthRecordCacheDir, "directory to cache authentication record")
 	_ = fs.MarkDeprecated("token-cache-dir", "use --cache-dir instead")
 	fs.StringVar(&o.AuthRecordCacheDir, "cache-dir", o.AuthRecordCacheDir, "directory to cache authentication record")
@@ -271,9 +271,6 @@ func (o *Options) UpdateFromEnv() {
 		if timeout, err := time.ParseDuration(v); err == nil {
 			o.Timeout = timeout
 		}
-	}
-	if v, ok := os.LookupEnv(env.AzurePipelinesServiceConnectionID); ok {
-		o.AzurePipelinesServiceConnectionID = v
 	}
 }
 

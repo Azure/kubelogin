@@ -8,6 +8,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity/cache"
+	"k8s.io/klog/v2"
 )
 
 type AzurePipelinesCredential struct {
@@ -22,12 +24,33 @@ func newAzurePipelinesCredential(opts *Options) (CredentialProvider, error) {
 		return nil, fmt.Errorf("SYSTEM_ACCESSTOKEN environment variable not set")
 	}
 
+	var (
+		c   azidentity.Cache
+		err error
+	)
+	if opts.UsePersistentCache {
+		c, err = cache.New(nil)
+		if err != nil {
+			klog.V(5).Infof("failed to create cache: %v", err)
+		}
+	}
+
+	azOpts := &azidentity.AzurePipelinesCredentialOptions{
+		ClientOptions:            azcore.ClientOptions{Cloud: opts.GetCloudConfiguration()},
+		Cache:                    c,
+		DisableInstanceDiscovery: opts.DisableInstanceDiscovery,
+	}
+
+	if opts.httpClient != nil {
+		azOpts.ClientOptions.Transport = opts.httpClient
+	}
+
 	cred, err := azidentity.NewAzurePipelinesCredential(
 		opts.TenantID,
 		opts.ClientID,
 		opts.AzurePipelinesServiceConnectionID,
 		systemAccessToken,
-		nil,
+		azOpts,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create azure pipelines credential: %w", err)
