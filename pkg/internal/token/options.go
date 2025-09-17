@@ -10,39 +10,41 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
-	"github.com/Azure/kubelogin/pkg/internal/env"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/client-go/util/homedir"
+
+	"github.com/Azure/kubelogin/pkg/internal/env"
 )
 
 type Options struct {
-	LoginMethod                string
-	ClientID                   string
-	ClientSecret               string
-	ClientCert                 string
-	ClientCertPassword         string
-	Username                   string
-	Password                   string
-	ServerID                   string
-	TenantID                   string
-	Environment                string
-	IsLegacy                   bool
-	Timeout                    time.Duration
-	AuthRecordCacheDir         string
-	authRecordCacheFile        string
-	IdentityResourceID         string
-	FederatedTokenFile         string
-	AuthorityHost              string
-	UseAzureRMTerraformEnv     bool
-	IsPoPTokenEnabled          bool
-	PoPTokenClaims             string
-	DisableEnvironmentOverride bool
-	UsePersistentCache         bool
-	DisableInstanceDiscovery   bool
-	httpClient                 *http.Client
-	RedirectURL                string
-	LoginHint                  string
+	LoginMethod                       string
+	ClientID                          string
+	ClientSecret                      string
+	ClientCert                        string
+	ClientCertPassword                string
+	Username                          string
+	Password                          string
+	ServerID                          string
+	TenantID                          string
+	Environment                       string
+	IsLegacy                          bool
+	Timeout                           time.Duration
+	AuthRecordCacheDir                string
+	authRecordCacheFile               string
+	IdentityResourceID                string
+	FederatedTokenFile                string
+	AuthorityHost                     string
+	UseAzureRMTerraformEnv            bool
+	IsPoPTokenEnabled                 bool
+	PoPTokenClaims                    string
+	DisableEnvironmentOverride        bool
+	UsePersistentCache                bool
+	DisableInstanceDiscovery          bool
+	httpClient                        *http.Client
+	RedirectURL                       string
+	LoginHint                         string
+	AzurePipelinesServiceConnectionID string
 }
 
 const (
@@ -56,6 +58,7 @@ const (
 	AzureCLILogin          = "azurecli"
 	AzureDeveloperCLILogin = "azd"
 	WorkloadIdentityLogin  = "workloadidentity"
+	AzurePipelinesLogin    = "azurepipelines"
 )
 
 var (
@@ -64,7 +67,7 @@ var (
 )
 
 func init() {
-	supportedLogin = []string{DeviceCodeLogin, InteractiveLogin, ServicePrincipalLogin, ROPCLogin, MSILogin, AzureCLILogin, AzureDeveloperCLILogin, WorkloadIdentityLogin}
+	supportedLogin = []string{DeviceCodeLogin, InteractiveLogin, ServicePrincipalLogin, ROPCLogin, MSILogin, AzureCLILogin, AzureDeveloperCLILogin, WorkloadIdentityLogin, AzurePipelinesLogin}
 }
 
 func GetSupportedLogins() string {
@@ -107,6 +110,8 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 		fmt.Sprintf("Workload Identity federated token file. It may be specified in %s environment variable", env.AzureFederatedTokenFile))
 	fs.StringVar(&o.AuthorityHost, "authority-host", o.AuthorityHost,
 		fmt.Sprintf("Workload Identity authority host. It may be specified in %s environment variable", env.AzureAuthorityHost))
+	fs.StringVar(&o.AzurePipelinesServiceConnectionID, "azure-pipelines-service-connection-id", o.AzurePipelinesServiceConnectionID,
+		"Service connection (resource) ID used by azurepipelines login method")
 	fs.StringVar(&o.AuthRecordCacheDir, "token-cache-dir", o.AuthRecordCacheDir, "directory to cache authentication record")
 	_ = fs.MarkDeprecated("token-cache-dir", "use --cache-dir instead")
 	fs.StringVar(&o.AuthRecordCacheDir, "cache-dir", o.AuthRecordCacheDir, "directory to cache authentication record")
@@ -161,6 +166,22 @@ func (o *Options) Validate() error {
 
 	if o.Timeout <= 0 {
 		return fmt.Errorf("timeout must be greater than 0")
+	}
+
+	// Azure Pipelines login method validation
+	if o.LoginMethod == AzurePipelinesLogin {
+		if o.TenantID == "" {
+			return fmt.Errorf("tenant ID is required for azurepipelines login method")
+		}
+		if o.AzurePipelinesServiceConnectionID == "" {
+			return fmt.Errorf("--azure-pipelines-service-connection-id is required for --login azurepipelines")
+		}
+		if os.Getenv(env.SystemAccessToken) == "" {
+			return fmt.Errorf("environment variable %s not set; enable \"Allow scripts to access the OAuth token\" in the pipeline", env.SystemAccessToken)
+		}
+		if os.Getenv(env.SystemOIDCRequestURI) == "" {
+			return fmt.Errorf("environment variable %s not set; this should be automatically set by Azure Pipelines", env.SystemOIDCRequestURI)
+		}
 	}
 
 	return nil

@@ -2,6 +2,7 @@ package token
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -111,6 +112,131 @@ func TestOptions(t *testing.T) {
 		o.PoPTokenClaims = "u=testhost"
 		if err := o.Validate(); err != nil {
 			t.Fatalf("valid PoP token claims should not return error. got: %s", err)
+		}
+	})
+
+	t.Run("azurepipelines login method validation", func(t *testing.T) {
+		tests := []struct {
+			name             string
+			setupEnv         func()
+			options          func() Options
+			expectError      bool
+			errorSubstring   string
+		}{
+			{
+				name: "valid azurepipelines login",
+				setupEnv: func() {
+					t.Setenv(env.SystemAccessToken, "test-token")
+					t.Setenv(env.SystemOIDCRequestURI, "https://test.oidc.request.uri")
+				},
+				options: func() Options {
+					o := defaultOptions()
+					o.LoginMethod = AzurePipelinesLogin
+					o.TenantID = "test-tenant"
+					o.AzurePipelinesServiceConnectionID = "test-service-connection"
+					return o
+				},
+				expectError: false,
+			},
+			{
+				name: "azurepipelines missing tenant ID",
+				setupEnv: func() {
+					t.Setenv(env.SystemAccessToken, "test-token")
+					t.Setenv(env.SystemOIDCRequestURI, "https://test.oidc.request.uri")
+				},
+				options: func() Options {
+					o := defaultOptions()
+					o.LoginMethod = AzurePipelinesLogin
+					o.AzurePipelinesServiceConnectionID = "test-service-connection"
+					return o
+				},
+				expectError:    true,
+				errorSubstring: "tenant ID is required for azurepipelines login method",
+			},
+			{
+				name: "azurepipelines missing service connection ID",
+				setupEnv: func() {
+					t.Setenv(env.SystemAccessToken, "test-token")
+					t.Setenv(env.SystemOIDCRequestURI, "https://test.oidc.request.uri")
+				},
+				options: func() Options {
+					o := defaultOptions()
+					o.LoginMethod = AzurePipelinesLogin
+					o.TenantID = "test-tenant"
+					return o
+				},
+				expectError:    true,
+				errorSubstring: "--azure-pipelines-service-connection-id is required for --login azurepipelines",
+			},
+			{
+				name: "azurepipelines missing SYSTEM_ACCESSTOKEN",
+				setupEnv: func() {
+					t.Setenv(env.SystemOIDCRequestURI, "https://test.oidc.request.uri")
+					// Don't set SYSTEM_ACCESSTOKEN
+				},
+				options: func() Options {
+					o := defaultOptions()
+					o.LoginMethod = AzurePipelinesLogin
+					o.TenantID = "test-tenant"
+					o.AzurePipelinesServiceConnectionID = "test-service-connection"
+					return o
+				},
+				expectError:    true,
+				errorSubstring: fmt.Sprintf("environment variable %s not set", env.SystemAccessToken),
+			},
+			{
+				name: "azurepipelines missing SYSTEM_OIDCREQUESTURI",
+				setupEnv: func() {
+					t.Setenv(env.SystemAccessToken, "test-token")
+					// Don't set SYSTEM_OIDCREQUESTURI
+				},
+				options: func() Options {
+					o := defaultOptions()
+					o.LoginMethod = AzurePipelinesLogin
+					o.TenantID = "test-tenant"
+					o.AzurePipelinesServiceConnectionID = "test-service-connection"
+					return o
+				},
+				expectError:    true,
+				errorSubstring: fmt.Sprintf("environment variable %s not set", env.SystemOIDCRequestURI),
+			},
+		}
+
+		for _, test := range tests {
+			t.Run(test.name, func(t *testing.T) {
+				// Clean up environment variables before each test
+				originalSystemAccessToken := os.Getenv(env.SystemAccessToken)
+				originalSystemOIDCRequestURI := os.Getenv(env.SystemOIDCRequestURI)
+				defer func() {
+					if originalSystemAccessToken != "" {
+						os.Setenv(env.SystemAccessToken, originalSystemAccessToken)
+					} else {
+						os.Unsetenv(env.SystemAccessToken)
+					}
+					if originalSystemOIDCRequestURI != "" {
+						os.Setenv(env.SystemOIDCRequestURI, originalSystemOIDCRequestURI)
+					} else {
+						os.Unsetenv(env.SystemOIDCRequestURI)
+					}
+				}()
+
+				test.setupEnv()
+				o := test.options()
+				err := o.Validate()
+
+				if test.expectError {
+					if err == nil {
+						t.Fatalf("expected error but got none")
+					}
+					if !strings.Contains(err.Error(), test.errorSubstring) {
+						t.Fatalf("expected error to contain '%s', got: %s", test.errorSubstring, err.Error())
+					}
+				} else {
+					if err != nil {
+						t.Fatalf("expected no error but got: %s", err)
+					}
+				}
+			})
 		}
 	})
 
