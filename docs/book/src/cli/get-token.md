@@ -12,8 +12,9 @@ Usage:
   kubelogin get-token [flags]
 
 Flags:
-      --authority-host string                Workload Identity authority host. It may be specified in AZURE_AUTHORITY_HOST environment variable
-      --cache-dir string                     directory to cache authentication record (default "/home/weinongw/.kube/cache/kubelogin/")
+      --authority-host string                          Workload Identity authority host. It may be specified in AZURE_AUTHORITY_HOST environment variable
+      --azure-pipelines-service-connection-id string   Service connection (resource) ID used by azurepipelines login method
+      --cache-dir string                               directory to cache authentication record (default "/home/weinongw/.kube/cache/kubelogin/")
       --client-certificate string            AAD client cert in pfx. Used in spn login. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE or AZURE_CLIENT_CERTIFICATE_PATH environment variable
       --client-certificate-password string   Password for AAD client cert. Used in spn login. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE_PASSWORD or AZURE_CLIENT_CERTIFICATE_PASSWORD environment variable
       --client-id string                     AAD client application ID. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_ID or AZURE_CLIENT_ID environment variable
@@ -25,7 +26,7 @@ Flags:
   -h, --help                                 help for get-token
       --identity-resource-id string          Managed Identity resource id.
       --legacy                               set to true to get token with 'spn:' prefix in audience claim
-  -l, --login string                         Login method. Supported methods: devicecode, interactive, spn, ropc, msi, azurecli, azd, workloadidentity. It may be specified in AAD_LOGIN_METHOD environment variable (default "devicecode")
+  -l, --login string                         Login method. Supported methods: devicecode, interactive, spn, ropc, msi, azurecli, azd, workloadidentity, azurepipelines. It may be specified in AAD_LOGIN_METHOD environment variable (default "devicecode")
       --login-hint string                    The login hint to pre-fill the username in the interactive login flow.
       --password string                      password for ropc login flow. It may be specified in AAD_USER_PRINCIPAL_PASSWORD or AZURE_PASSWORD environment variable
       --pop-claims key=val,key2=val2         contains a comma-separated list of claims to attach to the pop token in the format key=val,key2=val2. At minimum, specify the ARM ID of the cluster as `u=ARM_ID`
@@ -225,6 +226,32 @@ users:
           - <AAD server app ID>
           - --login
           - workloadidentity
+        command: kubelogin
+        env: null
+```
+
+### Azure Pipelines
+
+```yaml
+kind: Config
+preferences: {}
+users:
+  - name: demouser
+    user:
+      exec:
+        apiVersion: client.authentication.k8s.io/v1beta1
+        args:
+          - get-token
+          - --server-id
+          - <AAD server app ID>
+          - --client-id
+          - <AAD client app ID>
+          - --tenant-id
+          - <AAD tenant ID>
+          - --login
+          - azurepipelines
+          - --azure-pipelines-service-connection-id
+          - <service connection resource ID>
         command: kubelogin
         env: null
 ```
