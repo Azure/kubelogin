@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/kubelogin/pkg/internal/env"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -12,11 +13,11 @@ func TestNewAzIdentityCredential(t *testing.T) {
 	certFile := "fixtures/cert.pem"
 
 	// Set up environment variables for Azure Pipelines test
-	os.Setenv("SYSTEM_ACCESSTOKEN", "test-system-access-token")
-	os.Setenv("SYSTEM_OIDCREQUESTURI", "https://test.oidc.request.uri")
+	os.Setenv(env.SystemAccessToken, "test-system-access-token")
+	os.Setenv(env.SystemOIDCRequestURI, "https://test.oidc.request.uri")
 	defer func() {
-		os.Unsetenv("SYSTEM_ACCESSTOKEN")
-		os.Unsetenv("SYSTEM_OIDCREQUESTURI")
+		os.Unsetenv(env.SystemAccessToken)
+		os.Unsetenv(env.SystemOIDCRequestURI)
 	}()
 
 	tests := []struct {

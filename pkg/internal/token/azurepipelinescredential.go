@@ -10,6 +10,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity/cache"
 	"k8s.io/klog/v2"
+
+	"github.com/Azure/kubelogin/pkg/internal/env"
 )
 
 type AzurePipelinesCredential struct {
@@ -19,9 +21,9 @@ type AzurePipelinesCredential struct {
 var _ CredentialProvider = (*AzurePipelinesCredential)(nil)
 
 func newAzurePipelinesCredential(opts *Options) (CredentialProvider, error) {
-	systemAccessToken := os.Getenv("SYSTEM_ACCESSTOKEN")
+	systemAccessToken := os.Getenv(env.SystemAccessToken)
 	if systemAccessToken == "" {
-		return nil, fmt.Errorf("SYSTEM_ACCESSTOKEN environment variable not set")
+		return nil, fmt.Errorf("%s environment variable not set", env.SystemAccessToken)
 	}
 
 	var (

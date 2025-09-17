@@ -126,8 +126,8 @@ func TestOptions(t *testing.T) {
 			{
 				name: "valid azurepipelines login",
 				setupEnv: func() {
-					t.Setenv("SYSTEM_ACCESSTOKEN", "test-token")
-					t.Setenv("SYSTEM_OIDCREQUESTURI", "https://test.oidc.request.uri")
+					t.Setenv(env.SystemAccessToken, "test-token")
+					t.Setenv(env.SystemOIDCRequestURI, "https://test.oidc.request.uri")
 				},
 				options: func() Options {
 					o := defaultOptions()
@@ -141,8 +141,8 @@ func TestOptions(t *testing.T) {
 			{
 				name: "azurepipelines missing tenant ID",
 				setupEnv: func() {
-					t.Setenv("SYSTEM_ACCESSTOKEN", "test-token")
-					t.Setenv("SYSTEM_OIDCREQUESTURI", "https://test.oidc.request.uri")
+					t.Setenv(env.SystemAccessToken, "test-token")
+					t.Setenv(env.SystemOIDCRequestURI, "https://test.oidc.request.uri")
 				},
 				options: func() Options {
 					o := defaultOptions()
@@ -156,8 +156,8 @@ func TestOptions(t *testing.T) {
 			{
 				name: "azurepipelines missing service connection ID",
 				setupEnv: func() {
-					t.Setenv("SYSTEM_ACCESSTOKEN", "test-token")
-					t.Setenv("SYSTEM_OIDCREQUESTURI", "https://test.oidc.request.uri")
+					t.Setenv(env.SystemAccessToken, "test-token")
+					t.Setenv(env.SystemOIDCRequestURI, "https://test.oidc.request.uri")
 				},
 				options: func() Options {
 					o := defaultOptions()
@@ -171,7 +171,7 @@ func TestOptions(t *testing.T) {
 			{
 				name: "azurepipelines missing SYSTEM_ACCESSTOKEN",
 				setupEnv: func() {
-					t.Setenv("SYSTEM_OIDCREQUESTURI", "https://test.oidc.request.uri")
+					t.Setenv(env.SystemOIDCRequestURI, "https://test.oidc.request.uri")
 					// Don't set SYSTEM_ACCESSTOKEN
 				},
 				options: func() Options {
@@ -182,12 +182,12 @@ func TestOptions(t *testing.T) {
 					return o
 				},
 				expectError:    true,
-				errorSubstring: "environment variable SYSTEM_ACCESSTOKEN not set",
+				errorSubstring: fmt.Sprintf("environment variable %s not set", env.SystemAccessToken),
 			},
 			{
 				name: "azurepipelines missing SYSTEM_OIDCREQUESTURI",
 				setupEnv: func() {
-					t.Setenv("SYSTEM_ACCESSTOKEN", "test-token")
+					t.Setenv(env.SystemAccessToken, "test-token")
 					// Don't set SYSTEM_OIDCREQUESTURI
 				},
 				options: func() Options {
@@ -198,25 +198,25 @@ func TestOptions(t *testing.T) {
 					return o
 				},
 				expectError:    true,
-				errorSubstring: "environment variable SYSTEM_OIDCREQUESTURI not set",
+				errorSubstring: fmt.Sprintf("environment variable %s not set", env.SystemOIDCRequestURI),
 			},
 		}
 
 		for _, test := range tests {
 			t.Run(test.name, func(t *testing.T) {
 				// Clean up environment variables before each test
-				originalSystemAccessToken := os.Getenv("SYSTEM_ACCESSTOKEN")
-				originalSystemOIDCRequestURI := os.Getenv("SYSTEM_OIDCREQUESTURI")
+				originalSystemAccessToken := os.Getenv(env.SystemAccessToken)
+				originalSystemOIDCRequestURI := os.Getenv(env.SystemOIDCRequestURI)
 				defer func() {
 					if originalSystemAccessToken != "" {
-						os.Setenv("SYSTEM_ACCESSTOKEN", originalSystemAccessToken)
+						os.Setenv(env.SystemAccessToken, originalSystemAccessToken)
 					} else {
-						os.Unsetenv("SYSTEM_ACCESSTOKEN")
+						os.Unsetenv(env.SystemAccessToken)
 					}
 					if originalSystemOIDCRequestURI != "" {
-						os.Setenv("SYSTEM_OIDCREQUESTURI", originalSystemOIDCRequestURI)
+						os.Setenv(env.SystemOIDCRequestURI, originalSystemOIDCRequestURI)
 					} else {
-						os.Unsetenv("SYSTEM_OIDCREQUESTURI")
+						os.Unsetenv(env.SystemOIDCRequestURI)
 					}
 				}()
 

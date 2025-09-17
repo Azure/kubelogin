@@ -176,11 +176,11 @@ func (o *Options) Validate() error {
 		if o.AzurePipelinesServiceConnectionID == "" {
 			return fmt.Errorf("--azure-pipelines-service-connection-id is required for --login azurepipelines")
 		}
-		if os.Getenv("SYSTEM_ACCESSTOKEN") == "" {
-			return fmt.Errorf("environment variable SYSTEM_ACCESSTOKEN not set; enable \"Allow scripts to access the OAuth token\" in the pipeline")
+		if os.Getenv(env.SystemAccessToken) == "" {
+			return fmt.Errorf("environment variable %s not set; enable \"Allow scripts to access the OAuth token\" in the pipeline", env.SystemAccessToken)
 		}
-		if os.Getenv("SYSTEM_OIDCREQUESTURI") == "" {
-			return fmt.Errorf("environment variable SYSTEM_OIDCREQUESTURI not set; this should be automatically set by Azure Pipelines")
+		if os.Getenv(env.SystemOIDCRequestURI) == "" {
+			return fmt.Errorf("environment variable %s not set; this should be automatically set by Azure Pipelines", env.SystemOIDCRequestURI)
 		}
 	}
 

@@ -24,7 +24,11 @@ const (
 	AzureClientID                  = "AZURE_CLIENT_ID"
 	AzureClientSecret              = "AZURE_CLIENT_SECRET"
 	AzureFederatedTokenFile        = "AZURE_FEDERATED_TOKEN_FILE"
+	AzurePassword                  = "AZURE_PASSWORD"
 	AzureTenantID                  = "AZURE_TENANT_ID"
 	AzureUsername                  = "AZURE_USERNAME"
-	AzurePassword                  = "AZURE_PASSWORD"
+
+	// env vars used by Azure Pipelines
+	SystemAccessToken    = "SYSTEM_ACCESSTOKEN"
+	SystemOIDCRequestURI = "SYSTEM_OIDCREQUESTURI"
 )

@@ -1,9 +1,11 @@
 package token
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
+	"github.com/Azure/kubelogin/pkg/internal/env"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -11,8 +13,8 @@ import (
 func TestNewAzurePipelinesCredential(t *testing.T) {
 	// Clean up environment variables after test
 	defer func() {
-		os.Unsetenv("SYSTEM_ACCESSTOKEN")
-		os.Unsetenv("SYSTEM_OIDCREQUESTURI")
+		os.Unsetenv(env.SystemAccessToken)
+		os.Unsetenv(env.SystemOIDCRequestURI)
 	}()
 
 	tests := []struct {
@@ -44,7 +46,7 @@ func TestNewAzurePipelinesCredential(t *testing.T) {
 			systemAccessToken:    "",
 			systemOIDCRequestURI: "https://test.oidc.request.uri",
 			expectError:          true,
-			expectErrorSubstring: "SYSTEM_ACCESSTOKEN environment variable not set",
+			expectErrorSubstring: fmt.Sprintf("%s environment variable not set", env.SystemAccessToken),
 		},
 		{
 			name: "missing tenant ID",
@@ -62,15 +64,15 @@ func TestNewAzurePipelinesCredential(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			if test.systemAccessToken != "" {
-				os.Setenv("SYSTEM_ACCESSTOKEN", test.systemAccessToken)
+				os.Setenv(env.SystemAccessToken, test.systemAccessToken)
 			} else {
-				os.Unsetenv("SYSTEM_ACCESSTOKEN")
+				os.Unsetenv(env.SystemAccessToken)
 			}
 
 			if test.systemOIDCRequestURI != "" {
-				os.Setenv("SYSTEM_OIDCREQUESTURI", test.systemOIDCRequestURI)
+				os.Setenv(env.SystemOIDCRequestURI, test.systemOIDCRequestURI)
 			} else {
-				os.Unsetenv("SYSTEM_OIDCREQUESTURI")
+				os.Unsetenv(env.SystemOIDCRequestURI)
 			}
 
 			cred, err := newAzurePipelinesCredential(test.opts)
