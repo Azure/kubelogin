@@ -84,7 +84,8 @@ func (a *AESCBCHMACSHA2) tag(iv, ciphertext, aad []byte) []byte {
 	h.Write(ciphertext)
 	// aadBits is AL from step 4 of https://datatracker.ietf.org/doc/html/rfc7518#section-5.2.2.1
 	aadBits := make([]byte, 8)
-	binary.BigEndian.PutUint64(aadBits, uint64(len(aad)*8))
+	aadLen := uint64(len(aad))
+	binary.BigEndian.PutUint64(aadBits, aadLen*8)
 	h.Write(aadBits)
 	return h.Sum(nil)[:a.tLen]
 }

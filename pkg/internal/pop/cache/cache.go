@@ -13,8 +13,8 @@ const popCacheFileName = "pop_cache.json"
 
 // getPoPCacheFilePath returns the file path for the PoP token cache.
 // This is separate from the authentication record cache file.
-func getPoPCacheFilePath(cache_dir string) string {
-	return filepath.Join(cache_dir, popCacheFileName)
+func getPoPCacheFilePath(cacheDir string) string {
+	return filepath.Join(cacheDir, popCacheFileName)
 }
 
 // Cache implements the MSAL cache.ExportReplace interface using our platform-specific PoP cache.
