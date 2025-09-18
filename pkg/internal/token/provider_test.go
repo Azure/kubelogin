@@ -125,7 +125,7 @@ func TestNewAzIdentityCredential(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			record := azidentity.AuthenticationRecord{}
-			provider, err := NewAzIdentityCredential(record, tt.options)
+			provider, err := NewAzIdentityCredential(record, nil, tt.options)
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -170,7 +170,7 @@ func TestNewAzIdentityCredentialWithWorkloadIdentity(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			record := azidentity.AuthenticationRecord{}
-			provider, err := NewAzIdentityCredential(record, tt.options)
+			provider, err := NewAzIdentityCredential(record, nil, tt.options)
 
 			if tt.wantErr {
 				assert.Error(t, err)

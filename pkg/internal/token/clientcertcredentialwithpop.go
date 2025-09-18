@@ -4,12 +4,14 @@ import (
 	"context"
 	"crypto/x509"
 	"fmt"
+	"net/url"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/kubelogin/pkg/internal/pop"
+	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/confidential"
 )
 
@@ -22,7 +24,7 @@ type ClientCertificateCredentialWithPoP struct {
 
 var _ CredentialProvider = (*ClientCertificateCredentialWithPoP)(nil)
 
-func newClientCertificateCredentialWithPoP(opts *Options) (CredentialProvider, error) {
+func newClientCertificateCredentialWithPoP(opts *Options, cache cache.ExportReplace) (CredentialProvider, error) {
 	if opts.ClientID == "" {
 		return nil, fmt.Errorf("client ID cannot be empty")
 	}
@@ -50,8 +52,15 @@ func newClientCertificateCredentialWithPoP(opts *Options) (CredentialProvider, e
 	if err != nil {
 		return nil, fmt.Errorf("unable to create credential from certificate: %w", err)
 	}
+
+	// Construct authority URL properly to avoid malformation
+	authorityURL, err := url.JoinPath(opts.GetCloudConfiguration().ActiveDirectoryAuthorityHost, opts.TenantID)
+	if err != nil {
+		return nil, fmt.Errorf("unable to construct authority URL: %w", err)
+	}
+
 	msalOpts := &pop.MsalClientOptions{
-		Authority:                opts.GetCloudConfiguration().ActiveDirectoryAuthorityHost,
+		Authority:                authorityURL,
 		ClientID:                 opts.ClientID,
 		TenantID:                 opts.TenantID,
 		DisableInstanceDiscovery: opts.DisableInstanceDiscovery,
@@ -59,7 +68,11 @@ func newClientCertificateCredentialWithPoP(opts *Options) (CredentialProvider, e
 	if opts.httpClient != nil {
 		msalOpts.Options.Transport = opts.httpClient
 	}
-	client, err := pop.NewConfidentialClient(cred, msalOpts)
+	client, err := pop.NewConfidentialClient(
+		cred,
+		msalOpts,
+		pop.WithCustomCacheConfidential(cache),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create confidential client: %w", err)
 	}

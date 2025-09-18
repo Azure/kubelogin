@@ -18,17 +18,17 @@ type MsalClientOptions struct {
 	Options                  azcore.ClientOptions
 }
 
-// ClientOptions holds options for creating a confidential client
-type ClientOptions struct {
+// ConfidentialClientOptions holds options for creating a confidential client
+type ConfidentialClientOptions struct {
 	Cache cache.ExportReplace
 }
 
 // ConfidentialClientOption defines a functional option for configuring a confidential client
-type ConfidentialClientOption func(*ClientOptions)
+type ConfidentialClientOption func(*ConfidentialClientOptions)
 
-// WithCustomCache adds a custom cache to the confidential client
-func WithCustomCache(cache cache.ExportReplace) ConfidentialClientOption {
-	return func(opts *ClientOptions) {
+// WithCustomCacheConfidential adds a custom cache to the confidential client
+func WithCustomCacheConfidential(cache cache.ExportReplace) ConfidentialClientOption {
+	return func(opts *ConfidentialClientOptions) {
 		opts.Cache = cache
 	}
 }
@@ -44,7 +44,7 @@ func NewConfidentialClient(
 	}
 
 	// Apply custom options
-	clientOpts := &ClientOptions{}
+	clientOpts := &ConfidentialClientOptions{}
 	for _, option := range options {
 		option(clientOpts)
 	}

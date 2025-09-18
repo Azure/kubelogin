@@ -1390,6 +1390,67 @@ func TestConvert(t *testing.T) {
 			command: execName,
 		},
 		{
+			name: "with exec format kubeconfig, convert from devicecode to ropc with only pop-enabled specified, Convert should return error",
+			execArgItems: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argEnvironment, envName,
+				argLoginMethod, token.DeviceCodeLogin,
+				argIsPoPTokenEnabled,
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.ROPCLogin,
+			},
+			command:       execName,
+			expectedError: "--pop-claims is required when specifying --pop-enabled",
+		},
+		{
+			name: "with exec format kubeconfig, convert from devicecode to ropc with only pop-claims specified, Convert should return error",
+			execArgItems: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argEnvironment, envName,
+				argLoginMethod, token.DeviceCodeLogin,
+				argPoPTokenClaims, "u=testhost",
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod: token.ROPCLogin,
+			},
+			command:       execName,
+			expectedError: "--pop-enabled is required when specifying --pop-claims",
+		},
+		{
+			name: "with exec format kubeconfig, convert from devicecode to ropc with pop-enabled and pop-claims as flags",
+			execArgItems: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argEnvironment, envName,
+				argLoginMethod, token.DeviceCodeLogin,
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod:       token.ROPCLogin,
+				flagIsPoPTokenEnabled: "true",
+				flagPoPTokenClaims:    "u=testhost, 1=2",
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argEnvironment, envName,
+				argLoginMethod, token.ROPCLogin,
+				argIsPoPTokenEnabled,
+				argPoPTokenClaims, "u=testhost, 1=2",
+			},
+			command: execName,
+		},
+		{
 			name: "with exec format kubeconfig, convert from devicecode to spn with pop-enabled and pop-claims as flags",
 			execArgItems: []string{
 				getTokenCommand,

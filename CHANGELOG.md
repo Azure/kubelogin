@@ -438,4 +438,4 @@
 - ignore docs and readme on some workflows by @weinong in https://github.com/Azure/kubelogin/pull/248
 - Add reference to a context. by @Tatsinnit in https://github.com/Azure/kubelogin/pull/253
 - How to install kubelogin with asdf tool manager by @daveneeley in https://github.com/Azure/kubelogin/pull/256
-- Update devicecode.md by @madhurgupta03 in https://github.com/Azu
+- Update devicecode.md by @madhurgupta03 in https://github.com/Azure/kubelogin/pull/266
