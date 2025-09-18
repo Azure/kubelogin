@@ -19,6 +19,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/mock v0.5.0
 	golang.org/x/crypto v0.40.0
+	golang.org/x/sys v0.35.0
 	gopkg.in/dnaeon/go-vcr.v4 v4.0.2
 	k8s.io/apimachinery v0.29.3
 	k8s.io/cli-runtime v0.29.3
@@ -71,7 +72,6 @@ require (
 	golang.org/x/net v0.41.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
-	golang.org/x/sys v0.35.0 // indirect
 	golang.org/x/term v0.33.0 // indirect
 	golang.org/x/text v0.27.0 // indirect
 	golang.org/x/time v0.3.0 // indirect

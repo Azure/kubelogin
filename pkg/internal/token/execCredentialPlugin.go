@@ -13,6 +13,8 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 	klog "k8s.io/klog/v2"
+
+	popcache "github.com/Azure/kubelogin/pkg/internal/pop/cache"
 )
 
 type ExecCredentialPlugin interface {
@@ -22,7 +24,7 @@ type ExecCredentialPlugin interface {
 type execCredentialPlugin struct {
 	o                    *Options
 	cachedRecord         CachedRecordProvider
-	msalCachedRecord     MSALCacheProvider
+	msalCachedRecord     *popcache.MSALCacheProvider
 	execCredentialWriter ExecCredentialWriter
 	newCredentialFunc    func(record azidentity.AuthenticationRecord, cache cache.ExportReplace, o *Options) (CredentialProvider, error)
 }
@@ -35,7 +37,7 @@ func New(o *Options) (ExecCredentialPlugin, error) {
 	// Create MSAL cache provider using the official library with a separate cache file
 	// This is different from the authentication record cache file
 	msalCacheFile := getMSALCacheFileName(o)
-	msalCache, err := NewMSALCacheProvider(msalCacheFile)
+	msalCache, err := popcache.NewMSALCacheProvider(msalCacheFile)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create MSAL cache provider: %w", err)
 	}

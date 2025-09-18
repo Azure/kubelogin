@@ -60,24 +60,19 @@ jobs:
           go-version-file: "go.mod"
           cache: false
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libsecret-1-dev
-
       - name: Build Linux AMD64
         run: make
         env:
           GOOS: linux
           GOARCH: amd64
-          CGO_ENABLED: 1
+          CGO_ENABLED: 0
 
       - name: Build Linux ARM64
         run: make
         env:
           GOOS: linux
           GOARCH: arm64
-          CGO_ENABLED: 1
+          CGO_ENABLED: 0
 
       - name: Build Linux ARMv7
         run: make
@@ -85,7 +80,7 @@ jobs:
           GOOS: linux
           GOARCH: arm
           GOARM: "7"
-          CGO_ENABLED: 1
+          CGO_ENABLED: 0
 
       - name: Build Windows AMD64
         run: make
