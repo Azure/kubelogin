@@ -1,148 +1,208 @@
-//go:build go1.23 && linux
+//go:build linux
 
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
-
+// Linux-specific PoP cache implementation using kernel keyrings for secure storage.
+// This implementation is adapted from the Azure SDK azidentity cache to eliminate the
+// dependency on libsecret while maintaining secure token storage on Linux systems.
+//
+// The implementation uses Linux kernel keyrings to store encryption keys securely
+// in memory, with encrypted cache data persisted to disk. This provides:
+// - No external dependencies (no libsecret required)
+// - Secure key storage that survives process restarts but not system reboots
+// - Encrypted cache files with keys protected by the kernel keyring system
+//
+// Reference: https://github.com/Azure/azure-sdk-for-go/blob/main/sdk/azidentity/cache/linux.go
 package cache
 
 import (
 	"context"
+	"crypto/rand"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
-	"syscall"
 
+	aescbc "github.com/Azure/kubelogin/pkg/internal/pop/cache/internal/aesbc"
+	"github.com/Azure/kubelogin/pkg/internal/pop/cache/internal/jwe"
 	"github.com/AzureAD/microsoft-authentication-extensions-for-go/cache/accessor"
 	"golang.org/x/sys/unix"
 )
 
-// cacheDir returns the cache directory for Linux
-func cacheDir() (string, error) {
-	if xdg := os.Getenv("XDG_CACHE_HOME"); xdg != "" {
-		return xdg, nil
-	}
+const (
+	keySize = 32
+	userKey = "user"
+)
 
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("failed to get user home directory: %w", err)
-	}
-
-	return filepath.Join(home, ".cache"), nil
+// keyring encrypts cache data with a key stored on the user keyring and writes the encrypted
+// data to a file. The encryption key, and thus the data, is lost when the system shuts down.
+type keyring struct {
+	description, file string
+	key               []byte
+	keyID, ringID     int
 }
 
 // storage creates a platform-specific accessor for Linux
-func storage(name string) (accessor.Accessor, error) {
-	// Try kernel keyring first, fallback to file-based storage
-	if keyringAccessor, err := newKeyringAccessor(name); err == nil {
-		return keyringAccessor, nil
-	}
+func storage(cachePath string) (accessor.Accessor, error) {
+	return newKeyring(cachePath)
+}
 
-	// Fallback to file-based accessor if keyring fails
-	dir, err := cacheDir()
+func newKeyring(p string) (*keyring, error) {
+	// the user keyring is available to all processes owned by the user whereas the user
+	// *session* keyring is available only to processes in the current session i.e. shell
+	ringID, err := unix.KeyctlGetKeyringID(unix.KEY_SPEC_USER_KEYRING, true)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't get the user keyring due to error %q", err)
+	}
+	// Link the session keyring to the user keyring so the process possesses any key[ring] it links
+	// to the user keyring and thereby has permission to read/write/search them (see the "Possession"
+	// section of the keyrings man page). This step isn't always necessary but in some cases prevents
+	// weirdness such as a process adding keys it can't read. Ignore errors because failure here
+	// doesn't guarantee this process can't perform all required operations on the user keyring.
+	if sessionID, err := unix.KeyctlGetKeyringID(unix.KEY_SPEC_SESSION_KEYRING, true); err == nil {
+		_, _ = unix.KeyctlInt(unix.KEYCTL_LINK, ringID, sessionID, 0, 0)
+	}
+	// Attempt to link a persistent keyring to the user keyring. This keyring is persistent in that
+	// its linked keys survive all the user's login sessions being deleted but like all user keys,
+	// they exist only in memory and are therefore lost on system shutdown. If the attempt fails
+	// (some systems don't support persistent keyrings) continue with the user keyring.
+	if persistentRing, err := unix.KeyctlInt(unix.KEYCTL_GET_PERSISTENT, -1, ringID, 0, 0); err == nil {
+		ringID = persistentRing
+	}
+	return &keyring{description: popCacheFileName, file: p, ringID: ringID}, nil
+}
+
+func (k *keyring) Delete(context.Context) error {
+	if k.keyID != 0 && k.ringID != 0 {
+		_, err := unix.KeyctlInt(unix.KEYCTL_UNLINK, k.keyID, k.ringID, 0, 0)
+		if err != nil && !isKeyInvalidOrNotFound(err) {
+			return fmt.Errorf("failed to delete cache data due to error %q", err)
+		}
+	}
+	err := os.Remove(k.file)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	return err
+}
+
+func (k *keyring) Read(context.Context) ([]byte, error) {
+	b, err := os.ReadFile(k.file)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to read cache data due to error %q", err)
+	}
+	if len(b) == 0 {
+		return nil, nil
+	}
+	j, err := jwe.ParseCompactFormat(b)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't parse cache data due to error %q", err)
+	}
+	plaintext, err := k.decrypt(j)
+	return plaintext, err
+}
+
+func (k *keyring) Write(_ context.Context, data []byte) error {
+	if len(data) == 0 {
+		return nil
+	}
+	j, err := k.encrypt(data)
+	if err != nil {
+		return err
+	}
+	content, err := j.Serialize()
+	if err != nil {
+		return fmt.Errorf("couldn't serialize cache data due to error %q", err)
+	}
+	err = os.WriteFile(k.file, []byte(content), 0600)
+	if errors.Is(err, os.ErrNotExist) {
+		err = os.MkdirAll(filepath.Dir(k.file), 0700)
+		if err == nil {
+			err = os.WriteFile(k.file, []byte(content), 0600)
+		}
+	}
+	return err
+}
+
+func (k *keyring) createKey() ([]byte, error) {
+	// allocate an extra byte because keyring payloads must have a null terminator
+	key := make([]byte, keySize+1)
+	_, err := rand.Read(key)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't create cache encryption key due to error %q", err)
+	}
+	key[keySize] = 0
+	id, err := unix.AddKey(userKey, k.description, key, k.ringID)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't store cache encryption key due to error %q", err)
+	}
+	k.key = key[:keySize]
+	k.keyID = id
+	return k.key, nil
+}
+
+func (k *keyring) decrypt(j jwe.JWE) ([]byte, error) {
+	for tries := 0; tries < 2; tries++ {
+		key, err := k.getKey()
+		if err != nil {
+			if err == unix.ENOKEY {
+				return nil, nil
+			}
+			return nil, err
+		}
+		plaintext, err := j.Decrypt(key)
+		if err == nil {
+			return plaintext, nil
+		}
+		// try again, getting the key from the keyring first in case it was overwritten
+		// by the user (with keyctl) or another process (in a Write() race)
+		k.key = nil
+		k.keyID = 0
+	}
+	// data is unreadable; the next Write will overwrite the file
+	return nil, nil
+}
+
+func (k *keyring) encrypt(data []byte) (jwe.JWE, error) {
+	key, err := k.getKey()
+	if isKeyInvalidOrNotFound(err) {
+		key, err = k.createKey()
+	}
+	if err != nil {
+		return jwe.JWE{}, fmt.Errorf("couldn't get cache encryption key due to error %q", err)
+	}
+	alg, err := aescbc.NewAES128CBCHMACSHA256(key)
+	if err != nil {
+		return jwe.JWE{}, err
+	}
+	return jwe.Encrypt(data, fmt.Sprint(k.keyID), alg)
+}
+
+func (k *keyring) getKey() ([]byte, error) {
+	if k.key != nil {
+		// we created, or got, the key earlier
+		return k.key, nil
+	}
+	if k.keyID == 0 {
+		// search for a key matching the description i.e. the cache name
+		keyID, err := unix.KeyctlSearch(k.ringID, userKey, k.description, 0)
+		if err != nil {
+			return nil, err
+		}
+		k.keyID = keyID
+	}
+	pl := make([]byte, keySize+1) // extra byte for the payload's null terminator
+	_, err := unix.KeyctlBuffer(unix.KEYCTL_READ, k.keyID, pl, 0)
 	if err != nil {
 		return nil, err
 	}
-
-	cachePath := filepath.Join(dir, "kubelogin", "pop", fmt.Sprintf("%s.cache", name))
-	if err := os.MkdirAll(filepath.Dir(cachePath), 0700); err != nil {
-		return nil, fmt.Errorf("failed to create cache directory: %w", err)
-	}
-
-	return accessor.New(cachePath)
+	k.key = pl[:keySize]
+	return k.key, nil
 }
 
-// keyringAccessor implements accessor.Accessor using Linux kernel keyrings
-type keyringAccessor struct {
-	keyringID int
-	keyName   string
+func isKeyInvalidOrNotFound(err error) bool {
+	return errors.Is(err, unix.EKEYEXPIRED) || errors.Is(err, unix.EKEYREVOKED) || errors.Is(err, unix.ENOENT) || errors.Is(err, unix.ENOKEY)
 }
 
-// newKeyringAccessor creates a new keyring-based accessor
-func newKeyringAccessor(name string) (accessor.Accessor, error) {
-	// Try to get or create a user session keyring
-	keyringID, err := unix.KeyctlGetKeyringID(unix.KEY_SPEC_USER_SESSION_KEYRING, true)
-	if err != nil {
-		return nil, fmt.Errorf("failed to access user keyring: %w", err)
-	}
-
-	return &keyringAccessor{
-		keyringID: keyringID,
-		keyName:   fmt.Sprintf("kubelogin-pop-%s", name),
-	}, nil
-}
-
-// Read retrieves data from the kernel keyring
-func (k *keyringAccessor) Read(ctx context.Context) ([]byte, error) {
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	default:
-	}
-
-	// Search for the key
-	keyID, err := unix.KeyctlSearch(k.keyringID, "user", k.keyName, 0)
-	if err != nil {
-		if err == syscall.ENOKEY {
-			return nil, fmt.Errorf("key not found in keyring")
-		}
-		return nil, fmt.Errorf("keyring search failed: %w", err)
-	}
-
-	// Get the key size first
-	size, err := unix.KeyctlBuffer(keyID, unix.KEYCTL_READ, nil, 0)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get key size: %w", err)
-	}
-
-	// Read the actual data
-	data := make([]byte, size)
-	_, err = unix.KeyctlBuffer(keyID, unix.KEYCTL_READ, data, 0)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read from keyring: %w", err)
-	}
-
-	return data, nil
-}
-
-// Write stores data in the kernel keyring
-func (k *keyringAccessor) Write(ctx context.Context, data []byte) error {
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	default:
-	}
-
-	// Add the key to the keyring
-	_, err := unix.AddKey("user", k.keyName, data, k.keyringID)
-	if err != nil {
-		return fmt.Errorf("failed to write to keyring: %w", err)
-	}
-
-	return nil
-}
-
-// Delete removes data from the kernel keyring
-func (k *keyringAccessor) Delete(ctx context.Context) error {
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	default:
-	}
-
-	// Search for the key
-	keyID, err := unix.KeyctlSearch(k.keyringID, "user", k.keyName, 0)
-	if err != nil {
-		if err == syscall.ENOKEY {
-			return nil // Key doesn't exist, consider deletion successful
-		}
-		return fmt.Errorf("keyring search failed: %w", err)
-	}
-
-	// Revoke the key
-	_, err = unix.KeyctlInt(unix.KEYCTL_REVOKE, keyID, 0, 0, 0)
-	if err != nil {
-		return fmt.Errorf("failed to delete from keyring: %w", err)
-	}
-
-	return nil
-}
+var _ accessor.Accessor = (*keyring)(nil)

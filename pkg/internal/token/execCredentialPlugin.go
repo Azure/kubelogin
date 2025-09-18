@@ -24,7 +24,7 @@ type ExecCredentialPlugin interface {
 type execCredentialPlugin struct {
 	o                    *Options
 	cachedRecord         CachedRecordProvider
-	msalCachedRecord     *popcache.MSALCacheProvider
+	popTokenCachedRecord *popcache.Cache
 	execCredentialWriter ExecCredentialWriter
 	newCredentialFunc    func(record azidentity.AuthenticationRecord, cache cache.ExportReplace, o *Options) (CredentialProvider, error)
 }
@@ -34,12 +34,10 @@ var errAuthenticateNotSupported = errors.New("authenticate is not supported")
 func New(o *Options) (ExecCredentialPlugin, error) {
 	klog.V(10).Info(o.ToString())
 
-	// Create MSAL cache provider using the official library with a separate cache file
-	// This is different from the authentication record cache file
-	msalCacheFile := getMSALCacheFileName(o)
-	msalCache, err := popcache.NewMSALCacheProvider(msalCacheFile)
+	// Create PoP token cache using the official MSAL & MSAL extension libraries.
+	popTokenCache, err := popcache.NewCache(o.AuthRecordCacheDir)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create MSAL cache provider: %w", err)
+		return nil, fmt.Errorf("failed to create PoP token cache provider: %w", err)
 	}
 
 	return &execCredentialPlugin{
@@ -49,9 +47,9 @@ func New(o *Options) (ExecCredentialPlugin, error) {
 		cachedRecord: &defaultCachedRecordProvider{
 			file: o.authRecordCacheFile,
 		},
-		// msalCachedRecord stores actual MSAL tokens for token caching
-		msalCachedRecord:  msalCache,
-		newCredentialFunc: NewAzIdentityCredential,
+		// popTokenCachedRecord stores actual MSAL tokens for token caching
+		popTokenCachedRecord: popTokenCache,
+		newCredentialFunc:    NewAzIdentityCredential,
 	}, nil
 }
 
@@ -68,7 +66,7 @@ func (p *execCredentialPlugin) Do(ctx context.Context) error {
 		klog.V(5).Infof("failed to retrieve cached record: %s", err)
 	}
 
-	cred, err := p.newCredentialFunc(record, p.msalCachedRecord, p.o)
+	cred, err := p.newCredentialFunc(record, p.popTokenCachedRecord, p.o)
 	if err != nil {
 		klog.V(5).Infof("failed to create credential: %s", err)
 		return fmt.Errorf("failed to create azidentity credential: %w", err)
