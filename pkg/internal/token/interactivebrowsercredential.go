@@ -47,7 +47,7 @@ func newInteractiveBrowserCredential(opts *Options, record azidentity.Authentica
 	}
 
 	if opts.httpClient != nil {
-		azOpts.ClientOptions.Transport = opts.httpClient
+		azOpts.Transport = opts.httpClient
 	}
 
 	cred, err := azidentity.NewInteractiveBrowserCredential(azOpts)

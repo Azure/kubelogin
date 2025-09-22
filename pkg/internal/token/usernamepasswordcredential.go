@@ -49,7 +49,7 @@ func newUsernamePasswordCredential(opts *Options, record azidentity.Authenticati
 	}
 
 	if opts.httpClient != nil {
-		azOpts.ClientOptions.Transport = opts.httpClient
+		azOpts.Transport = opts.httpClient
 	}
 
 	cred, err := azidentity.NewUsernamePasswordCredential(

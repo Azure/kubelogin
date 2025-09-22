@@ -77,12 +77,12 @@ func getAPIVersionFromExecInfoEnv() (string, error) {
 	if err := json.Unmarshal([]byte(env), &execCredential); err != nil {
 		return "", fmt.Errorf("cannot unmarshal %q to ExecCredential: %w", env, err)
 	}
-	switch execCredential.TypeMeta.APIVersion {
+	switch execCredential.APIVersion {
 	case "":
 		return apiV1beta1, nil
 	case apiV1, apiV1beta1:
-		return execCredential.TypeMeta.APIVersion, nil
+		return execCredential.APIVersion, nil
 	default:
-		return "", fmt.Errorf("api version: %s is not supported", execCredential.TypeMeta.APIVersion)
+		return "", fmt.Errorf("api version: %s is not supported", execCredential.APIVersion)
 	}
 }

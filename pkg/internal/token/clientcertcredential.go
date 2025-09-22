@@ -58,7 +58,7 @@ func newClientCertificateCredential(opts *Options) (CredentialProvider, error) {
 	}
 
 	if opts.httpClient != nil {
-		azOpts.ClientOptions.Transport = opts.httpClient
+		azOpts.Transport = opts.httpClient
 	}
 
 	cred, err := azidentity.NewClientCertificateCredential(
@@ -101,9 +101,10 @@ func splitPEMBlock(pemBlock []byte) (certPEM []byte, keyPEM []byte) {
 		if derBlock == nil {
 			break
 		}
-		if derBlock.Type == "CERTIFICATE" {
+		switch derBlock.Type {
+		case "CERTIFICATE":
 			certPEM = append(certPEM, pem.EncodeToMemory(derBlock)...)
-		} else if derBlock.Type == "PRIVATE KEY" {
+		case "PRIVATE KEY":
 			keyPEM = append(keyPEM, pem.EncodeToMemory(derBlock)...)
 		}
 	}
