@@ -29,7 +29,7 @@ func newManagedIdentityCredential(opts *Options) (CredentialProvider, error) {
 	}
 
 	if opts.httpClient != nil {
-		azOpts.ClientOptions.Transport = opts.httpClient
+		azOpts.Transport = opts.httpClient
 	}
 
 	cred, err := azidentity.NewManagedIdentityCredential(azOpts)
