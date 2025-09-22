@@ -1,33 +1,50 @@
+version: "2"
 run:
-  # default concurrency is a available CPU number
   concurrency: 4
-  deadline: 10m
   tests: false
-
 linters:
-  disable-all: true
+  default: none
   enable:
     - errcheck
     - goconst
     - gocritic
-    - goimports
     - gosec
     - govet
     - ineffassign
     - misspell
     - paralleltest
     - staticcheck
-    - stylecheck
     - unused
-
-linters-settings:
-  gocritic:
-    disabled-checks:
-    - ifElseChain
-  misspell:
-    locale: US
-  gosec:
-    excludes:
-    - G101
-  goimports:
-    local-prefixes: github.com/org/project
+  settings:
+    gocritic:
+      disabled-checks:
+        - ifElseChain
+    gosec:
+      excludes:
+        - G101
+    misspell:
+      locale: US
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/org/project
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
