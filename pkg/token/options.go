@@ -8,6 +8,7 @@ const (
 	ServicePrincipalLogin = token.ServicePrincipalLogin
 	MSILogin              = token.MSILogin
 	WorkloadIdentityLogin = token.WorkloadIdentityLogin
+	ChainedLogin          = token.ChainedLogin
 )
 
 // Options defines the options for getting token.
