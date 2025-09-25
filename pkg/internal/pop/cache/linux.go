@@ -67,7 +67,7 @@ func newKeyring(p string) (*keyring, error) {
 	if persistentRing, err := unix.KeyctlInt(unix.KEYCTL_GET_PERSISTENT, -1, ringID, 0, 0); err == nil {
 		ringID = persistentRing
 	}
-	return &keyring{description: popCacheFileName, file: p, ringID: ringID}, nil
+	return &keyring{description: popTokenCacheFileName, file: p, ringID: ringID}, nil
 }
 
 func (k *keyring) Delete(context.Context) error {

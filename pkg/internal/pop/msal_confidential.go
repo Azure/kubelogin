@@ -58,8 +58,12 @@ func NewConfidentialClient(
 
 	// Add HTTP client if present in msalOptions
 	if msalOptions.Options.Transport != nil {
+		client, ok := msalOptions.Options.Transport.(*http.Client)
+		if !ok {
+			return confidential.Client{}, fmt.Errorf("unable to create confidential client: msalOptions.Options.Transport is not an *http.Client")
+		}
 		confOptions = append(confOptions,
-			confidential.WithHTTPClient(msalOptions.Options.Transport.(*http.Client)),
+			confidential.WithHTTPClient(client),
 		)
 	}
 

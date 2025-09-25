@@ -9,12 +9,12 @@ import (
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 )
 
-const popCacheFileName = "pop_cache.json"
+const popTokenCacheFileName = "pop_cache.json"
 
 // getPoPCacheFilePath returns the file path for the PoP token cache.
 // This is separate from the authentication record cache file.
 func getPoPCacheFilePath(cacheDir string) string {
-	return filepath.Join(cacheDir, popCacheFileName)
+	return filepath.Join(cacheDir, popTokenCacheFileName)
 }
 
 // Cache implements the MSAL cache.ExportReplace interface using our platform-specific PoP cache.

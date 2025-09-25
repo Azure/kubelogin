@@ -48,8 +48,12 @@ func NewPublicClient(
 
 	// Add HTTP client if present in msalOptions
 	if msalOptions.Options.Transport != nil {
+		client, ok := msalOptions.Options.Transport.(*http.Client)
+		if !ok {
+			return public.Client{}, fmt.Errorf("unable to create public client: msalOptions.Options.Transport is not an *http.Client")
+		}
 		publicOptions = append(publicOptions,
-			public.WithHTTPClient(msalOptions.Options.Transport.(*http.Client)),
+			public.WithHTTPClient(client),
 		)
 	}
 
