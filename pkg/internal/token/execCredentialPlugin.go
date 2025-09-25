@@ -26,7 +26,7 @@ type execCredentialPlugin struct {
 	cachedRecord         CachedRecordProvider
 	popTokenCachedRecord *popcache.Cache
 	execCredentialWriter ExecCredentialWriter
-	newCredentialFunc    func(record azidentity.AuthenticationRecord, cache cache.ExportReplace, o *Options) (CredentialProvider, error)
+	newCredentialFunc    func(record azidentity.AuthenticationRecord, popCache cache.ExportReplace, o *Options) (CredentialProvider, error)
 }
 
 var errAuthenticateNotSupported = errors.New("authenticate is not supported")

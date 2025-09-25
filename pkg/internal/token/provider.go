@@ -23,7 +23,7 @@ type CredentialProvider interface {
 	Name() string
 }
 
-func NewAzIdentityCredential(record azidentity.AuthenticationRecord, cache cache.ExportReplace, o *Options) (CredentialProvider, error) {
+func NewAzIdentityCredential(record azidentity.AuthenticationRecord, popCache cache.ExportReplace, o *Options) (CredentialProvider, error) {
 	switch o.LoginMethod {
 	case AzureCLILogin:
 		return newAzureCLICredential(o)
@@ -42,7 +42,7 @@ func NewAzIdentityCredential(record azidentity.AuthenticationRecord, cache cache
 	case InteractiveLogin:
 		switch {
 		case o.IsPoPTokenEnabled:
-			return newInteractiveBrowserCredentialWithPoP(o, cache)
+			return newInteractiveBrowserCredentialWithPoP(o, popCache)
 		default:
 			return newInteractiveBrowserCredential(o, record)
 		}
@@ -53,7 +53,7 @@ func NewAzIdentityCredential(record azidentity.AuthenticationRecord, cache cache
 	case ROPCLogin:
 		switch {
 		case o.IsPoPTokenEnabled:
-			return newUsernamePasswordCredentialWithPoP(o, cache)
+			return newUsernamePasswordCredentialWithPoP(o, popCache)
 		default:
 			return newUsernamePasswordCredential(o, record)
 		}
@@ -65,11 +65,11 @@ func NewAzIdentityCredential(record azidentity.AuthenticationRecord, cache cache
 		case o.IsLegacy:
 			return newADALClientSecretCredential(o)
 		case o.ClientCert != "" && o.IsPoPTokenEnabled:
-			return newClientCertificateCredentialWithPoP(o, cache)
+			return newClientCertificateCredentialWithPoP(o, popCache)
 		case o.ClientCert != "":
 			return newClientCertificateCredential(o)
 		case o.IsPoPTokenEnabled:
-			return newClientSecretCredentialWithPoP(o, cache)
+			return newClientSecretCredentialWithPoP(o, popCache)
 		default:
 			return newClientSecretCredential(o)
 		}
