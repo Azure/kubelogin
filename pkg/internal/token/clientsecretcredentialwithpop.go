@@ -19,6 +19,7 @@ type ClientSecretCredentialWithPoP struct {
 	cred      confidential.Credential
 	client    confidential.Client
 	options   *pop.MsalClientOptions
+	cacheDir  string
 }
 
 var _ CredentialProvider = (*ClientSecretCredentialWithPoP)(nil)
@@ -75,6 +76,7 @@ func newClientSecretCredentialWithPoP(opts *Options, cache cache.ExportReplace) 
 		cred:      cred,
 		client:    client,
 		options:   msalOpts,
+		cacheDir:  opts.AuthRecordCacheDir,
 	}, nil
 }
 
@@ -93,7 +95,7 @@ func (c *ClientSecretCredentialWithPoP) GetToken(ctx context.Context, opts polic
 		opts.Scopes,
 		c.client,
 		c.options.TenantID,
-		pop.GetSwPoPKey,
+		c.cacheDir,
 	)
 	if err != nil {
 		return azcore.AccessToken{}, fmt.Errorf("failed to create PoP token using client secret credential: %w", err)

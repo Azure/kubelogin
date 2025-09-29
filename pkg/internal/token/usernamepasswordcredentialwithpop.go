@@ -20,6 +20,7 @@ type UsernamePasswordCredentialWithPoP struct {
 	password  string
 	client    public.Client
 	options   *pop.MsalClientOptions
+	cacheDir  string
 }
 
 var _ CredentialProvider = (*UsernamePasswordCredentialWithPoP)(nil)
@@ -70,6 +71,7 @@ func newUsernamePasswordCredentialWithPoP(opts *Options, cache cache.ExportRepla
 		username:  opts.Username,
 		password:  opts.Password,
 		client:    client,
+		cacheDir:  opts.AuthRecordCacheDir,
 	}, nil
 }
 
@@ -90,6 +92,7 @@ func (c *UsernamePasswordCredentialWithPoP) GetToken(ctx context.Context, opts p
 		c.username,
 		c.password,
 		c.options,
+		c.cacheDir,
 	)
 	if err != nil {
 		return azcore.AccessToken{}, fmt.Errorf("failed to create PoP token using username and password credential: %w", err)

@@ -113,6 +113,7 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 				tc.p.username,
 				tc.p.password,
 				msalClientOptions,
+				"/tmp/test_cache", // Test cache directory
 			)
 			defer vcrRecorder.Stop()
 			if tc.expectedError != nil {

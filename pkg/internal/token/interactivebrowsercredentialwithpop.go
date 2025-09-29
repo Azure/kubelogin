@@ -18,6 +18,7 @@ type InteractiveBrowserCredentialWithPoP struct {
 	popClaims map[string]string
 	client    public.Client
 	options   *pop.MsalClientOptions
+	cacheDir  string
 }
 
 var _ CredentialProvider = (*InteractiveBrowserCredentialWithPoP)(nil)
@@ -65,6 +66,7 @@ func newInteractiveBrowserCredentialWithPoP(opts *Options, cache cache.ExportRep
 		options:   msalOpts,
 		client:    client,
 		popClaims: popClaimsMap,
+		cacheDir:  opts.AuthRecordCacheDir,
 	}, nil
 }
 
@@ -83,6 +85,7 @@ func (c *InteractiveBrowserCredentialWithPoP) GetToken(ctx context.Context, opts
 		opts.Scopes,
 		c.client,
 		c.options,
+		c.cacheDir,
 	)
 	if err != nil {
 		return azcore.AccessToken{}, fmt.Errorf("failed to create PoP token using interactive login: %w", err)

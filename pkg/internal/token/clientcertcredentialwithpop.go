@@ -20,6 +20,7 @@ type ClientCertificateCredentialWithPoP struct {
 	cred      confidential.Credential
 	client    confidential.Client
 	options   *pop.MsalClientOptions
+	cacheDir  string
 }
 
 var _ CredentialProvider = (*ClientCertificateCredentialWithPoP)(nil)
@@ -82,6 +83,7 @@ func newClientCertificateCredentialWithPoP(opts *Options, cache cache.ExportRepl
 		cred:      cred,
 		client:    client,
 		options:   msalOpts,
+		cacheDir:  opts.AuthRecordCacheDir,
 	}, nil
 }
 
@@ -100,7 +102,7 @@ func (c *ClientCertificateCredentialWithPoP) GetToken(ctx context.Context, opts 
 		opts.Scopes,
 		c.client,
 		c.options.TenantID,
-		pop.GetSwPoPKey,
+		c.cacheDir,
 	)
 	if err != nil {
 		return azcore.AccessToken{}, fmt.Errorf("failed to create PoP token using client certificate credential: %w", err)

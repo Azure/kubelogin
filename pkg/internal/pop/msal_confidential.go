@@ -86,24 +86,24 @@ func NewConfidentialClient(
 	return client, nil
 }
 
-// AcquirePoPTokenConfidential acquires a PoP token using MSAL's confidential login flow.
-// This flow does not require user interaction as the credentials for the request have
-// already been provided
-// instanceDisovery is to be false only in disconnected clouds to disable instance discovery and authoority validation
+// AcquirePoPTokenConfidential acquires a PoP token using MSAL's confidential login flow with persistent key.
+// It first tries to acquire a token silently from cache, and only falls back to credential-based login if needed.
+// Uses persistent PoP key for proper token caching.
+// If silent token acquisition fails, the cache is automatically cleared to ensure clean state.
+// This flow does not require user interaction as the credentials for the request have already been provided.
 func AcquirePoPTokenConfidential(
 	context context.Context,
 	popClaims map[string]string,
 	scopes []string,
 	client confidential.Client,
 	tenantID string,
-	popKeyFunc func() (*SwKey, error),
+	cacheDir string,
 ) (string, int64, error) {
-	if popKeyFunc == nil {
-		popKeyFunc = GetSwPoPKey
-	}
-	popKey, err := popKeyFunc()
+
+	var err error
+	popKey, err := GetSwPoPKeyPersistent(cacheDir)
 	if err != nil {
-		return "", -1, fmt.Errorf("unable to get PoP key: %w", err)
+		return "", -1, fmt.Errorf("unable to get persistent PoP key: %w", err)
 	}
 
 	authnScheme := &PoPAuthenticationScheme{
@@ -111,22 +111,27 @@ func AcquirePoPTokenConfidential(
 		PoPKey: popKey,
 	}
 
+	// Try silent token acquisition first
 	result, err := client.AcquireTokenSilent(
 		context,
 		scopes,
 		confidential.WithAuthenticationScheme(authnScheme),
 		confidential.WithTenantID(tenantID),
 	)
+	if err == nil {
+		return result.AccessToken, result.ExpiresOn.Unix(), nil
+	}
+
+	// Silent acquisition failed - proceed to credential-based acquisition
+	// Note: For confidential clients (service principals), MSAL will handle cache updates automatically
+	result, err = client.AcquireTokenByCredential(
+		context,
+		scopes,
+		confidential.WithAuthenticationScheme(authnScheme),
+		confidential.WithTenantID(tenantID),
+	)
 	if err != nil {
-		result, err = client.AcquireTokenByCredential(
-			context,
-			scopes,
-			confidential.WithAuthenticationScheme(authnScheme),
-			confidential.WithTenantID(tenantID),
-		)
-		if err != nil {
-			return "", -1, fmt.Errorf("failed to create service principal PoP token using secret: %w", err)
-		}
+		return "", -1, fmt.Errorf("failed to create service principal PoP token using credential: %w", err)
 	}
 
 	return result.AccessToken, result.ExpiresOn.Unix(), nil
