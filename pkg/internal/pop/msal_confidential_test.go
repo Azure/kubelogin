@@ -67,7 +67,7 @@ func TestAcquirePoPTokenConfidential(t *testing.T) {
 					ActiveDirectoryAuthorityHost: authority,
 				},
 			},
-			expectedError: fmt.Errorf("failed to create service principal PoP token using secret"),
+			expectedError: fmt.Errorf("failed to create service principal PoP token using credential"),
 			useSecret:     true,
 		},
 		{
@@ -125,7 +125,7 @@ func TestAcquirePoPTokenConfidential(t *testing.T) {
 				scopes,
 				client,
 				tc.p.tenantID,
-				GetSwPoPKey,
+				"/tmp/test_cache", // Test cache directory
 			)
 			defer vcrRecorder.Stop()
 			if tc.expectedError != nil {

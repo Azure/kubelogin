@@ -10,7 +10,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/kubelogin/pkg/internal/testutils"
-	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -92,21 +91,29 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 				t.Fatalf("failed to create vcr recorder: %s", err)
 			}
 
+			msalClientOptions := &MsalClientOptions{
+				Authority: authority,
+				ClientID:  tc.p.clientID,
+				Options: azcore.ClientOptions{
+					Cloud:     cloud.AzurePublic,
+					Transport: vcrRecorder.GetDefaultClient(),
+				},
+				TenantID: tc.p.tenantID,
+			}
+			client, err := NewPublicClient(msalClientOptions)
+			if err != nil {
+				t.Errorf("expected no error creating client but got: %s", err)
+			}
+
 			token, _, err := AcquirePoPTokenByUsernamePassword(
 				ctx,
 				tc.p.popClaims,
 				scopes,
+				client,
 				tc.p.username,
 				tc.p.password,
-				&MsalClientOptions{
-					Authority: authority,
-					ClientID:  tc.p.clientID,
-					Options: azcore.ClientOptions{
-						Cloud:     cloud.AzurePublic,
-						Transport: vcrRecorder.GetDefaultClient(),
-					},
-					TenantID: tc.p.tenantID,
-				},
+				msalClientOptions,
+				"/tmp/test_cache", // Test cache directory
 			)
 			defer vcrRecorder.Stop()
 			if tc.expectedError != nil {
@@ -183,23 +190,15 @@ func TestGetPublicClient(t *testing.T) {
 		},
 	}
 
-	var client *public.Client
-	var err error
-
 	for _, tc := range testCase {
 		t.Run(tc.testName, func(t *testing.T) {
-			client, err = getPublicClient(tc.msalOptions)
-
+			_, err := NewPublicClient(tc.msalOptions)
 			if tc.expectedError != nil {
 				if !testutils.ErrorContains(err, tc.expectedError.Error()) {
 					t.Errorf("expected error %s, but got %s", tc.expectedError.Error(), err)
 				}
 			} else if err != nil {
-				t.Errorf("expected no error, but got: %s", err)
-			} else {
-				if client == nil {
-					t.Errorf("expected a client but got nil")
-				}
+				t.Errorf("expected no error creating client, but got: %s", err.Error())
 			}
 		})
 	}

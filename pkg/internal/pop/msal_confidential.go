@@ -18,17 +18,17 @@ type MsalClientOptions struct {
 	Options                  azcore.ClientOptions
 }
 
-// ClientOptions holds options for creating a confidential client
-type ClientOptions struct {
+// ConfidentialClientOptions holds options for creating a confidential client
+type ConfidentialClientOptions struct {
 	Cache cache.ExportReplace
 }
 
 // ConfidentialClientOption defines a functional option for configuring a confidential client
-type ConfidentialClientOption func(*ClientOptions)
+type ConfidentialClientOption func(*ConfidentialClientOptions)
 
-// WithCustomCache adds a custom cache to the confidential client
-func WithCustomCache(cache cache.ExportReplace) ConfidentialClientOption {
-	return func(opts *ClientOptions) {
+// WithCustomCacheConfidential adds a custom cache to the confidential client
+func WithCustomCacheConfidential(cache cache.ExportReplace) ConfidentialClientOption {
+	return func(opts *ConfidentialClientOptions) {
 		opts.Cache = cache
 	}
 }
@@ -44,7 +44,7 @@ func NewConfidentialClient(
 	}
 
 	// Apply custom options
-	clientOpts := &ClientOptions{}
+	clientOpts := &ConfidentialClientOptions{}
 	for _, option := range options {
 		option(clientOpts)
 	}
@@ -58,8 +58,12 @@ func NewConfidentialClient(
 
 	// Add HTTP client if present in msalOptions
 	if msalOptions.Options.Transport != nil {
+		client, ok := msalOptions.Options.Transport.(*http.Client)
+		if !ok {
+			return confidential.Client{}, fmt.Errorf("unable to create confidential client: msalOptions.Options.Transport is not an *http.Client")
+		}
 		confOptions = append(confOptions,
-			confidential.WithHTTPClient(msalOptions.Options.Transport.(*http.Client)),
+			confidential.WithHTTPClient(client),
 		)
 	}
 
@@ -82,24 +86,24 @@ func NewConfidentialClient(
 	return client, nil
 }
 
-// AcquirePoPTokenConfidential acquires a PoP token using MSAL's confidential login flow.
-// This flow does not require user interaction as the credentials for the request have
-// already been provided
-// instanceDisovery is to be false only in disconnected clouds to disable instance discovery and authoority validation
+// AcquirePoPTokenConfidential acquires a PoP token using MSAL's confidential login flow with persistent key.
+// It first tries to acquire a token silently from cache, and only falls back to credential-based login if needed.
+// Uses persistent PoP key for proper token caching.
+// If silent token acquisition fails, the cache is automatically cleared to ensure clean state.
+// This flow does not require user interaction as the credentials for the request have already been provided.
 func AcquirePoPTokenConfidential(
 	context context.Context,
 	popClaims map[string]string,
 	scopes []string,
 	client confidential.Client,
 	tenantID string,
-	popKeyFunc func() (*SwKey, error),
+	cacheDir string,
 ) (string, int64, error) {
-	if popKeyFunc == nil {
-		popKeyFunc = GetSwPoPKey
-	}
-	popKey, err := popKeyFunc()
+
+	var err error
+	popKey, err := GetSwPoPKeyPersistent(cacheDir)
 	if err != nil {
-		return "", -1, fmt.Errorf("unable to get PoP key: %w", err)
+		return "", -1, fmt.Errorf("unable to get persistent PoP key: %w", err)
 	}
 
 	authnScheme := &PoPAuthenticationScheme{
@@ -107,22 +111,27 @@ func AcquirePoPTokenConfidential(
 		PoPKey: popKey,
 	}
 
+	// Try silent token acquisition first
 	result, err := client.AcquireTokenSilent(
 		context,
 		scopes,
 		confidential.WithAuthenticationScheme(authnScheme),
 		confidential.WithTenantID(tenantID),
 	)
+	if err == nil {
+		return result.AccessToken, result.ExpiresOn.Unix(), nil
+	}
+
+	// Silent acquisition failed - proceed to credential-based acquisition
+	// Note: For confidential clients (service principals), MSAL will handle cache updates automatically
+	result, err = client.AcquireTokenByCredential(
+		context,
+		scopes,
+		confidential.WithAuthenticationScheme(authnScheme),
+		confidential.WithTenantID(tenantID),
+	)
 	if err != nil {
-		result, err = client.AcquireTokenByCredential(
-			context,
-			scopes,
-			confidential.WithAuthenticationScheme(authnScheme),
-			confidential.WithTenantID(tenantID),
-		)
-		if err != nil {
-			return "", -1, fmt.Errorf("failed to create service principal PoP token using secret: %w", err)
-		}
+		return "", -1, fmt.Errorf("failed to create service principal PoP token using credential: %w", err)
 	}
 
 	return result.AccessToken, result.ExpiresOn.Unix(), nil
