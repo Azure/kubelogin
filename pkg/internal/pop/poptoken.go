@@ -95,8 +95,6 @@ func generateSwKey(key *rsa.PrivateKey) (*SwKey, error) {
 }
 
 // GetSwPoPKey generates a new PoP key returns it
-// Deprecated: This function generates a new key each time, breaking PoP token caching.
-// Use GetSwPoPKeyPersistent() instead for proper caching support.
 func GetSwPoPKey() (*SwKey, error) {
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
@@ -107,7 +105,7 @@ func GetSwPoPKey() (*SwKey, error) {
 
 // GetSwPoPKeyPersistent loads or generates a persistent PoP key for token caching.
 // This ensures the same PoP key is used across multiple kubelogin invocations,
-// which is required for PoP token caching to work correctly.
+// which is required for PoP token caching with MSAL to work correctly.
 func GetSwPoPKeyPersistent(cacheDir string) (*SwKey, error) {
 	key, err := loadOrGenerateRSAKey(cacheDir)
 	if err != nil {

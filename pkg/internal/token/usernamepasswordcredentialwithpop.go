@@ -84,6 +84,11 @@ func (c *UsernamePasswordCredentialWithPoP) Authenticate(ctx context.Context, op
 }
 
 func (c *UsernamePasswordCredentialWithPoP) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
+	popKey, err := pop.GetSwPoPKeyPersistent(c.cacheDir)
+	if err != nil {
+		return azcore.AccessToken{}, fmt.Errorf("unable to get persistent PoP key: %w", err)
+	}
+
 	token, expirationTimeUnix, err := pop.AcquirePoPTokenByUsernamePassword(
 		ctx,
 		c.popClaims,
@@ -92,7 +97,7 @@ func (c *UsernamePasswordCredentialWithPoP) GetToken(ctx context.Context, opts p
 		c.username,
 		c.password,
 		c.options,
-		c.cacheDir,
+		popKey,
 	)
 	if err != nil {
 		return azcore.AccessToken{}, fmt.Errorf("failed to create PoP token using username and password credential: %w", err)

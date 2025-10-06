@@ -105,6 +105,11 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 				t.Errorf("expected no error creating client but got: %s", err)
 			}
 
+			popKey, err := GetSwPoPKeyPersistent("/tmp/test_cache")
+			if err != nil {
+				t.Errorf("expected no error getting PoP key but got: %s", err)
+			}
+
 			token, _, err := AcquirePoPTokenByUsernamePassword(
 				ctx,
 				tc.p.popClaims,
@@ -113,7 +118,7 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 				tc.p.username,
 				tc.p.password,
 				msalClientOptions,
-				"/tmp/test_cache", // Test cache directory
+				popKey,
 			)
 			defer vcrRecorder.Stop()
 			if tc.expectedError != nil {

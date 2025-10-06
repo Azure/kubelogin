@@ -86,10 +86,9 @@ func NewConfidentialClient(
 	return client, nil
 }
 
-// AcquirePoPTokenConfidential acquires a PoP token using MSAL's confidential login flow with persistent key.
+// AcquirePoPTokenConfidential acquires a PoP token using MSAL's confidential login flow.
 // It first tries to acquire a token silently from cache, and only falls back to credential-based login if needed.
-// Uses persistent PoP key for proper token caching.
-// If silent token acquisition fails, the cache is automatically cleared to ensure clean state.
+// Uses the provided PoP key for token acquisition and caching.
 // This flow does not require user interaction as the credentials for the request have already been provided.
 func AcquirePoPTokenConfidential(
 	context context.Context,
@@ -97,14 +96,8 @@ func AcquirePoPTokenConfidential(
 	scopes []string,
 	client confidential.Client,
 	tenantID string,
-	cacheDir string,
+	popKey PoPKey,
 ) (string, int64, error) {
-
-	var err error
-	popKey, err := GetSwPoPKeyPersistent(cacheDir)
-	if err != nil {
-		return "", -1, fmt.Errorf("unable to get persistent PoP key: %w", err)
-	}
 
 	authnScheme := &PoPAuthenticationScheme{
 		Host:   popClaims["u"],

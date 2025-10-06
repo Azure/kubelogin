@@ -96,13 +96,18 @@ func (c *ClientCertificateCredentialWithPoP) Authenticate(ctx context.Context, o
 }
 
 func (c *ClientCertificateCredentialWithPoP) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
+	popKey, err := pop.GetSwPoPKeyPersistent(c.cacheDir)
+	if err != nil {
+		return azcore.AccessToken{}, fmt.Errorf("unable to get persistent PoP key: %w", err)
+	}
+
 	accessToken, expiresOn, err := pop.AcquirePoPTokenConfidential(
 		ctx,
 		c.popClaims,
 		opts.Scopes,
 		c.client,
 		c.options.TenantID,
-		c.cacheDir,
+		popKey,
 	)
 	if err != nil {
 		return azcore.AccessToken{}, fmt.Errorf("failed to create PoP token using client certificate credential: %w", err)

@@ -74,9 +74,9 @@ func NewPublicClient(
 	return client, nil
 }
 
-// AcquirePoPTokenInteractive acquires a PoP token using MSAL's interactive login flow with persistent key and single-user caching.
+// AcquirePoPTokenInteractive acquires a PoP token using MSAL's interactive login flow with single-user caching.
 // It first tries to acquire a token silently from cache, and only falls back to interactive login if needed.
-// Uses persistent PoP key for proper token caching and implements single-user cache (latest user wins).
+// Uses the provided PoP key for proper token caching and implements single-user cache (latest user wins).
 // If silent token acquisition fails, the cache is automatically cleared to ensure clean state.
 // Requires user to authenticate via browser only when no valid cached tokens exist.
 func AcquirePoPTokenInteractive(
@@ -85,14 +85,8 @@ func AcquirePoPTokenInteractive(
 	scopes []string,
 	client public.Client,
 	msalOptions *MsalClientOptions,
-	cacheDir string,
+	popKey PoPKey,
 ) (string, int64, error) {
-
-	var err error
-	popKey, err := GetSwPoPKeyPersistent(cacheDir)
-	if err != nil {
-		return "", -1, err
-	}
 
 	authnScheme := &PoPAuthenticationScheme{
 		Host:   popClaims["u"],
@@ -136,9 +130,9 @@ func AcquirePoPTokenInteractive(
 	return result.AccessToken, result.ExpiresOn.Unix(), nil
 }
 
-// AcquirePoPTokenByUsernamePassword acquires a PoP token using MSAL's username/password login flow with persistent key and single-user caching.
+// AcquirePoPTokenByUsernamePassword acquires a PoP token using MSAL's username/password login flow with single-user caching.
 // It first tries to acquire a token silently from cache, and only falls back to username/password login if needed.
-// Uses persistent PoP key for proper token caching and implements single-user cache (latest user wins).
+// Uses the provided PoP key for proper token caching and implements single-user cache (latest user wins).
 // This flow does not require user interaction as credentials have already been provided.
 func AcquirePoPTokenByUsernamePassword(
 	context context.Context,
@@ -148,14 +142,8 @@ func AcquirePoPTokenByUsernamePassword(
 	username,
 	password string,
 	msalOptions *MsalClientOptions,
-	cacheDir string,
+	popKey PoPKey,
 ) (string, int64, error) {
-
-	var err error
-	popKey, err := GetSwPoPKeyPersistent(cacheDir)
-	if err != nil {
-		return "", -1, err
-	}
 
 	authnScheme := &PoPAuthenticationScheme{
 		Host:   popClaims["u"],

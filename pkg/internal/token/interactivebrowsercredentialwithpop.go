@@ -79,13 +79,18 @@ func (c *InteractiveBrowserCredentialWithPoP) Authenticate(ctx context.Context, 
 }
 
 func (c *InteractiveBrowserCredentialWithPoP) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
+	popKey, err := pop.GetSwPoPKeyPersistent(c.cacheDir)
+	if err != nil {
+		return azcore.AccessToken{}, fmt.Errorf("unable to get persistent PoP key: %w", err)
+	}
+
 	token, expirationTimeUnix, err := pop.AcquirePoPTokenInteractive(
 		ctx,
 		c.popClaims,
 		opts.Scopes,
 		c.client,
 		c.options,
-		c.cacheDir,
+		popKey,
 	)
 	if err != nil {
 		return azcore.AccessToken{}, fmt.Errorf("failed to create PoP token using interactive login: %w", err)
