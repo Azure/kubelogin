@@ -14,6 +14,7 @@ const (
 	redactedToken = "[REDACTED]"
 	TestToken     = "TEST_ACCESS_TOKEN"
 	TestUsername  = "user@example.com"
+	TestPassword  = "password123"
 	TestTenantID  = "00000000-0000-0000-0000-000000000000"
 	TestClientID  = "80faf920-1908-4b52-b5ef-a8e7bedfc67a"
 	TestServerID  = "6dae42f8-4368-4678-94ff-3960e28e3630"

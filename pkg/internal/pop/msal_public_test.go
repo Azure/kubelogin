@@ -34,10 +34,10 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 		pEnv.clientID = testutils.TestClientID
 	}
 	if pEnv.username == "" {
-		pEnv.username = testutils.Username
+		pEnv.username = testutils.TestUsername
 	}
 	if pEnv.password == "" {
-		pEnv.password = testutils.Password
+		pEnv.password = testutils.TestPassword
 	}
 	if pEnv.tenantID == "" {
 		pEnv.tenantID = testutils.TestTenantID
@@ -141,6 +141,85 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestFindAccountByUsername(t *testing.T) {
+	ctx := context.Background()
+
+	// Create a test client
+	msalClientOptions := &MsalClientOptions{
+		Authority: "https://login.microsoftonline.com/" + testutils.TestTenantID,
+		ClientID:  testutils.TestClientID,
+		Options: azcore.ClientOptions{
+			Cloud: cloud.AzurePublic,
+		},
+		TenantID: testutils.TestTenantID,
+	}
+
+	client, err := NewPublicClient(msalClientOptions)
+	if err != nil {
+		t.Fatalf("failed to create public client: %s", err)
+	}
+
+	// Test with no accounts (fresh client)
+	account, err := findAccountByUsername(ctx, client, "user1@example.com")
+	if err != nil {
+		t.Errorf("findAccountByUsername returned error: %s", err)
+	}
+	if account != nil {
+		t.Errorf("expected no account found, but got %+v", account)
+	}
+
+	// Test with non-existent username (should not find anything)
+	account, err = findAccountByUsername(ctx, client, "nonexistent@example.com")
+	if err != nil {
+		t.Errorf("findAccountByUsername returned error: %s", err)
+	}
+	if account != nil {
+		t.Errorf("expected no account found for nonexistent user, but got %+v", account)
+	}
+}
+
+func TestClearAllAccounts(t *testing.T) {
+	ctx := context.Background()
+
+	// Create a test client
+	msalClientOptions := &MsalClientOptions{
+		Authority: "https://login.microsoftonline.com/" + testutils.TestTenantID,
+		ClientID:  testutils.TestClientID,
+		Options: azcore.ClientOptions{
+			Cloud: cloud.AzurePublic,
+		},
+		TenantID: testutils.TestTenantID,
+	}
+
+	client, err := NewPublicClient(msalClientOptions)
+	if err != nil {
+		t.Fatalf("failed to create public client: %s", err)
+	}
+
+	// Get initial account count
+	initialAccounts, err := client.Accounts(ctx)
+	if err != nil {
+		t.Errorf("error getting initial accounts: %s", err)
+	}
+	t.Logf("Initial accounts: %d", len(initialAccounts))
+
+	// Clear all accounts
+	err = clearAllAccounts(ctx, client)
+	if err != nil {
+		t.Errorf("clearAllAccounts returned error: %s", err)
+	}
+
+	// Verify accounts are cleared
+	finalAccounts, err := client.Accounts(ctx)
+	if err != nil {
+		t.Errorf("error getting final accounts: %s", err)
+	}
+
+	if len(finalAccounts) != 0 {
+		t.Errorf("expected 0 accounts after clearing, but got %d", len(finalAccounts))
 	}
 }
 

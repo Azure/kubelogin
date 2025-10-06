@@ -74,11 +74,10 @@ func NewPublicClient(
 	return client, nil
 }
 
-// AcquirePoPTokenInteractive acquires a PoP token using MSAL's interactive login flow with single-user caching.
-// It first tries to acquire a token silently from cache, and only falls back to interactive login if needed.
-// Uses the provided PoP key for proper token caching and implements single-user cache (latest user wins).
-// If silent token acquisition fails, the cache is automatically cleared to ensure clean state.
-// Requires user to authenticate via browser only when no valid cached tokens exist.
+// AcquirePoPTokenInteractive acquires a PoP token using MSAL's interactive login flow with caching.
+// First attempts silent token acquisition if a single account is cached.
+// Uses the provided PoP key for proper token caching.
+// Falls back to interactive authentication if silent acquisition fails or no accounts are cached.
 func AcquirePoPTokenInteractive(
 	context context.Context,
 	popClaims map[string]string,
@@ -96,11 +95,12 @@ func AcquirePoPTokenInteractive(
 	// Try silent token acquisition first if accounts exist
 	accounts, err := client.Accounts(context)
 	if err == nil && len(accounts) > 0 {
-		// Try silent acquisition with cached account
+		// Use the first account for silent acquisition (single-user cache)
+		account := accounts[0]
 		result, err := client.AcquireTokenSilent(
 			context,
 			scopes,
-			public.WithSilentAccount(accounts[0]),
+			public.WithSilentAccount(account),
 			public.WithAuthenticationScheme(authnScheme),
 			public.WithTenantID(msalOptions.TenantID),
 		)
@@ -116,7 +116,7 @@ func AcquirePoPTokenInteractive(
 		}
 	}
 
-	// Interactive login (first time, cache cleared, or token refresh)
+	// Interactive login (first time or after cache cleared due to silent acquisition failure)
 	result, err := client.AcquireTokenInteractive(
 		context,
 		scopes,
@@ -130,9 +130,10 @@ func AcquirePoPTokenInteractive(
 	return result.AccessToken, result.ExpiresOn.Unix(), nil
 }
 
-// AcquirePoPTokenByUsernamePassword acquires a PoP token using MSAL's username/password login flow with single-user caching.
-// It first tries to acquire a token silently from cache, and only falls back to username/password login if needed.
-// Uses the provided PoP key for proper token caching and implements single-user cache (latest user wins).
+// AcquirePoPTokenByUsernamePassword acquires a PoP token using MSAL's username/password login flow with user-specific caching.
+// It first tries to acquire a token silently from cache for the specific username, and only falls back to username/password login if needed.
+// Uses the provided PoP key for proper token caching. If the cache contains tokens for a different user,
+// it clears the cache and authenticates with the provided credentials.
 // This flow does not require user interaction as credentials have already been provided.
 func AcquirePoPTokenByUsernamePassword(
 	context context.Context,
@@ -150,14 +151,14 @@ func AcquirePoPTokenByUsernamePassword(
 		PoPKey: popKey,
 	}
 
-	// Try silent token acquisition first if accounts exist
-	accounts, err := client.Accounts(context)
-	if err == nil && len(accounts) > 0 {
-		// Try silent acquisition with cached account
+	// Try silent token acquisition first if accounts exist for the specific username
+	targetAccount, err := findAccountByUsername(context, client, username)
+	if err == nil && targetAccount != nil {
+		// Try silent acquisition with the matching account
 		result, err := client.AcquireTokenSilent(
 			context,
 			scopes,
-			public.WithSilentAccount(accounts[0]),
+			public.WithSilentAccount(*targetAccount),
 			public.WithAuthenticationScheme(authnScheme),
 			public.WithTenantID(msalOptions.TenantID),
 		)
@@ -165,15 +166,14 @@ func AcquirePoPTokenByUsernamePassword(
 			return result.AccessToken, result.ExpiresOn.Unix(), nil
 		}
 
-		// Silent acquisition failed - clear cache to ensure single-user behavior
-		// This handles token expiration, user switching, and cache corruption
+		// Silent acquisition failed - clear cache to ensure clean state for username/password authentication
 		clearErr := clearAllAccounts(context, client)
 		if clearErr != nil {
-			return "", -1, fmt.Errorf("failed to clear cache after silent acquisition failure: %w", clearErr)
+			return "", -1, fmt.Errorf("failed to clear cache before username/password authentication: %w", clearErr)
 		}
 	}
 
-	// Username/password login (first time, user switch, or token refresh)
+	// Username/password login (first time, user switch, or after cache cleared due to silent acquisition failure)
 	result, err := client.AcquireTokenByUsernamePassword(
 		context,
 		scopes,
@@ -187,6 +187,22 @@ func AcquirePoPTokenByUsernamePassword(
 	}
 
 	return result.AccessToken, result.ExpiresOn.Unix(), nil
+}
+
+// findAccountByUsername searches for a cached account with the specified username.
+// Returns the account if found, nil otherwise.
+func findAccountByUsername(ctx context.Context, client public.Client, username string) (*public.Account, error) {
+	accounts, err := client.Accounts(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, account := range accounts {
+		if account.PreferredUsername == username {
+			return &account, nil
+		}
+	}
+	return nil, nil
 }
 
 // clearAllAccounts removes all cached accounts from the MSAL client.
