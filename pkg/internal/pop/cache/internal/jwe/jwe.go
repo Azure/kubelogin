@@ -8,7 +8,7 @@ import (
 	"errors"
 	"fmt"
 
-	aescbc "github.com/Azure/kubelogin/pkg/internal/pop/cache/internal/aesbc"
+	aescbc "github.com/Azure/kubelogin/pkg/internal/pop/cache/internal/aescbc"
 )
 
 // JWE implements a subset of JSON Web Encryption (https://datatracker.ietf.org/doc/html/rfc7516).

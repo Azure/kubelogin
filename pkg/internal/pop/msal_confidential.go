@@ -91,7 +91,7 @@ func NewConfidentialClient(
 // Uses the provided PoP key for token acquisition and caching.
 // This flow does not require user interaction as the credentials for the request have already been provided.
 func AcquirePoPTokenConfidential(
-	context context.Context,
+	ctx context.Context,
 	popClaims map[string]string,
 	scopes []string,
 	client confidential.Client,
@@ -106,7 +106,7 @@ func AcquirePoPTokenConfidential(
 
 	// Try silent token acquisition first
 	result, err := client.AcquireTokenSilent(
-		context,
+		ctx,
 		scopes,
 		confidential.WithAuthenticationScheme(authnScheme),
 		confidential.WithTenantID(tenantID),
@@ -118,7 +118,7 @@ func AcquirePoPTokenConfidential(
 	// Silent acquisition failed - proceed to credential-based acquisition
 	// Note: For confidential clients (service principals), MSAL will handle cache updates automatically
 	result, err = client.AcquireTokenByCredential(
-		context,
+		ctx,
 		scopes,
 		confidential.WithAuthenticationScheme(authnScheme),
 		confidential.WithTenantID(tenantID),

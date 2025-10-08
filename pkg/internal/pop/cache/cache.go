@@ -9,7 +9,7 @@ import (
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 )
 
-const popTokenCacheFileName = "pop_cache.json"
+const popTokenCacheFileName = "pop_tokens.cache"
 
 // getPoPCacheFilePath returns the file path for the PoP token cache.
 // This is separate from the authentication record cache file.
@@ -66,4 +66,11 @@ func (c *Cache) Replace(ctx context.Context, unmarshaler cache.Unmarshaler, hint
 // Clear removes all PoP token data from the cache.
 func (c *Cache) Clear(ctx context.Context) error {
 	return c.accessor.Delete(ctx)
+}
+
+// NewSecureAccessor creates a new platform-specific secure storage accessor.
+// This can be used for storing other sensitive data like RSA private keys
+// using the same encrypted storage infrastructure as the PoP token cache.
+func NewSecureAccessor(cachePath string) (accessor.Accessor, error) {
+	return storage(cachePath)
 }

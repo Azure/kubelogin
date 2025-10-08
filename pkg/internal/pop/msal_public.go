@@ -79,7 +79,7 @@ func NewPublicClient(
 // Uses the provided PoP key for proper token caching.
 // Falls back to interactive authentication if silent acquisition fails or no accounts are cached.
 func AcquirePoPTokenInteractive(
-	context context.Context,
+	ctx context.Context,
 	popClaims map[string]string,
 	scopes []string,
 	client public.Client,
@@ -93,12 +93,12 @@ func AcquirePoPTokenInteractive(
 	}
 
 	// Try silent token acquisition first if accounts exist
-	accounts, err := client.Accounts(context)
+	accounts, err := client.Accounts(ctx)
 	if err == nil && len(accounts) > 0 {
 		// Use the first account for silent acquisition (single-user cache)
 		account := accounts[0]
 		result, err := client.AcquireTokenSilent(
-			context,
+			ctx,
 			scopes,
 			public.WithSilentAccount(account),
 			public.WithAuthenticationScheme(authnScheme),
@@ -110,7 +110,7 @@ func AcquirePoPTokenInteractive(
 
 		// Silent acquisition failed - clear cache to ensure single-user behavior
 		// This handles token expiration, user switching, and cache corruption
-		clearErr := clearAllAccounts(context, client)
+		clearErr := clearAllAccounts(ctx, client)
 		if clearErr != nil {
 			return "", -1, fmt.Errorf("failed to clear cache after silent acquisition failure: %w", clearErr)
 		}
@@ -118,7 +118,7 @@ func AcquirePoPTokenInteractive(
 
 	// Interactive login (first time or after cache cleared due to silent acquisition failure)
 	result, err := client.AcquireTokenInteractive(
-		context,
+		ctx,
 		scopes,
 		public.WithAuthenticationScheme(authnScheme),
 		public.WithTenantID(msalOptions.TenantID),
@@ -136,7 +136,7 @@ func AcquirePoPTokenInteractive(
 // it clears the cache and authenticates with the provided credentials.
 // This flow does not require user interaction as credentials have already been provided.
 func AcquirePoPTokenByUsernamePassword(
-	context context.Context,
+	ctx context.Context,
 	popClaims map[string]string,
 	scopes []string,
 	client public.Client,
@@ -152,11 +152,11 @@ func AcquirePoPTokenByUsernamePassword(
 	}
 
 	// Try silent token acquisition first if accounts exist for the specific username
-	targetAccount, err := findAccountByUsername(context, client, username)
+	targetAccount, err := findAccountByUsername(ctx, client, username)
 	if err == nil && targetAccount != nil {
 		// Try silent acquisition with the matching account
 		result, err := client.AcquireTokenSilent(
-			context,
+			ctx,
 			scopes,
 			public.WithSilentAccount(*targetAccount),
 			public.WithAuthenticationScheme(authnScheme),
@@ -167,7 +167,7 @@ func AcquirePoPTokenByUsernamePassword(
 		}
 
 		// Silent acquisition failed - clear cache to ensure clean state for username/password authentication
-		clearErr := clearAllAccounts(context, client)
+		clearErr := clearAllAccounts(ctx, client)
 		if clearErr != nil {
 			return "", -1, fmt.Errorf("failed to clear cache before username/password authentication: %w", clearErr)
 		}
@@ -175,7 +175,7 @@ func AcquirePoPTokenByUsernamePassword(
 
 	// Username/password login (first time, user switch, or after cache cleared due to silent acquisition failure)
 	result, err := client.AcquireTokenByUsernamePassword(
-		context,
+		ctx,
 		scopes,
 		username,
 		password,

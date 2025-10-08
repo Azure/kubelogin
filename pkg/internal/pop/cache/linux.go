@@ -21,7 +21,7 @@ import (
 	"os"
 	"path/filepath"
 
-	aescbc "github.com/Azure/kubelogin/pkg/internal/pop/cache/internal/aesbc"
+	aescbc "github.com/Azure/kubelogin/pkg/internal/pop/cache/internal/aescbc"
 	"github.com/Azure/kubelogin/pkg/internal/pop/cache/internal/jwe"
 	"github.com/AzureAD/microsoft-authentication-extensions-for-go/cache/accessor"
 	"golang.org/x/sys/unix"

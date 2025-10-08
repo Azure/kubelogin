@@ -1,6 +1,7 @@
 package pop
 
 import (
+	"context"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
@@ -12,9 +13,11 @@ import (
 	"math/big"
 	"os"
 	"path/filepath"
+
+	"github.com/Azure/kubelogin/pkg/internal/pop/cache"
 )
 
-const popKeyFileName = "pop_key.pem"
+const popKeyFileName = "pop_rsa_key.cache"
 
 // PoPKey is a generic interface for PoP key properties and methods
 type PoPKey interface {
@@ -106,10 +109,15 @@ func GetSwPoPKey() (*SwKey, error) {
 // GetSwPoPKeyPersistent loads or generates a persistent PoP key for token caching.
 // This ensures the same PoP key is used across multiple kubelogin invocations,
 // which is required for PoP token caching with MSAL to work correctly.
+//
+// This implementation uses platform-specific secure storage exclusively:
+// - Linux: Kernel keyrings with encrypted files
+// - macOS: macOS Keychain
+// - Windows: Windows Credential Manager
 func GetSwPoPKeyPersistent(cacheDir string) (*SwKey, error) {
 	key, err := loadOrGenerateRSAKey(cacheDir)
 	if err != nil {
-		return nil, fmt.Errorf("error loading or generating persistent RSA private key: %w", err)
+		return nil, fmt.Errorf("error loading or generating persistent RSA private key from secure storage: %w", err)
 	}
 	return GetSwPoPKeyWithRSAKey(key)
 }
@@ -165,15 +173,27 @@ func getPoPKeyFilePath(cacheDir string) string {
 	return filepath.Join(cacheDir, popKeyFileName)
 }
 
-// loadOrGenerateRSAKey loads an existing RSA key from disk or generates a new one if it doesn't exist.
-// This ensures the same PoP key is used across multiple kubelogin invocations, which is required
-// for PoP token caching to work correctly.
+// loadOrGenerateRSAKey loads an existing RSA key from secure storage or generates a new one if it doesn't exist.
+// This uses the same encrypted storage infrastructure as our PoP token cache, providing platform-specific secure storage:
+// - Linux: Kernel keyrings with encrypted files
+// - macOS: macOS Keychain
+// - Windows: Windows Credential Manager
 func loadOrGenerateRSAKey(cacheDir string) (*rsa.PrivateKey, error) {
-	keyPath := getPoPKeyFilePath(cacheDir)
+	// Create a secure storage accessor using our cache infrastructure
+	popKeyPath := getPoPKeyFilePath(cacheDir)
+	accessor, err := cache.NewSecureAccessor(popKeyPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create secure storage accessor: %w", err)
+	}
 
-	// Try to load existing key first
-	if key, err := loadRSAKey(keyPath); err == nil {
-		return key, nil
+	ctx := context.Background()
+
+	// Try to load existing key from secure storage
+	if keyData, err := accessor.Read(ctx); err == nil && len(keyData) > 0 {
+		if key, err := parseRSAKeyFromPEM(keyData); err == nil {
+			return key, nil
+		}
+		// If parsing fails, we'll generate a new key below
 	}
 
 	// Generate new key if loading failed
@@ -182,24 +202,19 @@ func loadOrGenerateRSAKey(cacheDir string) (*rsa.PrivateKey, error) {
 		return nil, fmt.Errorf("error generating RSA private key: %w", err)
 	}
 
-	// Save the key for future use
-	if err := saveRSAKey(keyPath, key); err != nil {
+	// Save the key to secure storage
+	keyPEM := marshalRSAKeyToPEM(key)
+	if err := accessor.Write(ctx, keyPEM); err != nil {
 		// Log warning but don't fail - key generation succeeded
-		// This allows the PoP token to work even if key persistence fails
-		fmt.Fprintf(os.Stderr, "Warning: failed to persist PoP key to %s: %v\n", keyPath, err)
+		fmt.Fprintf(os.Stderr, "Warning: failed to persist PoP key to secure storage: %v\n", err)
 	}
 
 	return key, nil
 }
 
-// loadRSAKey loads an RSA private key from a PEM file.
-func loadRSAKey(keyPath string) (*rsa.PrivateKey, error) {
-	data, err := os.ReadFile(keyPath)
-	if err != nil {
-		return nil, err
-	}
-
-	block, _ := pem.Decode(data)
+// parseRSAKeyFromPEM parses an RSA private key from PEM data
+func parseRSAKeyFromPEM(pemData []byte) (*rsa.PrivateKey, error) {
+	block, _ := pem.Decode(pemData)
 	if block == nil || block.Type != "RSA PRIVATE KEY" {
 		return nil, fmt.Errorf("invalid PEM block type")
 	}
@@ -212,24 +227,11 @@ func loadRSAKey(keyPath string) (*rsa.PrivateKey, error) {
 	return key, nil
 }
 
-// saveRSAKey saves an RSA private key to a PEM file with secure permissions.
-func saveRSAKey(keyPath string, key *rsa.PrivateKey) error {
-	// Ensure the directory exists
-	if err := os.MkdirAll(filepath.Dir(keyPath), 0700); err != nil {
-		return fmt.Errorf("failed to create key directory: %w", err)
-	}
-
-	// Convert key to PEM format
+// marshalRSAKeyToPEM converts an RSA private key to PEM format
+func marshalRSAKeyToPEM(key *rsa.PrivateKey) []byte {
 	keyBytes := x509.MarshalPKCS1PrivateKey(key)
-	keyPEM := pem.EncodeToMemory(&pem.Block{
+	return pem.EncodeToMemory(&pem.Block{
 		Type:  "RSA PRIVATE KEY",
 		Bytes: keyBytes,
 	})
-
-	// Write with secure permissions (readable only by owner)
-	if err := os.WriteFile(keyPath, keyPEM, 0600); err != nil {
-		return fmt.Errorf("failed to write key file: %w", err)
-	}
-
-	return nil
 }

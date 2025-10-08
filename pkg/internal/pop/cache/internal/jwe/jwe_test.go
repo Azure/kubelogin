@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	aescbc "github.com/Azure/kubelogin/pkg/internal/pop/cache/internal/aesbc"
+	aescbc "github.com/Azure/kubelogin/pkg/internal/pop/cache/internal/aescbc"
 	"github.com/stretchr/testify/require"
 )
 
