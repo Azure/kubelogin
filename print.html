@@ -473,7 +473,7 @@ steps:
 <li>https://pkg.go.dev/github.com/Azure/azure-sdk-for-go/sdk/azidentity#AzurePipelinesCredential</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="web-browser-interactive"><a class="header" href="#web-browser-interactive">Web Browser Interactive</a></h1>
-<p>This login mode will automatically open a browser to login the user. 
+<p>This login mode will automatically open a browser to login the user.
 Once authenticated, the browser will redirect back to a local web server with access token.
 The redirect URL can be set via <code>--redirect-url</code>.
 This login mode complies with Conditional Access policy.</p>
@@ -1162,6 +1162,36 @@ For more than 200 groups, consider using <a href="https://docs.microsoft.com/en-
 Use <a href="./concepts/login-modes/interactive.html">web browser interactive</a> instead.</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="development"><a class="header" href="#development">Development</a></h1>
+<h2 id="prerequisites-1"><a class="header" href="#prerequisites-1">Prerequisites</a></h2>
+<h3 id="system-dependencies"><a class="header" href="#system-dependencies">System Dependencies</a></h3>
+<p>kubelogin uses secure token storage that requires platform-specific libraries:</p>
+<h4 id="linux-ubuntudebian"><a class="header" href="#linux-ubuntudebian">Linux (Ubuntu/Debian)</a></h4>
+<pre><code class="language-bash">sudo apt update
+sudo apt install libsecret-1-0 libsecret-1-dev
+</code></pre>
+<h4 id="linux-centosrhelfedora"><a class="header" href="#linux-centosrhelfedora">Linux (CentOS/RHEL/Fedora)</a></h4>
+<pre><code class="language-bash"># CentOS/RHEL
+sudo yum install libsecret-devel
+
+# Fedora
+sudo dnf install libsecret-devel
+</code></pre>
+<h4 id="macos"><a class="header" href="#macos">macOS</a></h4>
+<p>No additional dependencies required (uses Keychain)</p>
+<h4 id="windows-1"><a class="header" href="#windows-1">Windows</a></h4>
+<p>No additional dependencies required (uses Windows Credential Manager)</p>
+<h3 id="go-dependencies"><a class="header" href="#go-dependencies">Go Dependencies</a></h3>
+<ul>
+<li>Go 1.23 or later</li>
+<li>Make</li>
+</ul>
+<h2 id="building"><a class="header" href="#building">Building</a></h2>
+<pre><code class="language-bash">make build
+</code></pre>
+<h2 id="testing"><a class="header" href="#testing">Testing</a></h2>
+<pre><code class="language-bash">make test
+</code></pre>
+<p><strong>Note</strong>: Tests require the system dependencies listed above. If you encounter errors related to <code>libsecret-1.so</code> or “encrypted storage isn’t possible”, ensure the libsecret library is installed.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="releasing"><a class="header" href="#releasing">Releasing</a></h1>
 <p>To make a new release and publish please follow the following steps.</p>
 <ol>
