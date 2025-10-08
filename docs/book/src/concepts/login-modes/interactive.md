@@ -1,6 +1,6 @@
 # Web Browser Interactive
 
-This login mode will automatically open a browser to login the user. 
+This login mode will automatically open a browser to login the user.
 Once authenticated, the browser will redirect back to a local web server with access token.
 The redirect URL can be set via `--redirect-url`.
 This login mode complies with Conditional Access policy.

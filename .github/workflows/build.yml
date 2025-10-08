@@ -76,14 +76,14 @@ jobs:
           GOARCH: arm
           GOARM: "7"
           CGO_ENABLED: 0
-      
+
       - name: Build Windows AMD64
         run: make
         env:
           GOOS: windows
           GOARCH: amd64
           CGO_ENABLED: 0
-  
+
       - name: Build Windows ARM64
         run: make
         env:

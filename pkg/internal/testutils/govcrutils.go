@@ -14,6 +14,7 @@ const (
 	redactedToken = "[REDACTED]"
 	TestToken     = "TEST_ACCESS_TOKEN"
 	TestUsername  = "user@example.com"
+	TestPassword  = "password123"
 	TestTenantID  = "00000000-0000-0000-0000-000000000000"
 	TestClientID  = "80faf920-1908-4b52-b5ef-a8e7bedfc67a"
 	TestServerID  = "6dae42f8-4368-4678-94ff-3960e28e3630"
@@ -134,7 +135,13 @@ func GetVCRHttpClient(path, tenantID string) (*recorder.Recorder, error) {
 
 	matcher := func(r *http.Request, i cassette.Request) bool {
 		url := redactURL(r.URL.String(), tenantID)
-		if r.Method != i.Method || url != i.URL {
+		recordedURL := i.URL
+
+		// Normalize URLs by removing trailing empty query strings
+		url = normalizeURL(url)
+		recordedURL = normalizeURL(recordedURL)
+
+		if r.Method != i.Method || url != recordedURL {
 			return false
 		}
 		_ = r.ParseForm()
@@ -176,6 +183,13 @@ func redactURL(url, tenantID string) string {
 		url = emailRegex.ReplaceAllString(url, TestUsername)
 	}
 	return strings.ReplaceAll(url, tenantID, TestTenantID)
+}
+
+// normalizeURL removes trailing empty query strings and other URL inconsistencies
+func normalizeURL(url string) string {
+	// Remove trailing ? if no query parameters follow
+	url = strings.TrimSuffix(url, "?")
+	return url
 }
 
 func redactToken(body string) (string, error) {

@@ -1,14 +1,23 @@
 package pop
 
 import (
+	"context"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
+	"crypto/x509"
 	"encoding/base64"
+	"encoding/pem"
 	"fmt"
 	"math/big"
+	"os"
+	"path/filepath"
+
+	"github.com/Azure/kubelogin/pkg/internal/pop/cache"
 )
+
+const popKeyFileName = "pop_rsa_key.cache"
 
 // PoPKey is a generic interface for PoP key properties and methods
 type PoPKey interface {
@@ -97,6 +106,22 @@ func GetSwPoPKey() (*SwKey, error) {
 	return GetSwPoPKeyWithRSAKey(key)
 }
 
+// GetSwPoPKeyPersistent loads or generates a persistent PoP key for token caching.
+// This ensures the same PoP key is used across multiple kubelogin invocations,
+// which is required for PoP token caching with MSAL to work correctly.
+//
+// This implementation uses platform-specific secure storage exclusively:
+// - Linux: Kernel keyrings with encrypted files
+// - macOS: macOS Keychain
+// - Windows: Windows Credential Manager
+func GetSwPoPKeyPersistent(cacheDir string) (*SwKey, error) {
+	key, err := loadOrGenerateRSAKey(cacheDir)
+	if err != nil {
+		return nil, fmt.Errorf("error loading or generating persistent RSA private key from secure storage: %w", err)
+	}
+	return GetSwPoPKeyWithRSAKey(key)
+}
+
 func GetSwPoPKeyWithRSAKey(rsaKey *rsa.PrivateKey) (*SwKey, error) {
 	key, err := generateSwKey(rsaKey)
 	if err != nil {
@@ -141,4 +166,72 @@ func getJWK(eB64 string, nB64 string, keyID string) string {
 	// compute JWK to be included in JWT w/ PoP token's cnf claim
 	// - https://tools.ietf.org/html/rfc7800#section-3.2
 	return fmt.Sprintf(`{"e":"%s","kty":"RSA","n":"%s","alg":"RS256","kid":"%s"}`, eB64, nB64, keyID)
+}
+
+// getPoPKeyFilePath returns the file path for the persistent PoP RSA key.
+func getPoPKeyFilePath(cacheDir string) string {
+	return filepath.Join(cacheDir, popKeyFileName)
+}
+
+// loadOrGenerateRSAKey loads an existing RSA key from secure storage or generates a new one if it doesn't exist.
+// This uses the same encrypted storage infrastructure as our PoP token cache, providing platform-specific secure storage:
+// - Linux: Kernel keyrings with encrypted files
+// - macOS: macOS Keychain
+// - Windows: Windows Credential Manager
+func loadOrGenerateRSAKey(cacheDir string) (*rsa.PrivateKey, error) {
+	// Create a secure storage accessor using our cache infrastructure
+	popKeyPath := getPoPKeyFilePath(cacheDir)
+	accessor, err := cache.NewSecureAccessor(popKeyPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create secure storage accessor: %w", err)
+	}
+
+	ctx := context.Background()
+
+	// Try to load existing key from secure storage
+	if keyData, err := accessor.Read(ctx); err == nil && len(keyData) > 0 {
+		if key, err := parseRSAKeyFromPEM(keyData); err == nil {
+			return key, nil
+		}
+		// If parsing fails, we'll generate a new key below
+	}
+
+	// Generate new key if loading failed
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return nil, fmt.Errorf("error generating RSA private key: %w", err)
+	}
+
+	// Save the key to secure storage
+	keyPEM := marshalRSAKeyToPEM(key)
+	if err := accessor.Write(ctx, keyPEM); err != nil {
+		// Log warning but don't fail - key generation succeeded
+		fmt.Fprintf(os.Stderr, "Warning: failed to persist PoP key to secure storage: %v\n", err)
+	}
+
+	return key, nil
+}
+
+// parseRSAKeyFromPEM parses an RSA private key from PEM data
+func parseRSAKeyFromPEM(pemData []byte) (*rsa.PrivateKey, error) {
+	block, _ := pem.Decode(pemData)
+	if block == nil || block.Type != "RSA PRIVATE KEY" {
+		return nil, fmt.Errorf("invalid PEM block type")
+	}
+
+	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse RSA private key: %w", err)
+	}
+
+	return key, nil
+}
+
+// marshalRSAKeyToPEM converts an RSA private key to PEM format
+func marshalRSAKeyToPEM(key *rsa.PrivateKey) []byte {
+	keyBytes := x509.MarshalPKCS1PrivateKey(key)
+	return pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: keyBytes,
+	})
 }

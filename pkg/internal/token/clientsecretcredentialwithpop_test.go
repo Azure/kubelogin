@@ -21,6 +21,7 @@ func TestNewClientSecretCredentialWithPoP(t *testing.T) {
 				ClientSecret:      "test-secret",
 				IsPoPTokenEnabled: true,
 				PoPTokenClaims:    "u=test-cluster",
+				AuthorityHost:     "https://login.microsoftonline.com/",
 			},
 			expectName: "ClientSecretCredentialWithPoP",
 		},
@@ -31,6 +32,7 @@ func TestNewClientSecretCredentialWithPoP(t *testing.T) {
 				ClientSecret:      "test-secret",
 				IsPoPTokenEnabled: true,
 				PoPTokenClaims:    "u=test-cluster",
+				AuthorityHost:     "https://login.microsoftonline.com/",
 			},
 			expectErrorMsg: "client ID cannot be empty",
 		},
@@ -41,6 +43,7 @@ func TestNewClientSecretCredentialWithPoP(t *testing.T) {
 				ClientSecret:      "test-secret",
 				IsPoPTokenEnabled: true,
 				PoPTokenClaims:    "u=test-cluster",
+				AuthorityHost:     "https://login.microsoftonline.com/",
 			},
 			expectErrorMsg: "tenant ID cannot be empty",
 		},
@@ -51,6 +54,7 @@ func TestNewClientSecretCredentialWithPoP(t *testing.T) {
 				TenantID:          "test-tenant-id",
 				IsPoPTokenEnabled: true,
 				PoPTokenClaims:    "u=test-cluster",
+				AuthorityHost:     "https://login.microsoftonline.com/",
 			},
 			expectErrorMsg: "client secret cannot be empty",
 		},
@@ -61,6 +65,7 @@ func TestNewClientSecretCredentialWithPoP(t *testing.T) {
 				TenantID:          "test-tenant-id",
 				ClientSecret:      "test-secret",
 				IsPoPTokenEnabled: true,
+				AuthorityHost:     "https://login.microsoftonline.com/",
 			},
 			expectErrorMsg: "unable to parse PoP claims: failed to parse PoP token claims: no claims provided",
 		},
@@ -72,6 +77,7 @@ func TestNewClientSecretCredentialWithPoP(t *testing.T) {
 				ClientSecret:      "test-secret",
 				IsPoPTokenEnabled: true,
 				PoPTokenClaims:    "invalid-format",
+				AuthorityHost:     "https://login.microsoftonline.com/",
 			},
 			expectErrorMsg: "unable to parse PoP claims: failed to parse PoP token claims. Ensure the claims are formatted as `key=value` with no extra whitespace",
 		},
@@ -83,6 +89,7 @@ func TestNewClientSecretCredentialWithPoP(t *testing.T) {
 				ClientSecret:      "test-secret",
 				IsPoPTokenEnabled: true,
 				PoPTokenClaims:    "key=value",
+				AuthorityHost:     "https://login.microsoftonline.com/",
 			},
 			expectErrorMsg: "unable to parse PoP claims: required u-claim not provided for PoP token flow. Please provide the ARM ID of the cluster in the format `u=<ARM_ID>`",
 		},
@@ -90,7 +97,7 @@ func TestNewClientSecretCredentialWithPoP(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			cred, err := newClientSecretCredentialWithPoP(tc.opts)
+			cred, err := newClientSecretCredentialWithPoP(tc.opts, nil)
 			if tc.expectErrorMsg != "" {
 				assert.Error(t, err)
 				assert.Equal(t, tc.expectErrorMsg, err.Error())

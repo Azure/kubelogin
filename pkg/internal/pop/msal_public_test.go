@@ -10,7 +10,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/kubelogin/pkg/internal/testutils"
-	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -35,10 +34,10 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 		pEnv.clientID = testutils.TestClientID
 	}
 	if pEnv.username == "" {
-		pEnv.username = testutils.Username
+		pEnv.username = testutils.TestUsername
 	}
 	if pEnv.password == "" {
-		pEnv.password = testutils.Password
+		pEnv.password = testutils.TestPassword
 	}
 	if pEnv.tenantID == "" {
 		pEnv.tenantID = testutils.TestTenantID
@@ -92,21 +91,34 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 				t.Fatalf("failed to create vcr recorder: %s", err)
 			}
 
+			msalClientOptions := &MsalClientOptions{
+				Authority: authority,
+				ClientID:  tc.p.clientID,
+				Options: azcore.ClientOptions{
+					Cloud:     cloud.AzurePublic,
+					Transport: vcrRecorder.GetDefaultClient(),
+				},
+				TenantID: tc.p.tenantID,
+			}
+			client, err := NewPublicClient(msalClientOptions)
+			if err != nil {
+				t.Errorf("expected no error creating client but got: %s", err)
+			}
+
+			popKey, err := GetSwPoPKeyPersistent("/tmp/test_cache")
+			if err != nil {
+				t.Errorf("expected no error getting PoP key but got: %s", err)
+			}
+
 			token, _, err := AcquirePoPTokenByUsernamePassword(
 				ctx,
 				tc.p.popClaims,
 				scopes,
+				client,
 				tc.p.username,
 				tc.p.password,
-				&MsalClientOptions{
-					Authority: authority,
-					ClientID:  tc.p.clientID,
-					Options: azcore.ClientOptions{
-						Cloud:     cloud.AzurePublic,
-						Transport: vcrRecorder.GetDefaultClient(),
-					},
-					TenantID: tc.p.tenantID,
-				},
+				msalClientOptions,
+				popKey,
 			)
 			defer vcrRecorder.Stop()
 			if tc.expectedError != nil {
@@ -129,6 +141,85 @@ func TestAcquirePoPTokenByUsernamePassword(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestFindAccountByUsername(t *testing.T) {
+	ctx := context.Background()
+
+	// Create a test client
+	msalClientOptions := &MsalClientOptions{
+		Authority: "https://login.microsoftonline.com/" + testutils.TestTenantID,
+		ClientID:  testutils.TestClientID,
+		Options: azcore.ClientOptions{
+			Cloud: cloud.AzurePublic,
+		},
+		TenantID: testutils.TestTenantID,
+	}
+
+	client, err := NewPublicClient(msalClientOptions)
+	if err != nil {
+		t.Fatalf("failed to create public client: %s", err)
+	}
+
+	// Test with no accounts (fresh client)
+	account, err := findAccountByUsername(ctx, client, "user1@example.com")
+	if err != nil {
+		t.Errorf("findAccountByUsername returned error: %s", err)
+	}
+	if account != nil {
+		t.Errorf("expected no account found, but got %+v", account)
+	}
+
+	// Test with non-existent username (should not find anything)
+	account, err = findAccountByUsername(ctx, client, "nonexistent@example.com")
+	if err != nil {
+		t.Errorf("findAccountByUsername returned error: %s", err)
+	}
+	if account != nil {
+		t.Errorf("expected no account found for nonexistent user, but got %+v", account)
+	}
+}
+
+func TestClearAllAccounts(t *testing.T) {
+	ctx := context.Background()
+
+	// Create a test client
+	msalClientOptions := &MsalClientOptions{
+		Authority: "https://login.microsoftonline.com/" + testutils.TestTenantID,
+		ClientID:  testutils.TestClientID,
+		Options: azcore.ClientOptions{
+			Cloud: cloud.AzurePublic,
+		},
+		TenantID: testutils.TestTenantID,
+	}
+
+	client, err := NewPublicClient(msalClientOptions)
+	if err != nil {
+		t.Fatalf("failed to create public client: %s", err)
+	}
+
+	// Get initial account count
+	initialAccounts, err := client.Accounts(ctx)
+	if err != nil {
+		t.Errorf("error getting initial accounts: %s", err)
+	}
+	t.Logf("Initial accounts: %d", len(initialAccounts))
+
+	// Clear all accounts
+	err = clearAllAccounts(ctx, client)
+	if err != nil {
+		t.Errorf("clearAllAccounts returned error: %s", err)
+	}
+
+	// Verify accounts are cleared
+	finalAccounts, err := client.Accounts(ctx)
+	if err != nil {
+		t.Errorf("error getting final accounts: %s", err)
+	}
+
+	if len(finalAccounts) != 0 {
+		t.Errorf("expected 0 accounts after clearing, but got %d", len(finalAccounts))
 	}
 }
 
@@ -183,23 +274,15 @@ func TestGetPublicClient(t *testing.T) {
 		},
 	}
 
-	var client *public.Client
-	var err error
-
 	for _, tc := range testCase {
 		t.Run(tc.testName, func(t *testing.T) {
-			client, err = getPublicClient(tc.msalOptions)
-
+			_, err := NewPublicClient(tc.msalOptions)
 			if tc.expectedError != nil {
 				if !testutils.ErrorContains(err, tc.expectedError.Error()) {
 					t.Errorf("expected error %s, but got %s", tc.expectedError.Error(), err)
 				}
 			} else if err != nil {
-				t.Errorf("expected no error, but got: %s", err)
-			} else {
-				if client == nil {
-					t.Errorf("expected a client but got nil")
-				}
+				t.Errorf("expected no error creating client, but got: %s", err.Error())
 			}
 		})
 	}
