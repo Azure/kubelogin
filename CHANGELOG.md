@@ -1,5 +1,28 @@
 # Change Log
 
+## [0.2.11]
+
+### What's Changed
+
+* Add OpenContainers Image Spec labels to Docker image by @Copilot in https://github.com/Azure/kubelogin/pull/693
+* Add AzurePipelinesCredential to authentication options by @Copilot in https://github.com/Azure/kubelogin/pull/703
+* Add encrypted caching support for PoP token flow by @vineeth-thumma in https://github.com/Azure/kubelogin/pull/676
+
+### Maintenance
+
+* update install doc by @weinong in https://github.com/Azure/kubelogin/pull/688
+* Update asdf installation instructions by @o-farooq in https://github.com/Azure/kubelogin/pull/690
+* docs: clarify sp login-mode precedence by @duduz in https://github.com/Azure/kubelogin/pull/692
+* bumped go version by @weinong in https://github.com/Azure/kubelogin/pull/709
+
+### New Contributors
+
+* @o-farooq made their first contribution in https://github.com/Azure/kubelogin/pull/690
+* @duduz made their first contribution in https://github.com/Azure/kubelogin/pull/692
+* @vineeth-thumma made their first contribution in https://github.com/Azure/kubelogin/pull/676
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.10...v0.2.11
+
 ## [0.2.10]
 
 ### What's Changed
