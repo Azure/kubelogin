@@ -168,10 +168,6 @@ func (o *Options) Validate() error {
 		return fmt.Errorf("timeout must be greater than 0")
 	}
 
-	// Azure Pipelines login method validation
-	// Note: tenant-id, client-id, and service-connection-id are optional as they can come from environment variables
-	// The actual credential creation will fail with appropriate errors if they're missing at runtime
-
 	return nil
 }
 
