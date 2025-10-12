@@ -93,7 +93,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&o.LoginMethod, "login", "l", o.LoginMethod,
 		fmt.Sprintf("Login method. Supported methods: %s. It may be specified in %s environment variable", GetSupportedLogins(), env.LoginMethod))
 	fs.StringVar(&o.ClientID, "client-id", o.ClientID,
-		fmt.Sprintf("AAD client application ID. It may be specified in %s or %s environment variable. For Azure Pipelines login, it may be specified in %s", env.KubeloginClientID, env.AzureClientID, env.AzureSubscriptionClientID))
+		fmt.Sprintf("AAD client application ID. It may be specified in %s or %s environment variable. For Azure Pipelines login, it may be specified in %s environment variable", env.KubeloginClientID, env.AzureClientID, env.AzureSubscriptionClientID))
 	fs.StringVar(&o.ClientSecret, "client-secret", o.ClientSecret,
 		fmt.Sprintf("AAD client application secret. Used in spn login. It may be specified in %s or %s environment variable", env.KubeloginClientSecret, env.AzureClientSecret))
 	fs.StringVar(&o.ClientCert, "client-certificate", o.ClientCert,
