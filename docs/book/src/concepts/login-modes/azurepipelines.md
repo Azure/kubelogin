@@ -23,7 +23,7 @@ The authentication leverages Azure Pipelines' managed identity integration throu
 - `--server-id`: Application ID of the server/resource (typically the AKS cluster's server ID)
 - `--azure-pipelines-service-connection-id`: The resource ID of the Azure Resource Manager service connection
 
-> **Note**: When using Azure Pipelines tasks with Azure Resource Manager service connections, Azure Pipelines automatically sets the following environment variables which kubelogin will use if the corresponding flags are not provided:
+> **Note**: When using `AzureCLI@2` task with Azure Resource Manager service connections, Azure Pipelines automatically sets the following environment variables which kubelogin will use if the corresponding flags are not provided:
 > - `AZURESUBSCRIPTION_TENANT_ID` - Automatically used for `--tenant-id`
 > - `AZURESUBSCRIPTION_CLIENT_ID` - Automatically used for `--client-id`
 > - `AZURESUBSCRIPTION_SERVICE_CONNECTION_ID` - Automatically used for `--azure-pipelines-service-connection-id`
@@ -32,7 +32,7 @@ The authentication leverages Azure Pipelines' managed identity integration throu
 
 ## Usage Examples
 
-### Basic Usage in Pipeline (Simplified with Environment Variables)
+### Basic Usage in Pipeline
 
 ```yaml
 # azure-pipelines.yml
@@ -44,11 +44,12 @@ steps:
     scriptType: 'bash'
     scriptLocation: 'inlineScript'
     inlineScript: |
+      # Download kubeconfig from AKS
+      az aks get-credentials -g ${RESOURCE_GROUP} -n ${AKS_NAME}
+      
       # Configure kubeconfig to use azurepipelines login
-      # tenant-id, client-id, and service-connection-id are automatically detected
-      kubelogin convert-kubeconfig \
-        --login azurepipelines \
-        --server-id $(server-id)
+      # tenant-id, client-id, and service-connection-id are automatically detected from environment variables
+      kubelogin convert-kubeconfig --login azurepipelines
       
       # Now kubectl commands will authenticate using Azure Pipelines credentials
       kubectl get nodes
@@ -98,35 +99,9 @@ kubelogin get-token \
   --azure-pipelines-service-connection-id <service-connection-resource-id>
 ```
 
-### Terraform Integration
-
-```yaml
-# azure-pipelines.yml for Terraform deployments
-steps:
-- task: AzureCLI@2
-  displayName: 'Terraform Apply'
-  inputs:
-    azureSubscription: 'my-service-connection'
-    scriptType: 'bash'
-    scriptLocation: 'inlineScript'
-    inlineScript: |
-      # Setup Terraform
-      cd $(System.DefaultWorkingDirectory)/terraform
-      terraform init
-      
-      # Configure kubeconfig for kubectl provider in Terraform
-      # tenant-id, client-id, and service-connection-id are automatically detected
-      kubelogin convert-kubeconfig \
-        --login azurepipelines \
-        --server-id $(server-id)
-      
-      # Run Terraform
-      terraform apply -auto-approve
-```
-
 ## Environment Variable Support
 
-When using Azure Pipelines tasks with Azure Resource Manager service connections, Azure Pipelines automatically sets environment variables for the service connection. Kubelogin automatically detects and uses these variables:
+When using `AzureCLI@2` task with Azure Resource Manager service connections, Azure Pipelines automatically sets environment variables for the service connection. Kubelogin automatically detects and uses these variables:
 
 | Environment Variable | Used For | Command-line Flag Equivalent |
 |---------------------|----------|------------------------------|
@@ -142,7 +117,7 @@ When using Azure Pipelines tasks with Azure Resource Manager service connections
 
 1. **Service Connection**: Azure DevOps service connections provide managed identity or service principal authentication to Azure resources
 2. **System Access Token**: When "Allow scripts to access the OAuth token" is enabled, Azure Pipelines provides a `SYSTEM_ACCESSTOKEN` environment variable
-3. **Environment Variables**: When using Azure Pipelines tasks with Azure Resource Manager service connections, Azure Pipelines automatically sets subscription-specific environment variables
+3. **Environment Variables**: When using `AzureCLI@2` task with Azure Resource Manager service connections, Azure Pipelines automatically sets subscription-specific environment variables
 4. **OIDC Integration**: The `azurepipelines` login method uses Azure SDK's `AzurePipelinesCredential` to exchange the system access token for an Azure AD token
 5. **Token Caching**: Authentication tokens are cached to improve performance across multiple kubectl operations
 

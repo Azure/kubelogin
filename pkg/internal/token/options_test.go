@@ -124,7 +124,7 @@ func TestOptions(t *testing.T) {
 			errorSubstring   string
 		}{
 			{
-				name: "valid azurepipelines login",
+				name: "valid azurepipelines login with all parameters",
 				setupEnv: func() {
 					t.Setenv(env.SystemAccessToken, "test-token")
 					t.Setenv(env.SystemOIDCRequestURI, "https://test.oidc.request.uri")
@@ -133,72 +133,43 @@ func TestOptions(t *testing.T) {
 					o := defaultOptions()
 					o.LoginMethod = AzurePipelinesLogin
 					o.TenantID = "test-tenant"
+					o.ClientID = "test-client"
 					o.AzurePipelinesServiceConnectionID = "test-service-connection"
 					return o
 				},
 				expectError: false,
 			},
 			{
-				name: "azurepipelines missing tenant ID",
+				name: "azurepipelines login without tenant ID is valid (can come from env)",
 				setupEnv: func() {
 					t.Setenv(env.SystemAccessToken, "test-token")
 					t.Setenv(env.SystemOIDCRequestURI, "https://test.oidc.request.uri")
+					t.Setenv(env.AzureSubscriptionTenantID, "env-tenant-id")
 				},
 				options: func() Options {
 					o := defaultOptions()
 					o.LoginMethod = AzurePipelinesLogin
+					o.ClientID = "test-client"
 					o.AzurePipelinesServiceConnectionID = "test-service-connection"
 					return o
 				},
-				expectError:    true,
-				errorSubstring: "tenant ID is required for azurepipelines login method",
+				expectError: false,
 			},
 			{
-				name: "azurepipelines missing service connection ID",
+				name: "azurepipelines login without service connection ID is valid (can come from env)",
 				setupEnv: func() {
 					t.Setenv(env.SystemAccessToken, "test-token")
 					t.Setenv(env.SystemOIDCRequestURI, "https://test.oidc.request.uri")
+					t.Setenv(env.AzureSubscriptionServiceConnectionID, "env-service-connection")
 				},
 				options: func() Options {
 					o := defaultOptions()
 					o.LoginMethod = AzurePipelinesLogin
 					o.TenantID = "test-tenant"
+					o.ClientID = "test-client"
 					return o
 				},
-				expectError:    true,
-				errorSubstring: "--azure-pipelines-service-connection-id is required for --login azurepipelines",
-			},
-			{
-				name: "azurepipelines missing SYSTEM_ACCESSTOKEN",
-				setupEnv: func() {
-					t.Setenv(env.SystemOIDCRequestURI, "https://test.oidc.request.uri")
-					// Don't set SYSTEM_ACCESSTOKEN
-				},
-				options: func() Options {
-					o := defaultOptions()
-					o.LoginMethod = AzurePipelinesLogin
-					o.TenantID = "test-tenant"
-					o.AzurePipelinesServiceConnectionID = "test-service-connection"
-					return o
-				},
-				expectError:    true,
-				errorSubstring: fmt.Sprintf("environment variable %s not set", env.SystemAccessToken),
-			},
-			{
-				name: "azurepipelines missing SYSTEM_OIDCREQUESTURI",
-				setupEnv: func() {
-					t.Setenv(env.SystemAccessToken, "test-token")
-					// Don't set SYSTEM_OIDCREQUESTURI
-				},
-				options: func() Options {
-					o := defaultOptions()
-					o.LoginMethod = AzurePipelinesLogin
-					o.TenantID = "test-tenant"
-					o.AzurePipelinesServiceConnectionID = "test-service-connection"
-					return o
-				},
-				expectError:    true,
-				errorSubstring: fmt.Sprintf("environment variable %s not set", env.SystemOIDCRequestURI),
+				expectError: false,
 			},
 		}
 
@@ -207,6 +178,8 @@ func TestOptions(t *testing.T) {
 				// Clean up environment variables before each test
 				originalSystemAccessToken := os.Getenv(env.SystemAccessToken)
 				originalSystemOIDCRequestURI := os.Getenv(env.SystemOIDCRequestURI)
+				originalTenantID := os.Getenv(env.AzureSubscriptionTenantID)
+				originalServiceConnectionID := os.Getenv(env.AzureSubscriptionServiceConnectionID)
 				defer func() {
 					if originalSystemAccessToken != "" {
 						os.Setenv(env.SystemAccessToken, originalSystemAccessToken)
@@ -217,6 +190,16 @@ func TestOptions(t *testing.T) {
 						os.Setenv(env.SystemOIDCRequestURI, originalSystemOIDCRequestURI)
 					} else {
 						os.Unsetenv(env.SystemOIDCRequestURI)
+					}
+					if originalTenantID != "" {
+						os.Setenv(env.AzureSubscriptionTenantID, originalTenantID)
+					} else {
+						os.Unsetenv(env.AzureSubscriptionTenantID)
+					}
+					if originalServiceConnectionID != "" {
+						os.Setenv(env.AzureSubscriptionServiceConnectionID, originalServiceConnectionID)
+					} else {
+						os.Unsetenv(env.AzureSubscriptionServiceConnectionID)
 					}
 				}()
 

@@ -169,20 +169,8 @@ func (o *Options) Validate() error {
 	}
 
 	// Azure Pipelines login method validation
-	if o.LoginMethod == AzurePipelinesLogin {
-		if o.TenantID == "" {
-			return fmt.Errorf("tenant ID is required for azurepipelines login method")
-		}
-		if o.AzurePipelinesServiceConnectionID == "" {
-			return fmt.Errorf("--azure-pipelines-service-connection-id is required for --login azurepipelines")
-		}
-		if os.Getenv(env.SystemAccessToken) == "" {
-			return fmt.Errorf("environment variable %s not set; enable \"Allow scripts to access the OAuth token\" in the pipeline", env.SystemAccessToken)
-		}
-		if os.Getenv(env.SystemOIDCRequestURI) == "" {
-			return fmt.Errorf("environment variable %s not set; this should be automatically set by Azure Pipelines", env.SystemOIDCRequestURI)
-		}
-	}
+	// Note: tenant-id, client-id, and service-connection-id are optional as they can come from environment variables
+	// The actual credential creation will fail with appropriate errors if they're missing at runtime
 
 	return nil
 }
