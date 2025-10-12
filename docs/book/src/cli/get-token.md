@@ -232,7 +232,7 @@ users:
 
 ### Azure Pipelines
 
-When using Azure Pipelines with `addSpnToEnvironment: true`, environment variables are automatically set. You only need to provide the `--server-id`:
+When using Azure Pipelines tasks with Azure Resource Manager service connections, environment variables are automatically set. You only need to provide the `--server-id`:
 
 ```yaml
 kind: Config
@@ -278,7 +278,7 @@ users:
         env: null
 ```
 
-> **Note**: When using AzureCLI@2 with `addSpnToEnvironment: true`, the following environment variables are automatically set and used:
+> **Note**: When using Azure Pipelines tasks with Azure Resource Manager service connections, the following environment variables are automatically set and used:
 > - `AZURESUBSCRIPTION_TENANT_ID` for `--tenant-id`
 > - `AZURESUBSCRIPTION_CLIENT_ID` for `--client-id`
 > - `AZURESUBSCRIPTION_SERVICE_CONNECTION_ID` for `--azure-pipelines-service-connection-id`

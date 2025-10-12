@@ -23,7 +23,7 @@ The authentication leverages Azure Pipelines' managed identity integration throu
 - `--server-id`: Application ID of the server/resource (typically the AKS cluster's server ID)
 - `--azure-pipelines-service-connection-id`: The resource ID of the Azure Resource Manager service connection
 
-> **Note**: When using the `AzureCLI@2` task with `addSpnToEnvironment: true`, Azure Pipelines automatically sets the following environment variables which kubelogin will use if the corresponding flags are not provided:
+> **Note**: When using Azure Pipelines tasks with Azure Resource Manager service connections, Azure Pipelines automatically sets the following environment variables which kubelogin will use if the corresponding flags are not provided:
 > - `AZURESUBSCRIPTION_TENANT_ID` - Automatically used for `--tenant-id`
 > - `AZURESUBSCRIPTION_CLIENT_ID` - Automatically used for `--client-id`
 > - `AZURESUBSCRIPTION_SERVICE_CONNECTION_ID` - Automatically used for `--azure-pipelines-service-connection-id`
@@ -52,12 +52,11 @@ steps:
       
       # Now kubectl commands will authenticate using Azure Pipelines credentials
       kubectl get nodes
-    addSpnToEnvironment: true  # This enables SYSTEM_ACCESSTOKEN and sets Azure subscription environment variables
 ```
 
 ### Basic Usage with Explicit Parameters
 
-If you prefer to explicitly provide all parameters (or if `addSpnToEnvironment` is not available):
+If you prefer to explicitly provide all parameters:
 
 ```yaml
 # azure-pipelines.yml
@@ -79,7 +78,6 @@ steps:
       
       # Now kubectl commands will authenticate using Azure Pipelines credentials
       kubectl get nodes
-    addSpnToEnvironment: true
 ```
 
 ### Direct Token Retrieval
@@ -124,12 +122,11 @@ steps:
       
       # Run Terraform
       terraform apply -auto-approve
-    addSpnToEnvironment: true
 ```
 
 ## Environment Variable Support
 
-When using the `AzureCLI@2` task with `addSpnToEnvironment: true`, Azure Pipelines automatically sets environment variables for the service connection. Kubelogin automatically detects and uses these variables:
+When using Azure Pipelines tasks with Azure Resource Manager service connections, Azure Pipelines automatically sets environment variables for the service connection. Kubelogin automatically detects and uses these variables:
 
 | Environment Variable | Used For | Command-line Flag Equivalent |
 |---------------------|----------|------------------------------|
@@ -145,7 +142,7 @@ When using the `AzureCLI@2` task with `addSpnToEnvironment: true`, Azure Pipelin
 
 1. **Service Connection**: Azure DevOps service connections provide managed identity or service principal authentication to Azure resources
 2. **System Access Token**: When "Allow scripts to access the OAuth token" is enabled, Azure Pipelines provides a `SYSTEM_ACCESSTOKEN` environment variable
-3. **Environment Variables**: When using `AzureCLI@2` with `addSpnToEnvironment: true`, Azure Pipelines sets subscription-specific environment variables
+3. **Environment Variables**: When using Azure Pipelines tasks with Azure Resource Manager service connections, Azure Pipelines automatically sets subscription-specific environment variables
 4. **OIDC Integration**: The `azurepipelines` login method uses Azure SDK's `AzurePipelinesCredential` to exchange the system access token for an Azure AD token
 5. **Token Caching**: Authentication tokens are cached to improve performance across multiple kubectl operations
 
