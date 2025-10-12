@@ -232,6 +232,28 @@ users:
 
 ### Azure Pipelines
 
+When using Azure Pipelines with `addSpnToEnvironment: true`, environment variables are automatically set. You only need to provide the `--server-id`:
+
+```yaml
+kind: Config
+preferences: {}
+users:
+  - name: demouser
+    user:
+      exec:
+        apiVersion: client.authentication.k8s.io/v1beta1
+        args:
+          - get-token
+          - --server-id
+          - <AAD server app ID>
+          - --login
+          - azurepipelines
+        command: kubelogin
+        env: null
+```
+
+If environment variables are not available, provide all parameters explicitly:
+
 ```yaml
 kind: Config
 preferences: {}
@@ -255,3 +277,8 @@ users:
         command: kubelogin
         env: null
 ```
+
+> **Note**: When using AzureCLI@2 with `addSpnToEnvironment: true`, the following environment variables are automatically set and used:
+> - `AZURESUBSCRIPTION_TENANT_ID` for `--tenant-id`
+> - `AZURESUBSCRIPTION_CLIENT_ID` for `--client-id`
+> - `AZURESUBSCRIPTION_SERVICE_CONNECTION_ID` for `--azure-pipelines-service-connection-id`
