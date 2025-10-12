@@ -31,4 +31,9 @@ const (
 	// env vars used by Azure Pipelines
 	SystemAccessToken    = "SYSTEM_ACCESSTOKEN"
 	SystemOIDCRequestURI = "SYSTEM_OIDCREQUESTURI"
+
+	// env vars used by Azure Pipelines service connections
+	AzureSubscriptionTenantID            = "AZURESUBSCRIPTION_TENANT_ID"
+	AzureSubscriptionServiceConnectionID = "AZURESUBSCRIPTION_SERVICE_CONNECTION_ID"
+	AzureSubscriptionClientID            = "AZURESUBSCRIPTION_CLIENT_ID"
 )
