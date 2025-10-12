@@ -115,7 +115,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&o.AuthRecordCacheDir, "token-cache-dir", o.AuthRecordCacheDir, "directory to cache authentication record")
 	_ = fs.MarkDeprecated("token-cache-dir", "use --cache-dir instead")
 	fs.StringVar(&o.AuthRecordCacheDir, "cache-dir", o.AuthRecordCacheDir, "directory to cache authentication record")
-	fs.StringVarP(&o.TenantID, "tenant-id", "t", o.TenantID, fmt.Sprintf("AAD tenant ID. It may be specified in %s environment variable. For Azure Pipelines login, it may be specified in %s", env.AzureTenantID, env.AzureSubscriptionTenantID))
+	fs.StringVarP(&o.TenantID, "tenant-id", "t", o.TenantID, fmt.Sprintf("AAD tenant ID. It may be specified in %s environment variable. For Azure Pipelines login, it may be specified in %s environment variable", env.AzureTenantID, env.AzureSubscriptionTenantID))
 	fs.StringVarP(&o.Environment, "environment", "e", o.Environment, "Azure environment name")
 	fs.BoolVar(&o.IsLegacy, "legacy", o.IsLegacy, "set to true to get token with 'spn:' prefix in audience claim")
 	fs.BoolVar(&o.UseAzureRMTerraformEnv, "use-azurerm-env-vars", o.UseAzureRMTerraformEnv,
