@@ -10,39 +10,41 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
-	"github.com/Azure/kubelogin/pkg/internal/env"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/client-go/util/homedir"
+
+	"github.com/Azure/kubelogin/pkg/internal/env"
 )
 
 type Options struct {
-	LoginMethod                string
-	ClientID                   string
-	ClientSecret               string
-	ClientCert                 string
-	ClientCertPassword         string
-	Username                   string
-	Password                   string
-	ServerID                   string
-	TenantID                   string
-	Environment                string
-	IsLegacy                   bool
-	Timeout                    time.Duration
-	AuthRecordCacheDir         string
-	authRecordCacheFile        string
-	IdentityResourceID         string
-	FederatedTokenFile         string
-	AuthorityHost              string
-	UseAzureRMTerraformEnv     bool
-	IsPoPTokenEnabled          bool
-	PoPTokenClaims             string
-	DisableEnvironmentOverride bool
-	UsePersistentCache         bool
-	DisableInstanceDiscovery   bool
-	httpClient                 *http.Client
-	RedirectURL                string
-	LoginHint                  string
+	LoginMethod                       string
+	ClientID                          string
+	ClientSecret                      string
+	ClientCert                        string
+	ClientCertPassword                string
+	Username                          string
+	Password                          string
+	ServerID                          string
+	TenantID                          string
+	Environment                       string
+	IsLegacy                          bool
+	Timeout                           time.Duration
+	AuthRecordCacheDir                string
+	authRecordCacheFile               string
+	IdentityResourceID                string
+	FederatedTokenFile                string
+	AuthorityHost                     string
+	UseAzureRMTerraformEnv            bool
+	IsPoPTokenEnabled                 bool
+	PoPTokenClaims                    string
+	DisableEnvironmentOverride        bool
+	UsePersistentCache                bool
+	DisableInstanceDiscovery          bool
+	httpClient                        *http.Client
+	RedirectURL                       string
+	LoginHint                         string
+	AzurePipelinesServiceConnectionID string
 }
 
 const (
@@ -56,6 +58,7 @@ const (
 	AzureCLILogin          = "azurecli"
 	AzureDeveloperCLILogin = "azd"
 	WorkloadIdentityLogin  = "workloadidentity"
+	AzurePipelinesLogin    = "azurepipelines"
 )
 
 var (
@@ -64,7 +67,7 @@ var (
 )
 
 func init() {
-	supportedLogin = []string{DeviceCodeLogin, InteractiveLogin, ServicePrincipalLogin, ROPCLogin, MSILogin, AzureCLILogin, AzureDeveloperCLILogin, WorkloadIdentityLogin}
+	supportedLogin = []string{DeviceCodeLogin, InteractiveLogin, ServicePrincipalLogin, ROPCLogin, MSILogin, AzureCLILogin, AzureDeveloperCLILogin, WorkloadIdentityLogin, AzurePipelinesLogin}
 }
 
 func GetSupportedLogins() string {
@@ -90,7 +93,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&o.LoginMethod, "login", "l", o.LoginMethod,
 		fmt.Sprintf("Login method. Supported methods: %s. It may be specified in %s environment variable", GetSupportedLogins(), env.LoginMethod))
 	fs.StringVar(&o.ClientID, "client-id", o.ClientID,
-		fmt.Sprintf("AAD client application ID. It may be specified in %s or %s environment variable", env.KubeloginClientID, env.AzureClientID))
+		fmt.Sprintf("AAD client application ID. It may be specified in %s or %s environment variable. For Azure Pipelines login, it may be specified in %s environment variable", env.KubeloginClientID, env.AzureClientID, env.AzureSubscriptionClientID))
 	fs.StringVar(&o.ClientSecret, "client-secret", o.ClientSecret,
 		fmt.Sprintf("AAD client application secret. Used in spn login. It may be specified in %s or %s environment variable", env.KubeloginClientSecret, env.AzureClientSecret))
 	fs.StringVar(&o.ClientCert, "client-certificate", o.ClientCert,
@@ -107,10 +110,12 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 		fmt.Sprintf("Workload Identity federated token file. It may be specified in %s environment variable", env.AzureFederatedTokenFile))
 	fs.StringVar(&o.AuthorityHost, "authority-host", o.AuthorityHost,
 		fmt.Sprintf("Workload Identity authority host. It may be specified in %s environment variable", env.AzureAuthorityHost))
+	fs.StringVar(&o.AzurePipelinesServiceConnectionID, "azure-pipelines-service-connection-id", o.AzurePipelinesServiceConnectionID,
+		fmt.Sprintf("Service connection (resource) ID used by azurepipelines login method. It may be specified in %s environment variable", env.AzureSubscriptionServiceConnectionID))
 	fs.StringVar(&o.AuthRecordCacheDir, "token-cache-dir", o.AuthRecordCacheDir, "directory to cache authentication record")
 	_ = fs.MarkDeprecated("token-cache-dir", "use --cache-dir instead")
 	fs.StringVar(&o.AuthRecordCacheDir, "cache-dir", o.AuthRecordCacheDir, "directory to cache authentication record")
-	fs.StringVarP(&o.TenantID, "tenant-id", "t", o.TenantID, fmt.Sprintf("AAD tenant ID. It may be specified in %s environment variable", env.AzureTenantID))
+	fs.StringVarP(&o.TenantID, "tenant-id", "t", o.TenantID, fmt.Sprintf("AAD tenant ID. It may be specified in %s environment variable. For Azure Pipelines login, it may be specified in %s environment variable", env.AzureTenantID, env.AzureSubscriptionTenantID))
 	fs.StringVarP(&o.Environment, "environment", "e", o.Environment, "Azure environment name")
 	fs.BoolVar(&o.IsLegacy, "legacy", o.IsLegacy, "set to true to get token with 'spn:' prefix in audience claim")
 	fs.BoolVar(&o.UseAzureRMTerraformEnv, "use-azurerm-env-vars", o.UseAzureRMTerraformEnv,
@@ -246,6 +251,25 @@ func (o *Options) UpdateFromEnv() {
 			o.AuthorityHost = v
 		}
 	}
+
+	if o.LoginMethod == AzurePipelinesLogin {
+		if o.ClientID == "" {
+			if v, ok := os.LookupEnv(env.AzureSubscriptionClientID); ok {
+				o.ClientID = v
+			}
+		}
+		if o.TenantID == "" {
+			if v, ok := os.LookupEnv(env.AzureSubscriptionTenantID); ok {
+				o.TenantID = v
+			}
+		}
+		if o.AzurePipelinesServiceConnectionID == "" {
+			if v, ok := os.LookupEnv(env.AzureSubscriptionServiceConnectionID); ok {
+				o.AzurePipelinesServiceConnectionID = v
+			}
+		}
+	}
+
 	if v, ok := os.LookupEnv("AZURE_CLI_TIMEOUT"); ok {
 		if timeout, err := time.ParseDuration(v); err == nil {
 			o.Timeout = timeout

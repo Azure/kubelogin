@@ -81,6 +81,9 @@ func NewAzIdentityCredential(record azidentity.AuthenticationRecord, popCache ca
 		default:
 			return newWorkloadIdentityCredential(o)
 		}
+
+	case AzurePipelinesLogin:
+		return newAzurePipelinesCredential(o)
 	}
 
 	return nil, errors.New("unsupported token provider")

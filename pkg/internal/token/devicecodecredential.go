@@ -50,7 +50,7 @@ func newDeviceCodeCredential(opts *Options, record azidentity.AuthenticationReco
 	}
 
 	if opts.httpClient != nil {
-		azOpts.ClientOptions.Transport = opts.httpClient
+		azOpts.Transport = opts.httpClient
 	}
 
 	cred, err := azidentity.NewDeviceCodeCredential(azOpts)

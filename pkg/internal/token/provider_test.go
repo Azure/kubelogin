@@ -5,11 +5,20 @@ import (
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/kubelogin/pkg/internal/env"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewAzIdentityCredential(t *testing.T) {
 	certFile := "fixtures/cert.pem"
+
+	// Set up environment variables for Azure Pipelines test
+	os.Setenv(env.SystemAccessToken, "test-system-access-token")
+	os.Setenv(env.SystemOIDCRequestURI, "https://test.oidc.request.uri")
+	defer func() {
+		os.Unsetenv(env.SystemAccessToken)
+		os.Unsetenv(env.SystemOIDCRequestURI)
+	}()
 
 	tests := []struct {
 		name       string
@@ -99,6 +108,17 @@ func TestNewAzIdentityCredential(t *testing.T) {
 			},
 			wantErr:    true,
 			errMessage: "unsupported token provider",
+		},
+		{
+			name: "Azure Pipelines login",
+			options: &Options{
+				LoginMethod:                       AzurePipelinesLogin,
+				ServerID:                          "server-id",
+				TenantID:                          "tenant-id", 
+				ClientID:                          "client-id",
+				AzurePipelinesServiceConnectionID: "service-connection-id",
+			},
+			wantErr: false,
 		},
 	}
 

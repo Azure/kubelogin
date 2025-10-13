@@ -14,9 +14,10 @@ Usage:
   kubelogin convert-kubeconfig [flags]
 
 Flags:
-      --authority-host string                Workload Identity authority host. It may be specified in AZURE_AUTHORITY_HOST environment variable
-      --azure-config-dir string              Azure CLI config path
-      --cache-dir string                     directory to cache authentication record (default "/home/weinongw/.kube/cache/kubelogin/")
+      --authority-host string                          Workload Identity authority host. It may be specified in AZURE_AUTHORITY_HOST environment variable
+      --azure-config-dir string                        Azure CLI config path
+      --azure-pipelines-service-connection-id string   Service connection (resource) ID used by azurepipelines login method
+      --cache-dir string                               directory to cache authentication record (default "/home/weinongw/.kube/cache/kubelogin/")
       --client-certificate string            AAD client cert in pfx. Used in spn login. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE or AZURE_CLIENT_CERTIFICATE_PATH environment variable
       --client-certificate-password string   Password for AAD client cert. Used in spn login. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_CERTIFICATE_PASSWORD or AZURE_CLIENT_CERTIFICATE_PASSWORD environment variable
       --client-id string                     AAD client application ID. It may be specified in AAD_SERVICE_PRINCIPAL_CLIENT_ID or AZURE_CLIENT_ID environment variable
@@ -30,7 +31,7 @@ Flags:
       --identity-resource-id string          Managed Identity resource id.
       --kubeconfig string                    Path to the kubeconfig file to use for CLI requests.
       --legacy                               set to true to get token with 'spn:' prefix in audience claim
-  -l, --login string                         Login method. Supported methods: devicecode, interactive, spn, ropc, msi, azurecli, azd, workloadidentity. It may be specified in AAD_LOGIN_METHOD environment variable (default "devicecode")
+  -l, --login string                         Login method. Supported methods: devicecode, interactive, spn, ropc, msi, azurecli, azd, workloadidentity, azurepipelines. It may be specified in AAD_LOGIN_METHOD environment variable (default "devicecode")
       --login-hint string                    The login hint to pre-fill the username in the interactive login flow.
       --password string                      password for ropc login flow. It may be specified in AAD_USER_PRINCIPAL_PASSWORD or AZURE_PASSWORD environment variable
       --pop-claims key=val,key2=val2         contains a comma-separated list of claims to attach to the pop token in the format key=val,key2=val2. At minimum, specify the ARM ID of the cluster as `u=ARM_ID`
