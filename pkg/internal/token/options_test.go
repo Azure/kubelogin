@@ -124,7 +124,7 @@ func TestOptions(t *testing.T) {
 			errorSubstring   string
 		}{
 			{
-				name: "valid azurepipelines login",
+				name: "valid azurepipelines login with all parameters",
 				setupEnv: func() {
 					t.Setenv(env.SystemAccessToken, "test-token")
 					t.Setenv(env.SystemOIDCRequestURI, "https://test.oidc.request.uri")
@@ -133,72 +133,43 @@ func TestOptions(t *testing.T) {
 					o := defaultOptions()
 					o.LoginMethod = AzurePipelinesLogin
 					o.TenantID = "test-tenant"
+					o.ClientID = "test-client"
 					o.AzurePipelinesServiceConnectionID = "test-service-connection"
 					return o
 				},
 				expectError: false,
 			},
 			{
-				name: "azurepipelines missing tenant ID",
+				name: "azurepipelines login without tenant ID is valid (can come from env)",
 				setupEnv: func() {
 					t.Setenv(env.SystemAccessToken, "test-token")
 					t.Setenv(env.SystemOIDCRequestURI, "https://test.oidc.request.uri")
+					t.Setenv(env.AzureSubscriptionTenantID, "env-tenant-id")
 				},
 				options: func() Options {
 					o := defaultOptions()
 					o.LoginMethod = AzurePipelinesLogin
+					o.ClientID = "test-client"
 					o.AzurePipelinesServiceConnectionID = "test-service-connection"
 					return o
 				},
-				expectError:    true,
-				errorSubstring: "tenant ID is required for azurepipelines login method",
+				expectError: false,
 			},
 			{
-				name: "azurepipelines missing service connection ID",
+				name: "azurepipelines login without service connection ID is valid (can come from env)",
 				setupEnv: func() {
 					t.Setenv(env.SystemAccessToken, "test-token")
 					t.Setenv(env.SystemOIDCRequestURI, "https://test.oidc.request.uri")
+					t.Setenv(env.AzureSubscriptionServiceConnectionID, "env-service-connection")
 				},
 				options: func() Options {
 					o := defaultOptions()
 					o.LoginMethod = AzurePipelinesLogin
 					o.TenantID = "test-tenant"
+					o.ClientID = "test-client"
 					return o
 				},
-				expectError:    true,
-				errorSubstring: "--azure-pipelines-service-connection-id is required for --login azurepipelines",
-			},
-			{
-				name: "azurepipelines missing SYSTEM_ACCESSTOKEN",
-				setupEnv: func() {
-					t.Setenv(env.SystemOIDCRequestURI, "https://test.oidc.request.uri")
-					// Don't set SYSTEM_ACCESSTOKEN
-				},
-				options: func() Options {
-					o := defaultOptions()
-					o.LoginMethod = AzurePipelinesLogin
-					o.TenantID = "test-tenant"
-					o.AzurePipelinesServiceConnectionID = "test-service-connection"
-					return o
-				},
-				expectError:    true,
-				errorSubstring: fmt.Sprintf("environment variable %s not set", env.SystemAccessToken),
-			},
-			{
-				name: "azurepipelines missing SYSTEM_OIDCREQUESTURI",
-				setupEnv: func() {
-					t.Setenv(env.SystemAccessToken, "test-token")
-					// Don't set SYSTEM_OIDCREQUESTURI
-				},
-				options: func() Options {
-					o := defaultOptions()
-					o.LoginMethod = AzurePipelinesLogin
-					o.TenantID = "test-tenant"
-					o.AzurePipelinesServiceConnectionID = "test-service-connection"
-					return o
-				},
-				expectError:    true,
-				errorSubstring: fmt.Sprintf("environment variable %s not set", env.SystemOIDCRequestURI),
+				expectError: false,
 			},
 		}
 
@@ -207,6 +178,8 @@ func TestOptions(t *testing.T) {
 				// Clean up environment variables before each test
 				originalSystemAccessToken := os.Getenv(env.SystemAccessToken)
 				originalSystemOIDCRequestURI := os.Getenv(env.SystemOIDCRequestURI)
+				originalTenantID := os.Getenv(env.AzureSubscriptionTenantID)
+				originalServiceConnectionID := os.Getenv(env.AzureSubscriptionServiceConnectionID)
 				defer func() {
 					if originalSystemAccessToken != "" {
 						os.Setenv(env.SystemAccessToken, originalSystemAccessToken)
@@ -217,6 +190,16 @@ func TestOptions(t *testing.T) {
 						os.Setenv(env.SystemOIDCRequestURI, originalSystemOIDCRequestURI)
 					} else {
 						os.Unsetenv(env.SystemOIDCRequestURI)
+					}
+					if originalTenantID != "" {
+						os.Setenv(env.AzureSubscriptionTenantID, originalTenantID)
+					} else {
+						os.Unsetenv(env.AzureSubscriptionTenantID)
+					}
+					if originalServiceConnectionID != "" {
+						os.Setenv(env.AzureSubscriptionServiceConnectionID, originalServiceConnectionID)
+					} else {
+						os.Unsetenv(env.AzureSubscriptionServiceConnectionID)
 					}
 				}()
 
@@ -454,6 +437,140 @@ func TestDisableEnvironmentOverride(t *testing.T) {
 		o.UpdateFromEnv()
 		if o.ClientID != "client-id from env" {
 			t.Fatalf("expected client-id to be 'client-id from env', got %s", o.ClientID)
+		}
+	})
+}
+
+func TestAzurePipelinesEnvironmentVariables(t *testing.T) {
+	const (
+		testClientID            = "test-client-id"
+		testTenantID            = "test-tenant-id"
+		testServiceConnectionID = "test-service-connection-id"
+	)
+
+	t.Run("Azure Pipelines environment variables are read when LoginMethod is AzurePipelinesLogin", func(t *testing.T) {
+		t.Setenv(env.AzureSubscriptionClientID, testClientID)
+		t.Setenv(env.AzureSubscriptionTenantID, testTenantID)
+		t.Setenv(env.AzureSubscriptionServiceConnectionID, testServiceConnectionID)
+
+		o := Options{LoginMethod: AzurePipelinesLogin}
+		o.UpdateFromEnv()
+
+		if o.ClientID != testClientID {
+			t.Fatalf("expected ClientID to be '%s', got '%s'", testClientID, o.ClientID)
+		}
+		if o.TenantID != testTenantID {
+			t.Fatalf("expected TenantID to be '%s', got '%s'", testTenantID, o.TenantID)
+		}
+		if o.AzurePipelinesServiceConnectionID != testServiceConnectionID {
+			t.Fatalf("expected AzurePipelinesServiceConnectionID to be '%s', got '%s'", testServiceConnectionID, o.AzurePipelinesServiceConnectionID)
+		}
+	})
+
+	t.Run("Azure Pipelines environment variables are not read for other login methods", func(t *testing.T) {
+		t.Setenv(env.AzureSubscriptionClientID, testClientID)
+		t.Setenv(env.AzureSubscriptionTenantID, testTenantID)
+		t.Setenv(env.AzureSubscriptionServiceConnectionID, testServiceConnectionID)
+
+		o := Options{LoginMethod: DeviceCodeLogin}
+		o.UpdateFromEnv()
+
+		if o.ClientID == testClientID {
+			t.Fatalf("Azure Pipelines ClientID should not be read for non-AzurePipelines login method")
+		}
+		if o.TenantID == testTenantID {
+			t.Fatalf("Azure Pipelines TenantID should not be read for non-AzurePipelines login method")
+		}
+		if o.AzurePipelinesServiceConnectionID == testServiceConnectionID {
+			t.Fatalf("Azure Pipelines ServiceConnectionID should not be read for non-AzurePipelines login method")
+		}
+	})
+
+	t.Run("Command-line flags take precedence over Azure Pipelines environment variables", func(t *testing.T) {
+		t.Setenv(env.AzureSubscriptionClientID, "env-client-id")
+		t.Setenv(env.AzureSubscriptionTenantID, "env-tenant-id")
+		t.Setenv(env.AzureSubscriptionServiceConnectionID, "env-service-connection-id")
+
+		o := Options{
+			LoginMethod:                       AzurePipelinesLogin,
+			ClientID:                          "flag-client-id",
+			TenantID:                          "flag-tenant-id",
+			AzurePipelinesServiceConnectionID: "flag-service-connection-id",
+		}
+		o.UpdateFromEnv()
+
+		// Command-line flags should take precedence (not be overwritten)
+		if o.ClientID != "flag-client-id" {
+			t.Fatalf("expected ClientID to remain 'flag-client-id', got '%s'", o.ClientID)
+		}
+		if o.TenantID != "flag-tenant-id" {
+			t.Fatalf("expected TenantID to remain 'flag-tenant-id', got '%s'", o.TenantID)
+		}
+		if o.AzurePipelinesServiceConnectionID != "flag-service-connection-id" {
+			t.Fatalf("expected AzurePipelinesServiceConnectionID to remain 'flag-service-connection-id', got '%s'", o.AzurePipelinesServiceConnectionID)
+		}
+	})
+
+	t.Run("Azure Pipelines environment variables are not read when DisableEnvironmentOverride is true", func(t *testing.T) {
+		t.Setenv(env.AzureSubscriptionClientID, testClientID)
+		t.Setenv(env.AzureSubscriptionTenantID, testTenantID)
+		t.Setenv(env.AzureSubscriptionServiceConnectionID, testServiceConnectionID)
+
+		o := Options{
+			LoginMethod:                 AzurePipelinesLogin,
+			DisableEnvironmentOverride:  true,
+		}
+		o.UpdateFromEnv()
+
+		if o.ClientID != "" {
+			t.Fatalf("expected ClientID to be empty when DisableEnvironmentOverride is true, got '%s'", o.ClientID)
+		}
+		if o.TenantID != "" {
+			t.Fatalf("expected TenantID to be empty when DisableEnvironmentOverride is true, got '%s'", o.TenantID)
+		}
+		if o.AzurePipelinesServiceConnectionID != "" {
+			t.Fatalf("expected AzurePipelinesServiceConnectionID to be empty when DisableEnvironmentOverride is true, got '%s'", o.AzurePipelinesServiceConnectionID)
+		}
+	})
+
+	t.Run("Azure Pipelines environment variables set LoginMethod from env", func(t *testing.T) {
+		t.Setenv(env.LoginMethod, AzurePipelinesLogin)
+		t.Setenv(env.AzureSubscriptionClientID, testClientID)
+		t.Setenv(env.AzureSubscriptionTenantID, testTenantID)
+		t.Setenv(env.AzureSubscriptionServiceConnectionID, testServiceConnectionID)
+
+		o := Options{}
+		o.UpdateFromEnv()
+
+		if o.LoginMethod != AzurePipelinesLogin {
+			t.Fatalf("expected LoginMethod to be '%s', got '%s'", AzurePipelinesLogin, o.LoginMethod)
+		}
+		if o.ClientID != testClientID {
+			t.Fatalf("expected ClientID to be '%s', got '%s'", testClientID, o.ClientID)
+		}
+		if o.TenantID != testTenantID {
+			t.Fatalf("expected TenantID to be '%s', got '%s'", testTenantID, o.TenantID)
+		}
+		if o.AzurePipelinesServiceConnectionID != testServiceConnectionID {
+			t.Fatalf("expected AzurePipelinesServiceConnectionID to be '%s', got '%s'", testServiceConnectionID, o.AzurePipelinesServiceConnectionID)
+		}
+	})
+
+	t.Run("Azure Pipelines environment variables partially set", func(t *testing.T) {
+		t.Setenv(env.AzureSubscriptionClientID, testClientID)
+		// Only set ClientID, not TenantID or ServiceConnectionID
+
+		o := Options{LoginMethod: AzurePipelinesLogin}
+		o.UpdateFromEnv()
+
+		if o.ClientID != testClientID {
+			t.Fatalf("expected ClientID to be '%s', got '%s'", testClientID, o.ClientID)
+		}
+		if o.TenantID != "" {
+			t.Fatalf("expected TenantID to be empty, got '%s'", o.TenantID)
+		}
+		if o.AzurePipelinesServiceConnectionID != "" {
+			t.Fatalf("expected AzurePipelinesServiceConnectionID to be empty, got '%s'", o.AzurePipelinesServiceConnectionID)
 		}
 	})
 }
