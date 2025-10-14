@@ -10,7 +10,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/kubelogin/pkg/internal/pop"
-	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
 )
 
@@ -26,7 +25,7 @@ type UsernamePasswordCredentialWithPoP struct {
 
 var _ CredentialProvider = (*UsernamePasswordCredentialWithPoP)(nil)
 
-func newUsernamePasswordCredentialWithPoP(opts *Options, cache cache.ExportReplace) (CredentialProvider, error) {
+func newUsernamePasswordCredentialWithPoP(opts *Options) (CredentialProvider, error) {
 	if opts.ClientID == "" {
 		return nil, fmt.Errorf("client ID cannot be empty")
 	}
@@ -62,14 +61,17 @@ func newUsernamePasswordCredentialWithPoP(opts *Options, cache cache.ExportRepla
 	if opts.httpClient != nil {
 		msalOpts.Options.Transport = opts.httpClient
 	}
-	client, err := pop.NewPublicClient(msalOpts, pop.WithCustomCachePublic(cache))
+	// Get cache from Options
+	popCache := opts.GetPoPTokenCache()
+
+	client, err := pop.NewPublicClient(msalOpts, pop.WithCustomCachePublic(popCache))
 	if err != nil {
 		return nil, fmt.Errorf("unable to create public client: %w", err)
 	}
 	// Only set cacheDir and use persistent keys when cache is available
 	var cacheDir string
 	usePersistentPoPKeys := false
-	if cache != nil {
+	if popCache != nil {
 		cacheDir = opts.AuthRecordCacheDir
 		usePersistentPoPKeys = true
 	}

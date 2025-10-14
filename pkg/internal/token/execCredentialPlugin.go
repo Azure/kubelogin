@@ -11,7 +11,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 	klog "k8s.io/klog/v2"
 
 	popcache "github.com/Azure/kubelogin/pkg/internal/pop/cache"
@@ -26,7 +25,7 @@ type execCredentialPlugin struct {
 	cachedRecord         CachedRecordProvider
 	popTokenCache        *popcache.Cache
 	execCredentialWriter ExecCredentialWriter
-	newCredentialFunc    func(record azidentity.AuthenticationRecord, popCache cache.ExportReplace, o *Options) (CredentialProvider, error)
+	newCredentialFunc    func(record azidentity.AuthenticationRecord, o *Options) (CredentialProvider, error)
 }
 
 var errAuthenticateNotSupported = errors.New("authenticate is not supported")
@@ -34,17 +33,17 @@ var errAuthenticateNotSupported = errors.New("authenticate is not supported")
 func New(o *Options) (ExecCredentialPlugin, error) {
 	klog.V(10).Info(o.ToString())
 
-	var popTokenCache *popcache.Cache
-	var err error
-	if o.IsPoPTokenEnabled {
+	// Initialize PoP token cache in Options if enabled
+	if o.IsPoPTokenEnabled && o.popTokenCache == nil {
 		// Create PoP token cache using the official MSAL & MSAL extension libraries.
-		popTokenCache, err = popcache.NewCache(o.AuthRecordCacheDir)
+		popTokenCache, err := popcache.NewCache(o.AuthRecordCacheDir)
 		if err != nil {
 			// Fallback: Log warning and continue without PoP token caching when cache creation fails
 			klog.V(2).Infof("PoP token caching disabled due to secure storage failure (likely container environment): %v", err)
 			popTokenCache = nil
 			// Continue execution without using cached PoP tokens
 		}
+		o.setPoPTokenCache(popTokenCache)
 	}
 
 	return &execCredentialPlugin{
@@ -55,7 +54,7 @@ func New(o *Options) (ExecCredentialPlugin, error) {
 			file: o.authRecordCacheFile,
 		},
 		// popTokenCache stores actual MSAL tokens for token caching
-		popTokenCache:     popTokenCache,
+		popTokenCache:     o.GetPoPTokenCache(),
 		newCredentialFunc: NewAzIdentityCredential,
 	}, nil
 }
@@ -73,7 +72,7 @@ func (p *execCredentialPlugin) Do(ctx context.Context) error {
 		klog.V(5).Infof("failed to retrieve cached record: %s", err)
 	}
 
-	cred, err := p.newCredentialFunc(record, p.popTokenCache, p.o)
+	cred, err := p.newCredentialFunc(record, p.o)
 	if err != nil {
 		return fmt.Errorf("failed to create azidentity credential: %w", err)
 	}

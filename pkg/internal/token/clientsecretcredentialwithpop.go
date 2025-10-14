@@ -10,7 +10,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/kubelogin/pkg/internal/pop"
-	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/confidential"
 )
 
@@ -25,7 +24,7 @@ type ClientSecretCredentialWithPoP struct {
 
 var _ CredentialProvider = (*ClientSecretCredentialWithPoP)(nil)
 
-func newClientSecretCredentialWithPoP(opts *Options, cache cache.ExportReplace) (CredentialProvider, error) {
+func newClientSecretCredentialWithPoP(opts *Options) (CredentialProvider, error) {
 	if opts.ClientID == "" {
 		return nil, fmt.Errorf("client ID cannot be empty")
 	}
@@ -63,10 +62,13 @@ func newClientSecretCredentialWithPoP(opts *Options, cache cache.ExportReplace) 
 	if opts.httpClient != nil {
 		msalOpts.Options.Transport = opts.httpClient
 	}
+	// Get cache from Options
+	popCache := opts.GetPoPTokenCache()
+
 	client, err := pop.NewConfidentialClient(
 		cred,
 		msalOpts,
-		pop.WithCustomCacheConfidential(cache),
+		pop.WithCustomCacheConfidential(popCache),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create confidential client: %w", err)
@@ -75,7 +77,7 @@ func newClientSecretCredentialWithPoP(opts *Options, cache cache.ExportReplace) 
 	// Only set cacheDir and use persistent keys when cache is available
 	var cacheDir string
 	usePersistentPoPKeys := false
-	if cache != nil {
+	if popCache != nil {
 		cacheDir = opts.AuthRecordCacheDir
 		usePersistentPoPKeys = true
 	}

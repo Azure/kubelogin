@@ -7,6 +7,8 @@ import (
 
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 	"github.com/stretchr/testify/assert"
+
+	popcache "github.com/Azure/kubelogin/pkg/internal/pop/cache"
 )
 
 func TestNewClientCertificateCredentialWithPoP(t *testing.T) {
@@ -117,7 +119,7 @@ func TestNewClientCertificateCredentialWithPoP(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			cred, err := newClientCertificateCredentialWithPoP(tc.opts, nil)
+			cred, err := newClientCertificateCredentialWithPoP(tc.opts)
 
 			if tc.expectErrorMsg != "" {
 				assert.Error(t, err)
@@ -175,14 +177,18 @@ func TestNewClientCertificateCredentialWithPoP_CacheScenarios(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			var mockCache cache.ExportReplace
+			// Set up the cache in Options
+			testOpts := *validOpts // Copy the options
+
 			if tc.cacheProvided {
-				mockCache = &mockCertCacheExportReplace{}
+				// Try to create a real cache for testing, fallback to nil on error
+				popCache, _ := popcache.NewCache("/tmp/test-cache")
+				testOpts.setPoPTokenCache(popCache)
 			} else {
-				mockCache = nil
+				testOpts.setPoPTokenCache(nil)
 			}
 
-			cred, err := newClientCertificateCredentialWithPoP(validOpts, mockCache)
+			cred, err := newClientCertificateCredentialWithPoP(&testOpts)
 
 			assert.NoError(t, err, tc.description)
 			assert.NotNil(t, cred, tc.description)

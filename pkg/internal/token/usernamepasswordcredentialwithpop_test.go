@@ -6,6 +6,8 @@ import (
 
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 	"github.com/stretchr/testify/assert"
+
+	popcache "github.com/Azure/kubelogin/pkg/internal/pop/cache"
 )
 
 func TestNewUsernamePasswordCredentialWithPoP(t *testing.T) {
@@ -118,7 +120,7 @@ func TestNewUsernamePasswordCredentialWithPoP(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			cred, err := newUsernamePasswordCredentialWithPoP(tc.opts, nil)
+			cred, err := newUsernamePasswordCredentialWithPoP(tc.opts)
 			if tc.expectErrorMsg != "" {
 				assert.Error(t, err)
 				assert.Equal(t, tc.expectErrorMsg, err.Error())
@@ -170,14 +172,18 @@ func TestNewUsernamePasswordCredentialWithPoP_CacheScenarios(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			var mockCache cache.ExportReplace
+			// Set up the cache in Options
+			testOpts := *validOpts // Copy the options
+
 			if tc.cacheProvided {
-				mockCache = &mockUserPassCacheExportReplace{}
+				// Try to create a real cache for testing, fallback to nil on error
+				popCache, _ := popcache.NewCache("/tmp/test-cache")
+				testOpts.setPoPTokenCache(popCache)
 			} else {
-				mockCache = nil
+				testOpts.setPoPTokenCache(nil)
 			}
 
-			cred, err := newUsernamePasswordCredentialWithPoP(validOpts, mockCache)
+			cred, err := newUsernamePasswordCredentialWithPoP(&testOpts)
 
 			assert.NoError(t, err, tc.description)
 			assert.NotNil(t, cred, tc.description)

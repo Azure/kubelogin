@@ -15,6 +15,7 @@ import (
 	"k8s.io/client-go/util/homedir"
 
 	"github.com/Azure/kubelogin/pkg/internal/env"
+	popcache "github.com/Azure/kubelogin/pkg/internal/pop/cache"
 )
 
 type Options struct {
@@ -45,6 +46,8 @@ type Options struct {
 	RedirectURL                       string
 	LoginHint                         string
 	AzurePipelinesServiceConnectionID string
+	// Private field to store the PoP token cache, set during initialization
+	popTokenCache *popcache.Cache
 }
 
 const (
@@ -367,4 +370,15 @@ func (o *Options) AddCompletions(cmd *cobra.Command) {
 		// us, and returns an error (which we ignore for this reason).
 		_ = cmd.RegisterFlagCompletionFunc(flag.Name, cobra.NoFileCompletions)
 	})
+}
+
+// GetPoPTokenCache returns the PoP token cache if available.
+// Returns nil if PoP is disabled or cache creation failed (e.g., container environments).
+func (o *Options) GetPoPTokenCache() *popcache.Cache {
+	return o.popTokenCache
+}
+
+// SetPoPTokenCache sets the PoP token cache. This is used internally during initialization.
+func (o *Options) setPoPTokenCache(cache *popcache.Cache) {
+	o.popTokenCache = cache
 }
