@@ -15,12 +15,13 @@ import (
 )
 
 type UsernamePasswordCredentialWithPoP struct {
-	popClaims map[string]string
-	username  string
-	password  string
-	client    public.Client
-	options   *pop.MsalClientOptions
-	cacheDir  string
+	popClaims         map[string]string
+	username          string
+	password          string
+	client            public.Client
+	options           *pop.MsalClientOptions
+	cacheDir          string
+	usePersistentKeys bool
 }
 
 var _ CredentialProvider = (*UsernamePasswordCredentialWithPoP)(nil)
@@ -65,13 +66,22 @@ func newUsernamePasswordCredentialWithPoP(opts *Options, cache cache.ExportRepla
 	if err != nil {
 		return nil, fmt.Errorf("unable to create public client: %w", err)
 	}
+	// Only set cacheDir and use persistent keys when cache is available
+	var cacheDir string
+	usePersistent := false
+	if cache != nil {
+		cacheDir = opts.AuthRecordCacheDir
+		usePersistent = true
+	}
+
 	return &UsernamePasswordCredentialWithPoP{
-		options:   msalOpts,
-		popClaims: popClaimsMap,
-		username:  opts.Username,
-		password:  opts.Password,
-		client:    client,
-		cacheDir:  opts.AuthRecordCacheDir,
+		options:           msalOpts,
+		popClaims:         popClaimsMap,
+		username:          opts.Username,
+		password:          opts.Password,
+		client:            client,
+		cacheDir:          cacheDir,
+		usePersistentKeys: usePersistent,
 	}, nil
 }
 
@@ -84,9 +94,21 @@ func (c *UsernamePasswordCredentialWithPoP) Authenticate(ctx context.Context, op
 }
 
 func (c *UsernamePasswordCredentialWithPoP) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
-	popKey, err := pop.GetSwPoPKeyPersistent(c.cacheDir)
-	if err != nil {
-		return azcore.AccessToken{}, fmt.Errorf("unable to get persistent PoP key: %w", err)
+	var popKey *pop.SwKey
+	var err error
+
+	if c.usePersistentKeys {
+		// Use persistent key storage when caching is available
+		popKey, err = pop.GetSwPoPKeyPersistent(c.cacheDir)
+		if err != nil {
+			return azcore.AccessToken{}, fmt.Errorf("unable to get persistent PoP key: %w", err)
+		}
+	} else {
+		// Use ephemeral keys when no caching is available (e.g., container environments)
+		popKey, err = pop.GetSwPoPKey()
+		if err != nil {
+			return azcore.AccessToken{}, fmt.Errorf("unable to generate PoP key: %w", err)
+		}
 	}
 
 	token, expirationTimeUnix, err := pop.AcquirePoPTokenByUsernamePassword(

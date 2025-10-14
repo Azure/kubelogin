@@ -15,10 +15,11 @@ import (
 )
 
 type InteractiveBrowserCredentialWithPoP struct {
-	popClaims map[string]string
-	client    public.Client
-	options   *pop.MsalClientOptions
-	cacheDir  string
+	popClaims         map[string]string
+	client            public.Client
+	options           *pop.MsalClientOptions
+	cacheDir          string
+	usePersistentKeys bool
 }
 
 var _ CredentialProvider = (*InteractiveBrowserCredentialWithPoP)(nil)
@@ -62,11 +63,20 @@ func newInteractiveBrowserCredentialWithPoP(opts *Options, cache cache.ExportRep
 		return nil, fmt.Errorf("unable to create public client: %w", err)
 	}
 
+	// Only set cacheDir and use persistent keys when cache is available
+	var cacheDir string
+	usePersistent := false
+	if cache != nil {
+		cacheDir = opts.AuthRecordCacheDir
+		usePersistent = true
+	}
+
 	return &InteractiveBrowserCredentialWithPoP{
-		options:   msalOpts,
-		client:    client,
-		popClaims: popClaimsMap,
-		cacheDir:  opts.AuthRecordCacheDir,
+		options:           msalOpts,
+		client:            client,
+		popClaims:         popClaimsMap,
+		cacheDir:          cacheDir,
+		usePersistentKeys: usePersistent,
 	}, nil
 }
 
@@ -79,9 +89,21 @@ func (c *InteractiveBrowserCredentialWithPoP) Authenticate(ctx context.Context, 
 }
 
 func (c *InteractiveBrowserCredentialWithPoP) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
-	popKey, err := pop.GetSwPoPKeyPersistent(c.cacheDir)
-	if err != nil {
-		return azcore.AccessToken{}, fmt.Errorf("unable to get persistent PoP key: %w", err)
+	var popKey *pop.SwKey
+	var err error
+
+	if c.usePersistentKeys {
+		// Use persistent key storage when caching is available
+		popKey, err = pop.GetSwPoPKeyPersistent(c.cacheDir)
+		if err != nil {
+			return azcore.AccessToken{}, fmt.Errorf("unable to get persistent PoP key: %w", err)
+		}
+	} else {
+		// Use ephemeral keys when no caching is available
+		popKey, err = pop.GetSwPoPKey()
+		if err != nil {
+			return azcore.AccessToken{}, fmt.Errorf("unable to generate PoP key: %w", err)
+		}
 	}
 
 	token, expirationTimeUnix, err := pop.AcquirePoPTokenInteractive(

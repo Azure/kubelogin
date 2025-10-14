@@ -24,7 +24,7 @@ type ExecCredentialPlugin interface {
 type execCredentialPlugin struct {
 	o                    *Options
 	cachedRecord         CachedRecordProvider
-	popTokenCachedRecord *popcache.Cache
+	popTokenCache        *popcache.Cache
 	execCredentialWriter ExecCredentialWriter
 	newCredentialFunc    func(record azidentity.AuthenticationRecord, popCache cache.ExportReplace, o *Options) (CredentialProvider, error)
 }
@@ -34,10 +34,17 @@ var errAuthenticateNotSupported = errors.New("authenticate is not supported")
 func New(o *Options) (ExecCredentialPlugin, error) {
 	klog.V(10).Info(o.ToString())
 
-	// Create PoP token cache using the official MSAL & MSAL extension libraries.
-	popTokenCache, err := popcache.NewCache(o.AuthRecordCacheDir)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create PoP token cache provider: %w", err)
+	var popTokenCache *popcache.Cache
+	var err error
+	if o.IsPoPTokenEnabled {
+		// Create PoP token cache using the official MSAL & MSAL extension libraries.
+		popTokenCache, err = popcache.NewCache(o.AuthRecordCacheDir)
+		if err != nil {
+			// Fallback: Log warning and continue without PoP token caching in container environments
+			klog.V(2).Infof("PoP token caching disabled due to secure storage failure (likely container environment): %v", err)
+			popTokenCache = nil
+			// Continue execution without using cached PoP tokens
+		}
 	}
 
 	return &execCredentialPlugin{
@@ -47,9 +54,9 @@ func New(o *Options) (ExecCredentialPlugin, error) {
 		cachedRecord: &defaultCachedRecordProvider{
 			file: o.authRecordCacheFile,
 		},
-		// popTokenCachedRecord stores actual MSAL tokens for token caching
-		popTokenCachedRecord: popTokenCache,
-		newCredentialFunc:    NewAzIdentityCredential,
+		// popTokenCache stores actual MSAL tokens for token caching
+		popTokenCache:     popTokenCache,
+		newCredentialFunc: NewAzIdentityCredential,
 	}, nil
 }
 
@@ -66,7 +73,7 @@ func (p *execCredentialPlugin) Do(ctx context.Context) error {
 		klog.V(5).Infof("failed to retrieve cached record: %s", err)
 	}
 
-	cred, err := p.newCredentialFunc(record, p.popTokenCachedRecord, p.o)
+	cred, err := p.newCredentialFunc(record, p.popTokenCache, p.o)
 	if err != nil {
 		return fmt.Errorf("failed to create azidentity credential: %w", err)
 	}

@@ -1,8 +1,10 @@
 package token
 
 import (
+	"context"
 	"testing"
 
+	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -109,4 +111,72 @@ func TestNewClientSecretCredentialWithPoP(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNewClientSecretCredentialWithPoP_CacheScenarios(t *testing.T) {
+	validOpts := &Options{
+		ClientID:           "test-client-id",
+		TenantID:           "test-tenant-id",
+		ClientSecret:       "test-secret",
+		IsPoPTokenEnabled:  true,
+		PoPTokenClaims:     "u=test-cluster",
+		AuthRecordCacheDir: "/tmp/test-cache",
+		AuthorityHost:      "https://login.microsoftonline.com/",
+	}
+
+	testCases := []struct {
+		name                    string
+		cacheProvided           bool
+		expectUsePersistentKeys bool
+		expectCacheDir          string
+		description             string
+	}{
+		{
+			name:                    "with cache - should use persistent keys",
+			cacheProvided:           true,
+			expectUsePersistentKeys: true,
+			expectCacheDir:          "/tmp/test-cache",
+			description:             "When cache is available, should use persistent key storage",
+		},
+		{
+			name:                    "nil cache - should use ephemeral keys",
+			cacheProvided:           false,
+			expectUsePersistentKeys: false,
+			expectCacheDir:          "",
+			description:             "When cache is nil (container fallback), should use ephemeral keys",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var mockCache cache.ExportReplace
+			if tc.cacheProvided {
+				mockCache = &mockSecretCacheExportReplace{}
+			} else {
+				mockCache = nil
+			}
+
+			cred, err := newClientSecretCredentialWithPoP(validOpts, mockCache)
+
+			assert.NoError(t, err, tc.description)
+			assert.NotNil(t, cred, tc.description)
+
+			// Check internal state via type assertion
+			if secretCred, ok := cred.(*ClientSecretCredentialWithPoP); ok {
+				assert.Equal(t, tc.expectUsePersistentKeys, secretCred.usePersistentKeys, tc.description)
+				assert.Equal(t, tc.expectCacheDir, secretCred.cacheDir, tc.description)
+			}
+		})
+	}
+}
+
+// mockSecretCacheExportReplace is a simple mock implementation for testing
+type mockSecretCacheExportReplace struct{}
+
+func (m *mockSecretCacheExportReplace) Export(ctx context.Context, marshaler cache.Marshaler, hints cache.ExportHints) error {
+	return nil
+}
+
+func (m *mockSecretCacheExportReplace) Replace(ctx context.Context, unmarshaler cache.Unmarshaler, hints cache.ReplaceHints) error {
+	return nil
 }

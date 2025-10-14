@@ -1,8 +1,10 @@
 package token
 
 import (
+	"context"
 	"testing"
 
+	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -86,4 +88,72 @@ func TestNewInteractiveBrowserCredentialWithPoP(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNewInteractiveBrowserCredentialWithPoP_CacheScenarios(t *testing.T) {
+	validOpts := &Options{
+		ClientID:           "test-client-id",
+		TenantID:           "test-tenant-id",
+		IsPoPTokenEnabled:  true,
+		PoPTokenClaims:     "u=test-cluster",
+		AuthRecordCacheDir: "/tmp/test-cache",
+	}
+
+	testCases := []struct {
+		name                    string
+		cacheProvided           bool
+		expectUsePersistentKeys bool
+		expectCacheDir          string
+		description             string
+	}{
+		{
+			name:                    "with cache - should use persistent keys",
+			cacheProvided:           true,
+			expectUsePersistentKeys: true,
+			expectCacheDir:          "/tmp/test-cache",
+			description:             "When cache is available, should use persistent key storage",
+		},
+		{
+			name:                    "nil cache - should use ephemeral keys",
+			cacheProvided:           false,
+			expectUsePersistentKeys: false,
+			expectCacheDir:          "",
+			description:             "When cache is nil, should use ephemeral keys",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Create mock cache or nil based on test case
+			var mockCache cache.ExportReplace
+			if tc.cacheProvided {
+				// Create a simple mock that implements the cache interface
+				mockCache = &mockCacheExportReplace{}
+			} else {
+				mockCache = nil
+			}
+
+			cred, err := newInteractiveBrowserCredentialWithPoP(validOpts, mockCache)
+
+			assert.NoError(t, err, tc.description)
+			assert.NotNil(t, cred, tc.description)
+
+			// Check internal state via type assertion
+			if browserCred, ok := cred.(*InteractiveBrowserCredentialWithPoP); ok {
+				assert.Equal(t, tc.expectUsePersistentKeys, browserCred.usePersistentKeys, tc.description)
+				assert.Equal(t, tc.expectCacheDir, browserCred.cacheDir, tc.description)
+			}
+		})
+	}
+}
+
+// mockCacheExportReplace is a simple mock implementation for testing
+type mockCacheExportReplace struct{}
+
+func (m *mockCacheExportReplace) Export(ctx context.Context, marshaler cache.Marshaler, hints cache.ExportHints) error {
+	return nil
+}
+
+func (m *mockCacheExportReplace) Replace(ctx context.Context, unmarshaler cache.Unmarshaler, hints cache.ReplaceHints) error {
+	return nil
 }

@@ -1,8 +1,10 @@
 package token
 
 import (
+	"context"
 	"testing"
 
+	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -129,4 +131,73 @@ func TestNewUsernamePasswordCredentialWithPoP(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNewUsernamePasswordCredentialWithPoP_CacheScenarios(t *testing.T) {
+	validOpts := &Options{
+		ClientID:           "test-client-id",
+		TenantID:           "test-tenant-id",
+		Username:           "test-user",
+		Password:           "test-password",
+		IsPoPTokenEnabled:  true,
+		PoPTokenClaims:     "u=test-cluster",
+		AuthRecordCacheDir: "/tmp/test-cache",
+		AuthorityHost:      "https://login.microsoftonline.com/",
+	}
+
+	testCases := []struct {
+		name                    string
+		cacheProvided           bool
+		expectUsePersistentKeys bool
+		expectCacheDir          string
+		description             string
+	}{
+		{
+			name:                    "with cache - should use persistent keys",
+			cacheProvided:           true,
+			expectUsePersistentKeys: true,
+			expectCacheDir:          "/tmp/test-cache",
+			description:             "When cache is available, should use persistent key storage",
+		},
+		{
+			name:                    "nil cache - should use ephemeral keys",
+			cacheProvided:           false,
+			expectUsePersistentKeys: false,
+			expectCacheDir:          "",
+			description:             "When cache is nil, should use ephemeral keys",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var mockCache cache.ExportReplace
+			if tc.cacheProvided {
+				mockCache = &mockUserPassCacheExportReplace{}
+			} else {
+				mockCache = nil
+			}
+
+			cred, err := newUsernamePasswordCredentialWithPoP(validOpts, mockCache)
+
+			assert.NoError(t, err, tc.description)
+			assert.NotNil(t, cred, tc.description)
+
+			// Check internal state via type assertion
+			if userPassCred, ok := cred.(*UsernamePasswordCredentialWithPoP); ok {
+				assert.Equal(t, tc.expectUsePersistentKeys, userPassCred.usePersistentKeys, tc.description)
+				assert.Equal(t, tc.expectCacheDir, userPassCred.cacheDir, tc.description)
+			}
+		})
+	}
+}
+
+// mockUserPassCacheExportReplace is a simple mock implementation for testing
+type mockUserPassCacheExportReplace struct{}
+
+func (m *mockUserPassCacheExportReplace) Export(ctx context.Context, marshaler cache.Marshaler, hints cache.ExportHints) error {
+	return nil
+}
+
+func (m *mockUserPassCacheExportReplace) Replace(ctx context.Context, unmarshaler cache.Unmarshaler, hints cache.ReplaceHints) error {
+	return nil
 }

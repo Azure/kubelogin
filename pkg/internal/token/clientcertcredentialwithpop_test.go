@@ -1,9 +1,11 @@
 package token
 
 import (
+	"context"
 	"os"
 	"testing"
 
+	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -130,4 +132,77 @@ func TestNewClientCertificateCredentialWithPoP(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNewClientCertificateCredentialWithPoP_CacheScenarios(t *testing.T) {
+	certFile := os.Getenv("KUBELOGIN_LIVETEST_CERTIFICATE_FILE")
+	if certFile == "" {
+		certFile = "fixtures/cert.pem"
+	}
+
+	validOpts := &Options{
+		ClientID:           "test-client-id",
+		TenantID:           "test-tenant-id",
+		ClientCert:         certFile,
+		IsPoPTokenEnabled:  true,
+		PoPTokenClaims:     "u=test-cluster",
+		AuthRecordCacheDir: "/tmp/test-cache",
+		AuthorityHost:      "https://login.microsoftonline.com/",
+	}
+
+	testCases := []struct {
+		name                    string
+		cacheProvided           bool
+		expectUsePersistentKeys bool
+		expectCacheDir          string
+		description             string
+	}{
+		{
+			name:                    "with cache - should use persistent keys",
+			cacheProvided:           true,
+			expectUsePersistentKeys: true,
+			expectCacheDir:          "/tmp/test-cache",
+			description:             "When cache is available, should use persistent key storage",
+		},
+		{
+			name:                    "nil cache - should use ephemeral keys",
+			cacheProvided:           false,
+			expectUsePersistentKeys: false,
+			expectCacheDir:          "",
+			description:             "When cache is nil, should use ephemeral keys",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var mockCache cache.ExportReplace
+			if tc.cacheProvided {
+				mockCache = &mockCertCacheExportReplace{}
+			} else {
+				mockCache = nil
+			}
+
+			cred, err := newClientCertificateCredentialWithPoP(validOpts, mockCache)
+
+			assert.NoError(t, err, tc.description)
+			assert.NotNil(t, cred, tc.description)
+
+			// Check internal state via type assertion
+			if certCred, ok := cred.(*ClientCertificateCredentialWithPoP); ok {
+				assert.Equal(t, tc.expectUsePersistentKeys, certCred.usePersistentKeys, tc.description)
+				assert.Equal(t, tc.expectCacheDir, certCred.cacheDir, tc.description)
+			}
+		})
+	}
+}
+
+// mockCertCacheExportReplace is a simple mock implementation for testing
+type mockCertCacheExportReplace struct{}
+
+func (m *mockCertCacheExportReplace) Export(ctx context.Context, marshaler cache.Marshaler, hints cache.ExportHints) error {
+	return nil
+}
+
+func (m *mockCertCacheExportReplace) Replace(ctx context.Context, unmarshaler cache.Unmarshaler, hints cache.ReplaceHints) error {
+	return nil
 }
