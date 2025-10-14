@@ -65,10 +65,10 @@ func newInteractiveBrowserCredentialWithPoP(opts *Options, cache cache.ExportRep
 
 	// Only set cacheDir and use persistent keys when cache is available
 	var cacheDir string
-	usePersistent := false
+	usePersistentPoPKeys := false
 	if cache != nil {
 		cacheDir = opts.AuthRecordCacheDir
-		usePersistent = true
+		usePersistentPoPKeys = true
 	}
 
 	return &InteractiveBrowserCredentialWithPoP{
@@ -76,7 +76,7 @@ func newInteractiveBrowserCredentialWithPoP(opts *Options, cache cache.ExportRep
 		client:            client,
 		popClaims:         popClaimsMap,
 		cacheDir:          cacheDir,
-		usePersistentKeys: usePersistent,
+		usePersistentKeys: usePersistentPoPKeys,
 	}, nil
 }
 

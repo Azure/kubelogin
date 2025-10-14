@@ -81,10 +81,10 @@ func newClientCertificateCredentialWithPoP(opts *Options, cache cache.ExportRepl
 
 	// Only set cacheDir and use persistent keys when cache is available
 	var cacheDir string
-	usePersistent := false
+	usePersistentPoPKeys := false
 	if cache != nil {
 		cacheDir = opts.AuthRecordCacheDir
-		usePersistent = true
+		usePersistentPoPKeys = true
 	}
 
 	return &ClientCertificateCredentialWithPoP{
@@ -93,7 +93,7 @@ func newClientCertificateCredentialWithPoP(opts *Options, cache cache.ExportRepl
 		client:            client,
 		options:           msalOpts,
 		cacheDir:          cacheDir,
-		usePersistentKeys: usePersistent,
+		usePersistentKeys: usePersistentPoPKeys,
 	}, nil
 }
 

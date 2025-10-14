@@ -68,10 +68,10 @@ func newUsernamePasswordCredentialWithPoP(opts *Options, cache cache.ExportRepla
 	}
 	// Only set cacheDir and use persistent keys when cache is available
 	var cacheDir string
-	usePersistent := false
+	usePersistentPoPKeys := false
 	if cache != nil {
 		cacheDir = opts.AuthRecordCacheDir
-		usePersistent = true
+		usePersistentPoPKeys = true
 	}
 
 	return &UsernamePasswordCredentialWithPoP{
@@ -81,7 +81,7 @@ func newUsernamePasswordCredentialWithPoP(opts *Options, cache cache.ExportRepla
 		password:          opts.Password,
 		client:            client,
 		cacheDir:          cacheDir,
-		usePersistentKeys: usePersistent,
+		usePersistentKeys: usePersistentPoPKeys,
 	}, nil
 }
 
@@ -104,7 +104,7 @@ func (c *UsernamePasswordCredentialWithPoP) GetToken(ctx context.Context, opts p
 			return azcore.AccessToken{}, fmt.Errorf("unable to get persistent PoP key: %w", err)
 		}
 	} else {
-		// Use ephemeral keys when no caching is available (e.g., container environments)
+		// Use ephemeral keys when no caching is available
 		popKey, err = pop.GetSwPoPKey()
 		if err != nil {
 			return azcore.AccessToken{}, fmt.Errorf("unable to generate PoP key: %w", err)
