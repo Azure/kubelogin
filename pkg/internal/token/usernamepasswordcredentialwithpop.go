@@ -96,21 +96,10 @@ func (c *UsernamePasswordCredentialWithPoP) Authenticate(ctx context.Context, op
 }
 
 func (c *UsernamePasswordCredentialWithPoP) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
-	var popKey *pop.SwKey
-	var err error
-
-	if c.usePersistentKeys {
-		// Use persistent key storage when caching is available
-		popKey, err = pop.GetSwPoPKeyPersistent(c.cacheDir)
-		if err != nil {
-			return azcore.AccessToken{}, fmt.Errorf("unable to get persistent PoP key: %w", err)
-		}
-	} else {
-		// Use ephemeral keys when no caching is available
-		popKey, err = pop.GetSwPoPKey()
-		if err != nil {
-			return azcore.AccessToken{}, fmt.Errorf("unable to generate PoP key: %w", err)
-		}
+	// Get PoP key using centralized logic
+	popKey, err := pop.GetPoPKeyByPolicy(c.usePersistentKeys, c.cacheDir)
+	if err != nil {
+		return azcore.AccessToken{}, err
 	}
 
 	token, expirationTimeUnix, err := pop.AcquirePoPTokenByUsernamePassword(
