@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
+	"os"
 	"path/filepath"
 	"sync"
 	"time"
@@ -21,7 +22,8 @@ var (
 	// storageError caches the result of the storage capability test
 	storageError error
 	// testStorage performs a round-trip test of storage functionality
-	testStorage = func(cachePath string) {
+	// This follows the Azure SDK pattern - https://github.com/Azure/azure-sdk-for-go/blob/main/sdk/azidentity/cache/cache.go
+	testStorage = func() {
 		const errFmt = "persistent PoP cache storage isn't available due to error %q"
 
 		// Use random content to prevent conflicts with concurrent processes
@@ -31,9 +33,11 @@ var (
 			storageError = fmt.Errorf(errFmt, fmt.Errorf("failed to generate random test data: %w", err))
 			return
 		}
-		testContent := append([]byte("pop-cache-test-"), randomBytes...)
+		testContent := append([]byte("storage-test-"), randomBytes...)
 
-		acc, err := storage(cachePath + "-test")
+		// Use a dedicated test path that won't interfere with actual cache
+		testPath := filepath.Join(os.TempDir(), "kubelogin-pop-cache-storage-test")
+		acc, err := storage(testPath)
 		if err != nil {
 			storageError = fmt.Errorf(errFmt, err)
 			return
@@ -42,13 +46,13 @@ var (
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		// Test write
+		// Test Write
 		if err = acc.Write(ctx, testContent); err != nil {
 			storageError = fmt.Errorf(errFmt, err)
 			return
 		}
 
-		// Test read
+		// Test Read
 		readContent, err := acc.Read(ctx)
 		if err != nil {
 			storageError = fmt.Errorf(errFmt, err)
@@ -61,8 +65,12 @@ var (
 			return
 		}
 
-		// Cleanup test file (best effort, ignore errors)
-		_ = acc.Delete(ctx)
+		// Test Deletion
+		err = acc.Delete(ctx)
+		if err != nil {
+			storageError = fmt.Errorf(errFmt, err)
+			return
+		}
 	}
 )
 
@@ -87,7 +95,7 @@ func NewCache(cacheDir string) (*Cache, error) {
 	cachePath := getPoPCacheFilePath(cacheDir)
 
 	// Test storage capability once per process using the Azure SDK pattern
-	once.Do(func() { testStorage(cachePath) })
+	once.Do(testStorage)
 	if storageError != nil {
 		return nil, storageError
 	}
