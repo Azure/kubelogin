@@ -1,5 +1,14 @@
 # Change Log
 
+## [0.2.12]
+
+### What's Changed
+
+* Support Azure Pipelines Environment Variables for AzurePipelinesCredential by @Copilot in https://github.com/Azure/kubelogin/pull/713
+* [PoP token Cache] Fallback to no caching when encrypted cache creation fails  by @vineeth-thumma in https://github.com/Azure/kubelogin/pull/715
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.11...v0.2.12
+
 ## [0.2.11]
 
 ### What's Changed
