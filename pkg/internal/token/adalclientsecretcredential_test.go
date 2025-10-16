@@ -1,13 +1,8 @@
 package token
 
 import (
-	"context"
-	"reflect"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -78,122 +73,6 @@ func TestNewADALClientSecretCredential(t *testing.T) {
 				assert.NoError(t, err)
 				assert.NotNil(t, cred)
 				assert.Equal(t, tc.expectName, cred.Name())
-			}
-		})
-	}
-}
-
-func Test_newADALClientSecretCredential(t *testing.T) {
-	type args struct {
-		opts *Options
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    CredentialProvider
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := newADALClientSecretCredential(tt.args.opts)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("newADALClientSecretCredential() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("newADALClientSecretCredential() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestADALClientSecretCredential_Name(t *testing.T) {
-	tests := []struct {
-		name string
-		c    *ADALClientSecretCredential
-		want string
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.c.Name(); got != tt.want {
-				t.Errorf("ADALClientSecretCredential.Name() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestADALClientSecretCredential_Authenticate(t *testing.T) {
-	type args struct {
-		ctx  context.Context
-		opts *policy.TokenRequestOptions
-	}
-	tests := []struct {
-		name    string
-		c       *ADALClientSecretCredential
-		args    args
-		want    azidentity.AuthenticationRecord
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.c.Authenticate(tt.args.ctx, tt.args.opts)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ADALClientSecretCredential.Authenticate() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ADALClientSecretCredential.Authenticate() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestADALClientSecretCredential_GetToken(t *testing.T) {
-	type args struct {
-		ctx  context.Context
-		opts policy.TokenRequestOptions
-	}
-	tests := []struct {
-		name    string
-		c       *ADALClientSecretCredential
-		args    args
-		want    azcore.AccessToken
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.c.GetToken(tt.args.ctx, tt.args.opts)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ADALClientSecretCredential.GetToken() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ADALClientSecretCredential.GetToken() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestADALClientSecretCredential_NeedAuthenticate(t *testing.T) {
-	tests := []struct {
-		name string
-		c    *ADALClientSecretCredential
-		want bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.c.NeedAuthenticate(); got != tt.want {
-				t.Errorf("ADALClientSecretCredential.NeedAuthenticate() = %v, want %v", got, tt.want)
 			}
 		})
 	}
