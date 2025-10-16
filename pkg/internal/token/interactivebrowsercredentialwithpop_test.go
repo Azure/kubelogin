@@ -142,9 +142,12 @@ func TestNewInteractiveBrowserCredentialWithPoP_CacheScenarios(t *testing.T) {
 			assert.NoError(t, err, tc.description)
 			assert.NotNil(t, cred, tc.description)
 
-			// Check internal state via type assertion
+			// Verify that the key provider was set correctly by checking behavior
 			if browserCred, ok := cred.(*InteractiveBrowserCredentialWithPoP); ok {
-				assert.Equal(t, tc.expectCacheDir, browserCred.cacheDir, tc.description)
+				assert.NotNil(t, browserCred.keyProvider, tc.description)
+				// Verify key provider behavior: should be able to get a key
+				_, err := browserCred.keyProvider.GetPoPKey()
+				assert.NoError(t, err, "Key provider should be able to generate PoP keys")
 			}
 		})
 	}

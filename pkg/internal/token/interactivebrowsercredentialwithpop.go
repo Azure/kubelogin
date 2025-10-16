@@ -14,10 +14,10 @@ import (
 )
 
 type InteractiveBrowserCredentialWithPoP struct {
-	popClaims map[string]string
-	client    public.Client
-	options   *pop.MsalClientOptions
-	cacheDir  string
+	popClaims   map[string]string
+	client      public.Client
+	options     *pop.MsalClientOptions
+	keyProvider PoPKeyProvider
 }
 
 var _ CredentialProvider = (*InteractiveBrowserCredentialWithPoP)(nil)
@@ -64,17 +64,11 @@ func newInteractiveBrowserCredentialWithPoP(opts *Options) (CredentialProvider, 
 		return nil, fmt.Errorf("unable to create public client: %w", err)
 	}
 
-	// Only set cacheDir when cache is available
-	var cacheDir string
-	if popCache != nil {
-		cacheDir = opts.AuthRecordCacheDir
-	}
-
 	return &InteractiveBrowserCredentialWithPoP{
-		options:   msalOpts,
-		client:    client,
-		popClaims: popClaimsMap,
-		cacheDir:  cacheDir,
+		options:     msalOpts,
+		client:      client,
+		popClaims:   popClaimsMap,
+		keyProvider: opts.GetPoPKeyProvider(),
 	}, nil
 }
 
@@ -87,8 +81,8 @@ func (c *InteractiveBrowserCredentialWithPoP) Authenticate(ctx context.Context, 
 }
 
 func (c *InteractiveBrowserCredentialWithPoP) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
-	// Get PoP key using centralized logic
-	popKey, err := pop.GetPoPKeyByPolicy(c.cacheDir)
+	// Get PoP key using centralized key provider
+	popKey, err := c.keyProvider.GetPoPKey()
 	if err != nil {
 		return azcore.AccessToken{}, err
 	}

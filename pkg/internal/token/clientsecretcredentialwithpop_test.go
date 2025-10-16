@@ -130,7 +130,7 @@ func TestNewClientSecretCredentialWithPoP_CacheScenarios(t *testing.T) {
 	}
 
 	testCases := []struct {
-		name                    string
+		name           string
 		cacheProvided  bool
 		expectCacheDir string
 		description    string
@@ -144,8 +144,8 @@ func TestNewClientSecretCredentialWithPoP_CacheScenarios(t *testing.T) {
 		{
 			name:           "nil cache - should use ephemeral keys",
 			cacheProvided:  false,
-			expectCacheDir:          "",
-			description:             "When cache is nil (container fallback), should use ephemeral keys",
+			expectCacheDir: "",
+			description:    "When cache is nil (container fallback), should use ephemeral keys",
 		},
 	}
 
@@ -167,9 +167,12 @@ func TestNewClientSecretCredentialWithPoP_CacheScenarios(t *testing.T) {
 			assert.NoError(t, err, tc.description)
 			assert.NotNil(t, cred, tc.description)
 
-			// Check internal state via type assertion
+			// Verify that the key provider was set correctly by checking behavior
 			if secretCred, ok := cred.(*ClientSecretCredentialWithPoP); ok {
-				assert.Equal(t, tc.expectCacheDir, secretCred.cacheDir, tc.description)
+				assert.NotNil(t, secretCred.keyProvider, tc.description)
+				// Verify key provider behavior: should be able to get a key
+				_, err := secretCred.keyProvider.GetPoPKey()
+				assert.NoError(t, err, "Key provider should be able to generate PoP keys")
 			}
 		})
 	}

@@ -15,8 +15,14 @@ import (
 	"k8s.io/client-go/util/homedir"
 
 	"github.com/Azure/kubelogin/pkg/internal/env"
+	"github.com/Azure/kubelogin/pkg/internal/pop"
 	popcache "github.com/Azure/kubelogin/pkg/internal/pop/cache"
 )
+
+// PoPKeyProvider provides PoP keys based on the configured cache policy
+type PoPKeyProvider interface {
+	GetPoPKey() (*pop.SwKey, error)
+}
 
 type Options struct {
 	LoginMethod                       string
@@ -381,4 +387,30 @@ func (o *Options) GetPoPTokenCache() *popcache.Cache {
 // SetPoPTokenCache sets the PoP token cache. This is used internally during initialization.
 func (o *Options) setPoPTokenCache(cache *popcache.Cache) {
 	o.popTokenCache = cache
+}
+
+// GetPoPKeyProvider returns a PoPKeyProvider based on the current cache configuration.
+// This centralizes the key provider logic and eliminates code duplication across credential types.
+func (o *Options) GetPoPKeyProvider() PoPKeyProvider {
+	return &defaultPoPKeyProvider{
+		cacheDir: o.getCacheDir(),
+	}
+}
+
+// getCacheDir returns the cache directory path if caching is enabled, empty string otherwise
+func (o *Options) getCacheDir() string {
+	if o.popTokenCache != nil {
+		return o.AuthRecordCacheDir
+	}
+	return ""
+}
+
+// defaultPoPKeyProvider is the default implementation of PoPKeyProvider
+type defaultPoPKeyProvider struct {
+	cacheDir string
+}
+
+// GetPoPKey implements PoPKeyProvider interface
+func (p *defaultPoPKeyProvider) GetPoPKey() (*pop.SwKey, error) {
+	return pop.GetPoPKeyByPolicy(p.cacheDir)
 }

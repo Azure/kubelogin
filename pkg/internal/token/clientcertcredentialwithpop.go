@@ -15,11 +15,11 @@ import (
 )
 
 type ClientCertificateCredentialWithPoP struct {
-	popClaims map[string]string
-	cred      confidential.Credential
-	client    confidential.Client
-	options   *pop.MsalClientOptions
-	cacheDir  string
+	popClaims   map[string]string
+	cred        confidential.Credential
+	client      confidential.Client
+	options     *pop.MsalClientOptions
+	keyProvider PoPKeyProvider
 }
 
 var _ CredentialProvider = (*ClientCertificateCredentialWithPoP)(nil)
@@ -80,18 +80,12 @@ func newClientCertificateCredentialWithPoP(opts *Options) (CredentialProvider, e
 		return nil, fmt.Errorf("unable to create confidential client: %w", err)
 	}
 
-	// Only set cacheDir when cache is available
-	var cacheDir string
-	if popCache != nil {
-		cacheDir = opts.AuthRecordCacheDir
-	}
-
 	return &ClientCertificateCredentialWithPoP{
-		popClaims: popClaimsMap,
-		cred:      cred,
-		client:    client,
-		options:   msalOpts,
-		cacheDir:  cacheDir,
+		popClaims:   popClaimsMap,
+		cred:        cred,
+		client:      client,
+		options:     msalOpts,
+		keyProvider: opts.GetPoPKeyProvider(),
 	}, nil
 }
 
@@ -104,8 +98,8 @@ func (c *ClientCertificateCredentialWithPoP) Authenticate(ctx context.Context, o
 }
 
 func (c *ClientCertificateCredentialWithPoP) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
-	// Get PoP key using centralized logic
-	popKey, err := pop.GetPoPKeyByPolicy(c.cacheDir)
+	// Get PoP key using centralized key provider
+	popKey, err := c.keyProvider.GetPoPKey()
 	if err != nil {
 		return azcore.AccessToken{}, err
 	}
