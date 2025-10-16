@@ -390,7 +390,7 @@ func (o *Options) setPoPTokenCache(cache *popcache.Cache) {
 }
 
 // GetPoPKeyProvider returns a PoPKeyProvider based on the current cache configuration.
-// This centralizes the key provider logic and eliminates code duplication across credential types.
+// This centralizes the key provider logic.
 func (o *Options) GetPoPKeyProvider() PoPKeyProvider {
 	return &defaultPoPKeyProvider{
 		cacheDir: o.getCacheDir(),
