@@ -23,7 +23,6 @@ type ExecCredentialPlugin interface {
 type execCredentialPlugin struct {
 	o                    *Options
 	cachedRecord         CachedRecordProvider
-	popTokenCache        *popcache.Cache
 	execCredentialWriter ExecCredentialWriter
 	newCredentialFunc    func(record azidentity.AuthenticationRecord, o *Options) (CredentialProvider, error)
 }
@@ -53,8 +52,6 @@ func New(o *Options) (ExecCredentialPlugin, error) {
 		cachedRecord: &defaultCachedRecordProvider{
 			file: o.authRecordCacheFile,
 		},
-		// popTokenCache stores actual MSAL tokens for token caching
-		popTokenCache:     o.GetPoPTokenCache(),
 		newCredentialFunc: NewAzIdentityCredential,
 	}, nil
 }

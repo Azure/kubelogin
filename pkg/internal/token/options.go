@@ -52,7 +52,7 @@ type Options struct {
 	RedirectURL                       string
 	LoginHint                         string
 	AzurePipelinesServiceConnectionID string
-	// Private field to store the PoP token cache, set during initialization
+	// Private field to store the PoP token cache, set during initialization. Stores MSAL tokens for token caching
 	popTokenCache *popcache.Cache
 }
 

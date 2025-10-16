@@ -57,7 +57,7 @@ func TestNew_PoPCacheFallbackResilience(t *testing.T) {
 
 		execPlugin, ok := plugin.(*execCredentialPlugin)
 		assert.True(t, ok, "Should return execCredentialPlugin type")
-		assert.Nil(t, execPlugin.popTokenCache, "Should not create cache when PoP is disabled")
+		assert.Nil(t, execPlugin.o.GetPoPTokenCache(), "Should not create cache when PoP is disabled")
 	})
 
 	t.Run("PoP enabled with valid cache directory", func(t *testing.T) {
@@ -83,7 +83,7 @@ func TestNew_PoPCacheFallbackResilience(t *testing.T) {
 		assert.True(t, ok, "Should return execCredentialPlugin type")
 
 		// Log the actual outcome for debugging
-		if execPlugin.popTokenCache != nil {
+		if execPlugin.o.GetPoPTokenCache() != nil {
 			t.Log("Cache creation succeeded - secure storage available")
 		} else {
 			t.Log("Cache creation failed (gracefully) - likely container environment or keyring restrictions")
@@ -123,7 +123,7 @@ func TestNew_PoPCacheFallbackResilience(t *testing.T) {
 
 				// Document the behavior for each scenario
 				cacheState := "succeeded"
-				if execPlugin.popTokenCache == nil {
+				if execPlugin.o.GetPoPTokenCache() == nil {
 					cacheState = "failed (graceful fallback)"
 				}
 				t.Logf("Directory '%s': cache creation %s", tc.cacheDir, cacheState)
