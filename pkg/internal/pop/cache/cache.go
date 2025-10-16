@@ -90,11 +90,10 @@ type Cache struct {
 // NewCache creates a new MSAL cache provider using custom platform-specific PoP cache.
 // This implementation provides secure storage on all platforms without external dependencies like libsecret on Linux.
 // Following the azidentity pattern, this proactively tests storage capability before creating the cache.
-// https://github.com/Azure/azure-sdk-for-go/blob/main/sdk/azidentity/cache/cache.go
 func NewCache(cacheDir string) (*Cache, error) {
 	cachePath := getPoPCacheFilePath(cacheDir)
 
-	// Test storage capability once per process using the Azure SDK pattern
+	// Test storage capability once per process
 	once.Do(testStorage)
 	if storageError != nil {
 		return nil, storageError
