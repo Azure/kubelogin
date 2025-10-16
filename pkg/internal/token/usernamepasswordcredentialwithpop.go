@@ -14,13 +14,12 @@ import (
 )
 
 type UsernamePasswordCredentialWithPoP struct {
-	popClaims         map[string]string
-	username          string
-	password          string
-	client            public.Client
-	options           *pop.MsalClientOptions
-	cacheDir          string
-	usePersistentKeys bool
+	popClaims map[string]string
+	username  string
+	password  string
+	client    public.Client
+	options   *pop.MsalClientOptions
+	cacheDir  string
 }
 
 var _ CredentialProvider = (*UsernamePasswordCredentialWithPoP)(nil)
@@ -68,22 +67,19 @@ func newUsernamePasswordCredentialWithPoP(opts *Options) (CredentialProvider, er
 	if err != nil {
 		return nil, fmt.Errorf("unable to create public client: %w", err)
 	}
-	// Only set cacheDir and use persistent keys when cache is available
+	// Only set cacheDir when cache is available
 	var cacheDir string
-	usePersistentPoPKeys := false
 	if popCache != nil {
 		cacheDir = opts.AuthRecordCacheDir
-		usePersistentPoPKeys = true
 	}
 
 	return &UsernamePasswordCredentialWithPoP{
-		options:           msalOpts,
-		popClaims:         popClaimsMap,
-		username:          opts.Username,
-		password:          opts.Password,
-		client:            client,
-		cacheDir:          cacheDir,
-		usePersistentKeys: usePersistentPoPKeys,
+		options:   msalOpts,
+		popClaims: popClaimsMap,
+		username:  opts.Username,
+		password:  opts.Password,
+		client:    client,
+		cacheDir:  cacheDir,
 	}, nil
 }
 
@@ -97,7 +93,7 @@ func (c *UsernamePasswordCredentialWithPoP) Authenticate(ctx context.Context, op
 
 func (c *UsernamePasswordCredentialWithPoP) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
 	// Get PoP key using centralized logic
-	popKey, err := pop.GetPoPKeyByPolicy(c.usePersistentKeys, c.cacheDir)
+	popKey, err := pop.GetPoPKeyByPolicy(c.cacheDir)
 	if err != nil {
 		return azcore.AccessToken{}, err
 	}

@@ -61,3 +61,52 @@ func TestExecCredentialWriterAPIVersion(t *testing.T) {
 		})
 	}
 }
+
+func Test_execCredentialWriter_Write(t *testing.T) {
+	type args struct {
+		accessToken azcore.AccessToken
+	}
+	tests := []struct {
+		name       string
+		e          *execCredentialWriter
+		args       args
+		wantWriter string
+		wantErr    bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			writer := &bytes.Buffer{}
+			if err := tt.e.Write(tt.args.accessToken, writer); (err != nil) != tt.wantErr {
+				t.Errorf("execCredentialWriter.Write() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotWriter := writer.String(); gotWriter != tt.wantWriter {
+				t.Errorf("execCredentialWriter.Write() = %v, want %v", gotWriter, tt.wantWriter)
+			}
+		})
+	}
+}
+
+func Test_getAPIVersionFromExecInfoEnv(t *testing.T) {
+	tests := []struct {
+		name    string
+		want    string
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := getAPIVersionFromExecInfoEnv()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getAPIVersionFromExecInfoEnv() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("getAPIVersionFromExecInfoEnv() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

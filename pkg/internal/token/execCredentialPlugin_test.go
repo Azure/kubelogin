@@ -1,7 +1,9 @@
 package token
 
 import (
+	"context"
 	"os"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -130,4 +132,71 @@ func TestNew_PoPCacheFallbackResilience(t *testing.T) {
 			})
 		}
 	})
+}
+
+func TestNew(t *testing.T) {
+	type args struct {
+		o *Options
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    ExecCredentialPlugin
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := New(tt.args.o)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("New() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("New() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_execCredentialPlugin_Do(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+	tests := []struct {
+		name    string
+		p       *execCredentialPlugin
+		args    args
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.p.Do(tt.args.ctx); (err != nil) != tt.wantErr {
+				t.Errorf("execCredentialPlugin.Do() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestGetScope(t *testing.T) {
+	type args struct {
+		serverID string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetScope(tt.args.serverID); got != tt.want {
+				t.Errorf("GetScope() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

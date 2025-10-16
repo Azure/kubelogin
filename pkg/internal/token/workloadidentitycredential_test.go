@@ -4,9 +4,11 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/kubelogin/pkg/internal/testutils"
 	"github.com/stretchr/testify/assert"
 )
@@ -58,4 +60,92 @@ func TestWorkloadIdentityCredential_GetToken(t *testing.T) {
 	})
 	assert.NoError(t, err)
 	assert.Equal(t, testutils.TestToken, token.Token)
+}
+
+func Test_newWorkloadIdentityCredential(t *testing.T) {
+	type args struct {
+		opts *Options
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    CredentialProvider
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := newWorkloadIdentityCredential(tt.args.opts)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("newWorkloadIdentityCredential() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newWorkloadIdentityCredential() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestWorkloadIdentityCredential_Name(t *testing.T) {
+	tests := []struct {
+		name string
+		c    *WorkloadIdentityCredential
+		want string
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.c.Name(); got != tt.want {
+				t.Errorf("WorkloadIdentityCredential.Name() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestWorkloadIdentityCredential_Authenticate(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		opts *policy.TokenRequestOptions
+	}
+	tests := []struct {
+		name    string
+		c       *WorkloadIdentityCredential
+		args    args
+		want    azidentity.AuthenticationRecord
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.c.Authenticate(tt.args.ctx, tt.args.opts)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("WorkloadIdentityCredential.Authenticate() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("WorkloadIdentityCredential.Authenticate() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestWorkloadIdentityCredential_NeedAuthenticate(t *testing.T) {
+	tests := []struct {
+		name string
+		c    *WorkloadIdentityCredential
+		want bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.c.NeedAuthenticate(); got != tt.want {
+				t.Errorf("WorkloadIdentityCredential.NeedAuthenticate() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

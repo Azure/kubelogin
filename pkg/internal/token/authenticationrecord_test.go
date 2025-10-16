@@ -3,6 +3,7 @@ package token
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
@@ -105,4 +106,48 @@ func TestDefaultCachedRecordProvider_NonExistentDirectory(t *testing.T) {
 	fileInfo, err := os.Stat(nonExistentDir)
 	assert.NoError(t, err)
 	assert.True(t, fileInfo.IsDir())
+}
+
+func Test_defaultCachedRecordProvider_Retrieve(t *testing.T) {
+	tests := []struct {
+		name    string
+		c       *defaultCachedRecordProvider
+		want    azidentity.AuthenticationRecord
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.c.Retrieve()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("defaultCachedRecordProvider.Retrieve() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("defaultCachedRecordProvider.Retrieve() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_defaultCachedRecordProvider_Store(t *testing.T) {
+	type args struct {
+		record azidentity.AuthenticationRecord
+	}
+	tests := []struct {
+		name    string
+		c       *defaultCachedRecordProvider
+		args    args
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := tt.c.Store(tt.args.record); (err != nil) != tt.wantErr {
+				t.Errorf("defaultCachedRecordProvider.Store() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
 }

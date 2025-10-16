@@ -5,8 +5,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"reflect"
 	"testing"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -104,4 +108,146 @@ func TestGetGitHubToken(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, "", token)
 	})
+}
+
+func Test_newGithubActionsCredential(t *testing.T) {
+	type args struct {
+		opts *Options
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    CredentialProvider
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := newGithubActionsCredential(tt.args.opts)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("newGithubActionsCredential() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newGithubActionsCredential() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGithubActionsCredential_Name(t *testing.T) {
+	tests := []struct {
+		name string
+		c    *GithubActionsCredential
+		want string
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.c.Name(); got != tt.want {
+				t.Errorf("GithubActionsCredential.Name() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGithubActionsCredential_Authenticate(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		opts *policy.TokenRequestOptions
+	}
+	tests := []struct {
+		name    string
+		c       *GithubActionsCredential
+		args    args
+		want    azidentity.AuthenticationRecord
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.c.Authenticate(tt.args.ctx, tt.args.opts)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GithubActionsCredential.Authenticate() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GithubActionsCredential.Authenticate() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGithubActionsCredential_GetToken(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		opts policy.TokenRequestOptions
+	}
+	tests := []struct {
+		name    string
+		c       *GithubActionsCredential
+		args    args
+		want    azcore.AccessToken
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.c.GetToken(tt.args.ctx, tt.args.opts)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GithubActionsCredential.GetToken() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GithubActionsCredential.GetToken() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGithubActionsCredential_NeedAuthenticate(t *testing.T) {
+	tests := []struct {
+		name string
+		c    *GithubActionsCredential
+		want bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.c.NeedAuthenticate(); got != tt.want {
+				t.Errorf("GithubActionsCredential.NeedAuthenticate() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_getGitHubToken(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := getGitHubToken(tt.args.ctx)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getGitHubToken() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("getGitHubToken() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

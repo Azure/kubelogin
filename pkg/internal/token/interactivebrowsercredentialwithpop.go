@@ -14,11 +14,10 @@ import (
 )
 
 type InteractiveBrowserCredentialWithPoP struct {
-	popClaims         map[string]string
-	client            public.Client
-	options           *pop.MsalClientOptions
-	cacheDir          string
-	usePersistentKeys bool
+	popClaims map[string]string
+	client    public.Client
+	options   *pop.MsalClientOptions
+	cacheDir  string
 }
 
 var _ CredentialProvider = (*InteractiveBrowserCredentialWithPoP)(nil)
@@ -65,20 +64,17 @@ func newInteractiveBrowserCredentialWithPoP(opts *Options) (CredentialProvider, 
 		return nil, fmt.Errorf("unable to create public client: %w", err)
 	}
 
-	// Only set cacheDir and use persistent keys when cache is available
+	// Only set cacheDir when cache is available
 	var cacheDir string
-	usePersistentPoPKeys := false
 	if popCache != nil {
 		cacheDir = opts.AuthRecordCacheDir
-		usePersistentPoPKeys = true
 	}
 
 	return &InteractiveBrowserCredentialWithPoP{
-		options:           msalOpts,
-		client:            client,
-		popClaims:         popClaimsMap,
-		cacheDir:          cacheDir,
-		usePersistentKeys: usePersistentPoPKeys,
+		options:   msalOpts,
+		client:    client,
+		popClaims: popClaimsMap,
+		cacheDir:  cacheDir,
 	}, nil
 }
 
@@ -92,7 +88,7 @@ func (c *InteractiveBrowserCredentialWithPoP) Authenticate(ctx context.Context, 
 
 func (c *InteractiveBrowserCredentialWithPoP) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
 	// Get PoP key using centralized logic
-	popKey, err := pop.GetPoPKeyByPolicy(c.usePersistentKeys, c.cacheDir)
+	popKey, err := pop.GetPoPKeyByPolicy(c.cacheDir)
 	if err != nil {
 		return azcore.AccessToken{}, err
 	}

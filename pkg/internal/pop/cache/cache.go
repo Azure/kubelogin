@@ -131,6 +131,11 @@ func (c *Cache) Replace(ctx context.Context, unmarshaler cache.Unmarshaler, hint
 		return unmarshaler.Unmarshal([]byte("{}"))
 	}
 
+	// If no data exists (file doesn't exist or is empty), initialize with empty cache
+	if len(data) == 0 {
+		return unmarshaler.Unmarshal([]byte("{}"))
+	}
+
 	return unmarshaler.Unmarshal(data)
 }
 

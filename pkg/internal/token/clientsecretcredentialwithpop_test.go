@@ -2,12 +2,15 @@ package token
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	popcache "github.com/Azure/kubelogin/pkg/internal/pop/cache"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 	"github.com/stretchr/testify/assert"
-
-	popcache "github.com/Azure/kubelogin/pkg/internal/pop/cache"
 )
 
 func TestNewClientSecretCredentialWithPoP(t *testing.T) {
@@ -128,22 +131,19 @@ func TestNewClientSecretCredentialWithPoP_CacheScenarios(t *testing.T) {
 
 	testCases := []struct {
 		name                    string
-		cacheProvided           bool
-		expectUsePersistentKeys bool
-		expectCacheDir          string
-		description             string
+		cacheProvided  bool
+		expectCacheDir string
+		description    string
 	}{
 		{
-			name:                    "with cache - should use persistent keys",
-			cacheProvided:           true,
-			expectUsePersistentKeys: true,
-			expectCacheDir:          "/tmp/test-cache",
-			description:             "When cache is available, should use persistent key storage",
+			name:           "with cache - should use persistent keys",
+			cacheProvided:  true,
+			expectCacheDir: "/tmp/test-cache",
+			description:    "When cache is available, should use persistent key storage",
 		},
 		{
-			name:                    "nil cache - should use ephemeral keys",
-			cacheProvided:           false,
-			expectUsePersistentKeys: false,
+			name:           "nil cache - should use ephemeral keys",
+			cacheProvided:  false,
 			expectCacheDir:          "",
 			description:             "When cache is nil (container fallback), should use ephemeral keys",
 		},
@@ -169,7 +169,6 @@ func TestNewClientSecretCredentialWithPoP_CacheScenarios(t *testing.T) {
 
 			// Check internal state via type assertion
 			if secretCred, ok := cred.(*ClientSecretCredentialWithPoP); ok {
-				assert.Equal(t, tc.expectUsePersistentKeys, secretCred.usePersistentKeys, tc.description)
 				assert.Equal(t, tc.expectCacheDir, secretCred.cacheDir, tc.description)
 			}
 		})
@@ -185,4 +184,120 @@ func (m *mockSecretCacheExportReplace) Export(ctx context.Context, marshaler cac
 
 func (m *mockSecretCacheExportReplace) Replace(ctx context.Context, unmarshaler cache.Unmarshaler, hints cache.ReplaceHints) error {
 	return nil
+}
+
+func Test_newClientSecretCredentialWithPoP(t *testing.T) {
+	type args struct {
+		opts *Options
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    CredentialProvider
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := newClientSecretCredentialWithPoP(tt.args.opts)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("newClientSecretCredentialWithPoP() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newClientSecretCredentialWithPoP() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestClientSecretCredentialWithPoP_Name(t *testing.T) {
+	tests := []struct {
+		name string
+		c    *ClientSecretCredentialWithPoP
+		want string
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.c.Name(); got != tt.want {
+				t.Errorf("ClientSecretCredentialWithPoP.Name() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestClientSecretCredentialWithPoP_Authenticate(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		opts *policy.TokenRequestOptions
+	}
+	tests := []struct {
+		name    string
+		c       *ClientSecretCredentialWithPoP
+		args    args
+		want    azidentity.AuthenticationRecord
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.c.Authenticate(tt.args.ctx, tt.args.opts)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ClientSecretCredentialWithPoP.Authenticate() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ClientSecretCredentialWithPoP.Authenticate() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestClientSecretCredentialWithPoP_GetToken(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		opts policy.TokenRequestOptions
+	}
+	tests := []struct {
+		name    string
+		c       *ClientSecretCredentialWithPoP
+		args    args
+		want    azcore.AccessToken
+		wantErr bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.c.GetToken(tt.args.ctx, tt.args.opts)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ClientSecretCredentialWithPoP.GetToken() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ClientSecretCredentialWithPoP.GetToken() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestClientSecretCredentialWithPoP_NeedAuthenticate(t *testing.T) {
+	tests := []struct {
+		name string
+		c    *ClientSecretCredentialWithPoP
+		want bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.c.NeedAuthenticate(); got != tt.want {
+				t.Errorf("ClientSecretCredentialWithPoP.NeedAuthenticate() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
