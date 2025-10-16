@@ -97,7 +97,7 @@ func TestNewClientSecretCredentialWithPoP(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			cred, err := newClientSecretCredentialWithPoP(tc.opts, nil)
+			cred, err := newClientSecretCredentialWithPoP(tc.opts)
 			if tc.expectErrorMsg != "" {
 				assert.Error(t, err)
 				assert.Equal(t, tc.expectErrorMsg, err.Error())

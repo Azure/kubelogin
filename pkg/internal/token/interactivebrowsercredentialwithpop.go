@@ -10,20 +10,19 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/kubelogin/pkg/internal/pop"
-	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
 )
 
 type InteractiveBrowserCredentialWithPoP struct {
-	popClaims map[string]string
-	client    public.Client
-	options   *pop.MsalClientOptions
-	cacheDir  string
+	popClaims   map[string]string
+	client      public.Client
+	options     *pop.MsalClientOptions
+	keyProvider PoPKeyProvider
 }
 
 var _ CredentialProvider = (*InteractiveBrowserCredentialWithPoP)(nil)
 
-func newInteractiveBrowserCredentialWithPoP(opts *Options, cache cache.ExportReplace) (CredentialProvider, error) {
+func newInteractiveBrowserCredentialWithPoP(opts *Options) (CredentialProvider, error) {
 	if opts.ClientID == "" {
 		return nil, fmt.Errorf("client ID cannot be empty")
 	}
@@ -54,19 +53,22 @@ func newInteractiveBrowserCredentialWithPoP(opts *Options, cache cache.ExportRep
 		msalOpts.Options.Transport = opts.httpClient
 	}
 
+	// Get cache from Options
+	popCache := opts.GetPoPTokenCache()
+
 	client, err := pop.NewPublicClient(
 		msalOpts,
-		pop.WithCustomCachePublic(cache),
+		pop.WithCustomCachePublic(popCache),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create public client: %w", err)
 	}
 
 	return &InteractiveBrowserCredentialWithPoP{
-		options:   msalOpts,
-		client:    client,
-		popClaims: popClaimsMap,
-		cacheDir:  opts.AuthRecordCacheDir,
+		options:     msalOpts,
+		client:      client,
+		popClaims:   popClaimsMap,
+		keyProvider: opts.GetPoPKeyProvider(),
 	}, nil
 }
 
@@ -79,9 +81,10 @@ func (c *InteractiveBrowserCredentialWithPoP) Authenticate(ctx context.Context, 
 }
 
 func (c *InteractiveBrowserCredentialWithPoP) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
-	popKey, err := pop.GetSwPoPKeyPersistent(c.cacheDir)
+	// Get PoP key using centralized key provider
+	popKey, err := c.keyProvider.GetPoPKey()
 	if err != nil {
-		return azcore.AccessToken{}, fmt.Errorf("unable to get persistent PoP key: %w", err)
+		return azcore.AccessToken{}, err
 	}
 
 	token, expirationTimeUnix, err := pop.AcquirePoPTokenInteractive(

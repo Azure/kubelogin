@@ -26,7 +26,7 @@ func (tp *tokenProviderShim) GetAccessToken(ctx context.Context) (AccessToken, e
 // GetTokenProvider returns a token provider based on the given options.
 func GetTokenProvider(options *Options) (TokenProvider, error) {
 	opts := options.toInternalOptions()
-	cred, err := token.NewAzIdentityCredential(azidentity.AuthenticationRecord{}, nil, opts)
+	cred, err := token.NewAzIdentityCredential(azidentity.AuthenticationRecord{}, opts)
 	if err != nil {
 		return nil, err
 	}

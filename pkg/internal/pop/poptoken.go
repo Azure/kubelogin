@@ -235,3 +235,24 @@ func marshalRSAKeyToPEM(key *rsa.PrivateKey) []byte {
 		Bytes: keyBytes,
 	})
 }
+
+// GetPoPKeyByPolicy returns a PoP key based on cache directory availability.
+// Uses persistent key storage when cacheDir is provided, ephemeral keys otherwise.
+// This centralizes the key selection logic used across all PoP credential implementations.
+func GetPoPKeyByPolicy(cacheDir string) (*SwKey, error) {
+	if cacheDir != "" {
+		// Use persistent key storage when cache directory is available
+		popKey, err := GetSwPoPKeyPersistent(cacheDir)
+		if err != nil {
+			return nil, fmt.Errorf("unable to get persistent PoP key: %w", err)
+		}
+		return popKey, nil
+	} else {
+		// Use ephemeral keys when no cache directory is available
+		popKey, err := GetSwPoPKey()
+		if err != nil {
+			return nil, fmt.Errorf("unable to generate PoP key: %w", err)
+		}
+		return popKey, nil
+	}
+}

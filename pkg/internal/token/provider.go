@@ -10,7 +10,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 )
 
 type CredentialProvider interface {
@@ -23,7 +22,7 @@ type CredentialProvider interface {
 	Name() string
 }
 
-func NewAzIdentityCredential(record azidentity.AuthenticationRecord, popCache cache.ExportReplace, o *Options) (CredentialProvider, error) {
+func NewAzIdentityCredential(record azidentity.AuthenticationRecord, o *Options) (CredentialProvider, error) {
 	switch o.LoginMethod {
 	case AzureCLILogin:
 		return newAzureCLICredential(o)
@@ -42,7 +41,7 @@ func NewAzIdentityCredential(record azidentity.AuthenticationRecord, popCache ca
 	case InteractiveLogin:
 		switch {
 		case o.IsPoPTokenEnabled:
-			return newInteractiveBrowserCredentialWithPoP(o, popCache)
+			return newInteractiveBrowserCredentialWithPoP(o)
 		default:
 			return newInteractiveBrowserCredential(o, record)
 		}
@@ -53,7 +52,7 @@ func NewAzIdentityCredential(record azidentity.AuthenticationRecord, popCache ca
 	case ROPCLogin:
 		switch {
 		case o.IsPoPTokenEnabled:
-			return newUsernamePasswordCredentialWithPoP(o, popCache)
+			return newUsernamePasswordCredentialWithPoP(o)
 		default:
 			return newUsernamePasswordCredential(o, record)
 		}
@@ -65,11 +64,11 @@ func NewAzIdentityCredential(record azidentity.AuthenticationRecord, popCache ca
 		case o.IsLegacy:
 			return newADALClientSecretCredential(o)
 		case o.ClientCert != "" && o.IsPoPTokenEnabled:
-			return newClientCertificateCredentialWithPoP(o, popCache)
+			return newClientCertificateCredentialWithPoP(o)
 		case o.ClientCert != "":
 			return newClientCertificateCredential(o)
 		case o.IsPoPTokenEnabled:
-			return newClientSecretCredentialWithPoP(o, popCache)
+			return newClientSecretCredentialWithPoP(o)
 		default:
 			return newClientSecretCredential(o)
 		}

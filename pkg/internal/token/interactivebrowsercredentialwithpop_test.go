@@ -74,7 +74,7 @@ func TestNewInteractiveBrowserCredentialWithPoP(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			cred, err := newInteractiveBrowserCredentialWithPoP(tc.opts, nil)
+			cred, err := newInteractiveBrowserCredentialWithPoP(tc.opts)
 			if tc.expectErrorMsg != "" {
 				assert.Error(t, err)
 				assert.Equal(t, tc.expectErrorMsg, err.Error())

@@ -67,7 +67,9 @@ func newKeyring(p string) (*keyring, error) {
 	if persistentRing, err := unix.KeyctlInt(unix.KEYCTL_GET_PERSISTENT, -1, ringID, 0, 0); err == nil {
 		ringID = persistentRing
 	}
-	return &keyring{description: popTokenCacheFileName, file: p, ringID: ringID}, nil
+	// Use the actual filename as the keyring description to ensure each file has its own encryption key
+	description := filepath.Base(p)
+	return &keyring{description: description, file: p, ringID: ringID}, nil
 }
 
 func (k *keyring) Delete(context.Context) error {

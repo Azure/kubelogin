@@ -15,7 +15,14 @@ import (
 	"k8s.io/client-go/util/homedir"
 
 	"github.com/Azure/kubelogin/pkg/internal/env"
+	"github.com/Azure/kubelogin/pkg/internal/pop"
+	popcache "github.com/Azure/kubelogin/pkg/internal/pop/cache"
 )
+
+// PoPKeyProvider provides PoP keys based on the configured cache policy
+type PoPKeyProvider interface {
+	GetPoPKey() (*pop.SwKey, error)
+}
 
 type Options struct {
 	LoginMethod                       string
@@ -45,6 +52,8 @@ type Options struct {
 	RedirectURL                       string
 	LoginHint                         string
 	AzurePipelinesServiceConnectionID string
+	// Private field to store the PoP token cache, set during initialization. Stores MSAL tokens for token caching
+	popTokenCache *popcache.Cache
 }
 
 const (
@@ -367,4 +376,41 @@ func (o *Options) AddCompletions(cmd *cobra.Command) {
 		// us, and returns an error (which we ignore for this reason).
 		_ = cmd.RegisterFlagCompletionFunc(flag.Name, cobra.NoFileCompletions)
 	})
+}
+
+// GetPoPTokenCache returns the PoP token cache if available.
+// Returns nil if PoP is disabled or cache creation failed (e.g., container environments).
+func (o *Options) GetPoPTokenCache() *popcache.Cache {
+	return o.popTokenCache
+}
+
+// SetPoPTokenCache sets the PoP token cache. This is used internally during initialization.
+func (o *Options) setPoPTokenCache(cache *popcache.Cache) {
+	o.popTokenCache = cache
+}
+
+// GetPoPKeyProvider returns a PoPKeyProvider based on the current cache configuration.
+// This centralizes the key provider logic.
+func (o *Options) GetPoPKeyProvider() PoPKeyProvider {
+	return &defaultPoPKeyProvider{
+		cacheDir: o.getCacheDir(),
+	}
+}
+
+// getCacheDir returns the cache directory path if caching is enabled, empty string otherwise
+func (o *Options) getCacheDir() string {
+	if o.popTokenCache != nil {
+		return o.AuthRecordCacheDir
+	}
+	return ""
+}
+
+// defaultPoPKeyProvider is the default implementation of PoPKeyProvider
+type defaultPoPKeyProvider struct {
+	cacheDir string
+}
+
+// GetPoPKey implements PoPKeyProvider interface
+func (p *defaultPoPKeyProvider) GetPoPKey() (*pop.SwKey, error) {
+	return pop.GetPoPKeyByPolicy(p.cacheDir)
 }

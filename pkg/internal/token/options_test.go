@@ -117,11 +117,11 @@ func TestOptions(t *testing.T) {
 
 	t.Run("azurepipelines login method validation", func(t *testing.T) {
 		tests := []struct {
-			name             string
-			setupEnv         func()
-			options          func() Options
-			expectError      bool
-			errorSubstring   string
+			name           string
+			setupEnv       func()
+			options        func() Options
+			expectError    bool
+			errorSubstring string
 		}{
 			{
 				name: "valid azurepipelines login with all parameters",
@@ -517,8 +517,8 @@ func TestAzurePipelinesEnvironmentVariables(t *testing.T) {
 		t.Setenv(env.AzureSubscriptionServiceConnectionID, testServiceConnectionID)
 
 		o := Options{
-			LoginMethod:                 AzurePipelinesLogin,
-			DisableEnvironmentOverride:  true,
+			LoginMethod:                AzurePipelinesLogin,
+			DisableEnvironmentOverride: true,
 		}
 		o.UpdateFromEnv()
 

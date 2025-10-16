@@ -11,21 +11,20 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/kubelogin/pkg/internal/pop"
-	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/confidential"
 )
 
 type ClientCertificateCredentialWithPoP struct {
-	popClaims map[string]string
-	cred      confidential.Credential
-	client    confidential.Client
-	options   *pop.MsalClientOptions
-	cacheDir  string
+	popClaims   map[string]string
+	cred        confidential.Credential
+	client      confidential.Client
+	options     *pop.MsalClientOptions
+	keyProvider PoPKeyProvider
 }
 
 var _ CredentialProvider = (*ClientCertificateCredentialWithPoP)(nil)
 
-func newClientCertificateCredentialWithPoP(opts *Options, cache cache.ExportReplace) (CredentialProvider, error) {
+func newClientCertificateCredentialWithPoP(opts *Options) (CredentialProvider, error) {
 	if opts.ClientID == "" {
 		return nil, fmt.Errorf("client ID cannot be empty")
 	}
@@ -69,21 +68,24 @@ func newClientCertificateCredentialWithPoP(opts *Options, cache cache.ExportRepl
 	if opts.httpClient != nil {
 		msalOpts.Options.Transport = opts.httpClient
 	}
+	// Get cache from Options
+	popCache := opts.GetPoPTokenCache()
+
 	client, err := pop.NewConfidentialClient(
 		cred,
 		msalOpts,
-		pop.WithCustomCacheConfidential(cache),
+		pop.WithCustomCacheConfidential(popCache),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create confidential client: %w", err)
 	}
 
 	return &ClientCertificateCredentialWithPoP{
-		popClaims: popClaimsMap,
-		cred:      cred,
-		client:    client,
-		options:   msalOpts,
-		cacheDir:  opts.AuthRecordCacheDir,
+		popClaims:   popClaimsMap,
+		cred:        cred,
+		client:      client,
+		options:     msalOpts,
+		keyProvider: opts.GetPoPKeyProvider(),
 	}, nil
 }
 
@@ -96,9 +98,10 @@ func (c *ClientCertificateCredentialWithPoP) Authenticate(ctx context.Context, o
 }
 
 func (c *ClientCertificateCredentialWithPoP) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
-	popKey, err := pop.GetSwPoPKeyPersistent(c.cacheDir)
+	// Get PoP key using centralized key provider
+	popKey, err := c.keyProvider.GetPoPKey()
 	if err != nil {
-		return azcore.AccessToken{}, fmt.Errorf("unable to get persistent PoP key: %w", err)
+		return azcore.AccessToken{}, err
 	}
 
 	accessToken, expiresOn, err := pop.AcquirePoPTokenConfidential(

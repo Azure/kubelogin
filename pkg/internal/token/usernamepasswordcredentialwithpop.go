@@ -10,22 +10,21 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/kubelogin/pkg/internal/pop"
-	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
 )
 
 type UsernamePasswordCredentialWithPoP struct {
-	popClaims map[string]string
-	username  string
-	password  string
-	client    public.Client
-	options   *pop.MsalClientOptions
-	cacheDir  string
+	popClaims   map[string]string
+	username    string
+	password    string
+	client      public.Client
+	options     *pop.MsalClientOptions
+	keyProvider PoPKeyProvider
 }
 
 var _ CredentialProvider = (*UsernamePasswordCredentialWithPoP)(nil)
 
-func newUsernamePasswordCredentialWithPoP(opts *Options, cache cache.ExportReplace) (CredentialProvider, error) {
+func newUsernamePasswordCredentialWithPoP(opts *Options) (CredentialProvider, error) {
 	if opts.ClientID == "" {
 		return nil, fmt.Errorf("client ID cannot be empty")
 	}
@@ -61,17 +60,20 @@ func newUsernamePasswordCredentialWithPoP(opts *Options, cache cache.ExportRepla
 	if opts.httpClient != nil {
 		msalOpts.Options.Transport = opts.httpClient
 	}
-	client, err := pop.NewPublicClient(msalOpts, pop.WithCustomCachePublic(cache))
+	// Get cache from Options
+	popCache := opts.GetPoPTokenCache()
+
+	client, err := pop.NewPublicClient(msalOpts, pop.WithCustomCachePublic(popCache))
 	if err != nil {
 		return nil, fmt.Errorf("unable to create public client: %w", err)
 	}
 	return &UsernamePasswordCredentialWithPoP{
-		options:   msalOpts,
-		popClaims: popClaimsMap,
-		username:  opts.Username,
-		password:  opts.Password,
-		client:    client,
-		cacheDir:  opts.AuthRecordCacheDir,
+		options:     msalOpts,
+		popClaims:   popClaimsMap,
+		username:    opts.Username,
+		password:    opts.Password,
+		client:      client,
+		keyProvider: opts.GetPoPKeyProvider(),
 	}, nil
 }
 
@@ -84,9 +86,10 @@ func (c *UsernamePasswordCredentialWithPoP) Authenticate(ctx context.Context, op
 }
 
 func (c *UsernamePasswordCredentialWithPoP) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
-	popKey, err := pop.GetSwPoPKeyPersistent(c.cacheDir)
+	// Get PoP key using centralized key provider
+	popKey, err := c.keyProvider.GetPoPKey()
 	if err != nil {
-		return azcore.AccessToken{}, fmt.Errorf("unable to get persistent PoP key: %w", err)
+		return azcore.AccessToken{}, err
 	}
 
 	token, expirationTimeUnix, err := pop.AcquirePoPTokenByUsernamePassword(
