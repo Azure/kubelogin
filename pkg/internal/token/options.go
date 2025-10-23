@@ -106,9 +106,9 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&o.ClientSecret, "client-secret", o.ClientSecret,
 		fmt.Sprintf("AAD client application secret. Used in spn login. It may be specified in %s or %s environment variable", env.KubeloginClientSecret, env.AzureClientSecret))
 	fs.StringVar(&o.ClientCert, "client-certificate", o.ClientCert,
-		fmt.Sprintf("AAD client cert in pfx. Used in spn login. It may be specified in %s or %s environment variable", env.KubeloginClientCertificatePath, env.AzureClientCertificatePath))
+		fmt.Sprintf("AAD client cert in pfx or PEM. Used in spn login. It may be specified in %s or %s environment variable", env.KubeloginClientCertificatePath, env.AzureClientCertificatePath))
 	fs.StringVar(&o.ClientCertPassword, "client-certificate-password", o.ClientCertPassword,
-		fmt.Sprintf("Password for AAD client cert. Used in spn login. It may be specified in %s or %s environment variable", env.KubeloginClientCertificatePassword, env.AzureClientCertificatePassword))
+		fmt.Sprintf("Password for AAD client cert. Used in spn login. It may be specified in %s or %s environment variable. Only used for PFX encoded certs.", env.KubeloginClientCertificatePassword, env.AzureClientCertificatePassword))
 	fs.StringVar(&o.Username, "username", o.Username,
 		fmt.Sprintf("user name for ropc login flow. It may be specified in %s or %s environment variable", env.KubeloginROPCUsername, env.AzureUsername))
 	fs.StringVar(&o.Password, "password", o.Password,
