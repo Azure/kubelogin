@@ -140,9 +140,8 @@ func TestKeyringDescription(t *testing.T) {
 		k, err := newKeyring(path)
 		require.NoError(t, err)
 
-		// Verify description is the filename
-		expectedDesc := filepath.Base(path)
-		require.Equal(t, expectedDesc, k.description)
+		// Verify description is the full path (changed to prevent cache conflicts)
+		require.Equal(t, path, k.description)
 
 		// Verify each path gets a unique description
 		require.False(t, descriptions[k.description], "description %q should be unique", k.description)

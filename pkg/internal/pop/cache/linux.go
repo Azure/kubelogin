@@ -67,8 +67,9 @@ func newKeyring(p string) (*keyring, error) {
 	if persistentRing, err := unix.KeyctlInt(unix.KEYCTL_GET_PERSISTENT, -1, ringID, 0, 0); err == nil {
 		ringID = persistentRing
 	}
-	// Use the actual filename as the keyring description to ensure each file has its own encryption key
-	description := filepath.Base(p)
+	// Use the full path as the keyring description to ensure each cache directory has its own encryption key
+	// This prevents cache conflicts when multiple cache directories are used (e.g., different clusters)
+	description := p
 	return &keyring{description: description, file: p, ringID: ringID}, nil
 }
 
