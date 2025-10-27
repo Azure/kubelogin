@@ -35,7 +35,7 @@ func New(o *Options) (ExecCredentialPlugin, error) {
 	// Initialize PoP token cache in Options if enabled
 	if o.IsPoPTokenEnabled && o.popTokenCache == nil {
 		// Create PoP token cache using the official MSAL & MSAL extension libraries.
-		popTokenCache, err := popcache.NewCache(o.AuthRecordCacheDir)
+		popTokenCache, err := popcache.NewCache(o.AuthRecordCacheDir, o.Environment)
 		if err != nil {
 			// Fallback: Log warning and continue without PoP token caching when cache creation fails
 			klog.V(2).Infof("PoP token caching disabled due to secure storage failure (likely container environment): %v", err)

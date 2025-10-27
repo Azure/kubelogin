@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -76,8 +77,11 @@ var (
 
 // getPoPCacheFilePath returns the file path for the PoP token cache.
 // This is separate from the authentication record cache file.
-func getPoPCacheFilePath(cacheDir string) string {
-	return filepath.Join(cacheDir, popTokenCacheFileName)
+func getPoPCacheFilePath(cacheDir, environment string) string {
+	// Include environment in filename to isolate tokens per Azure cloud
+	safeEnv := strings.ReplaceAll(environment, " ", "_")
+	filename := fmt.Sprintf("pop_tokens_%s.cache", strings.ToLower(safeEnv))
+	return filepath.Join(cacheDir, filename)
 }
 
 // Cache implements the MSAL cache.ExportReplace interface using our platform-specific PoP cache.
@@ -90,8 +94,14 @@ type Cache struct {
 // NewCache creates a new MSAL cache provider using custom platform-specific PoP cache.
 // This implementation provides secure storage on all platforms without external dependencies like libsecret on Linux.
 // Following the azidentity pattern, this proactively tests storage capability before creating the cache.
-func NewCache(cacheDir string) (*Cache, error) {
-	cachePath := getPoPCacheFilePath(cacheDir)
+// If environment is empty, defaults to "AzurePublicCloud".
+func NewCache(cacheDir, environment string) (*Cache, error) {
+	// Default to AzurePublicCloud if environment is not specified
+	if environment == "" {
+		environment = "AzurePublicCloud"
+	}
+	
+	cachePath := getPoPCacheFilePath(cacheDir, environment)
 
 	// Test storage capability once per process
 	once.Do(testStorage)

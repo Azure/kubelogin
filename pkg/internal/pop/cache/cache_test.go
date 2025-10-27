@@ -58,7 +58,7 @@ func TestNewCache(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cache, err := NewCache(tt.cacheDir)
+			cache, err := NewCache(tt.cacheDir, "AzurePublicCloud")
 			if tt.wantErr {
 				require.Error(t, err)
 				require.Nil(t, cache)
@@ -71,9 +71,31 @@ func TestNewCache(t *testing.T) {
 	}
 }
 
+func TestNewCache_WithDefaultEnvironment(t *testing.T) {
+	// Test that AzurePublicCloud is used as default when environment is empty
+	tempDir := t.TempDir()
+
+	// Call NewCache with empty environment - should default to AzurePublicCloud
+	c, err := NewCache(tempDir, "")
+	require.NoError(t, err)
+	require.NotNil(t, c)
+	require.NotNil(t, c.accessor)
+
+	// Verify we can write and read from the cache
+	testData := []byte(`{"access_tokens": {"key1": "value1"}}`)
+	marshaler := &mockMarshaler{data: testData}
+	err = c.Export(ctx, marshaler, cache.ExportHints{})
+	require.NoError(t, err)
+
+	unmarshaler := &mockUnmarshaler{}
+	err = c.Replace(ctx, unmarshaler, cache.ReplaceHints{})
+	require.NoError(t, err)
+	require.Equal(t, testData, unmarshaler.data)
+}
+
 func TestCache_ExportReplace(t *testing.T) {
 	tempDir := t.TempDir()
-	c, err := NewCache(tempDir)
+	c, err := NewCache(tempDir, "AzurePublicCloud")
 	require.NoError(t, err)
 
 	testData := []byte(`{"access_tokens": {"key1": "value1"}, "refresh_tokens": {"key2": "value2"}}`)
@@ -92,7 +114,7 @@ func TestCache_ExportReplace(t *testing.T) {
 
 func TestCache_ExportReplaceEmpty(t *testing.T) {
 	tempDir := t.TempDir()
-	c, err := NewCache(tempDir)
+	c, err := NewCache(tempDir, "AzurePublicCloud")
 	require.NoError(t, err)
 
 	// Test Replace on empty cache - should get empty JSON since no data exists
@@ -104,7 +126,7 @@ func TestCache_ExportReplaceEmpty(t *testing.T) {
 
 func TestCache_ExportMarshalError(t *testing.T) {
 	tempDir := t.TempDir()
-	c, err := NewCache(tempDir)
+	c, err := NewCache(tempDir, "AzurePublicCloud")
 	require.NoError(t, err)
 
 	expectedErr := fmt.Errorf("marshal error")
@@ -117,7 +139,7 @@ func TestCache_ExportMarshalError(t *testing.T) {
 
 func TestCache_ReplaceUnmarshalError(t *testing.T) {
 	tempDir := t.TempDir()
-	c, err := NewCache(tempDir)
+	c, err := NewCache(tempDir, "AzurePublicCloud")
 	require.NoError(t, err)
 
 	// First export some data
@@ -137,7 +159,7 @@ func TestCache_ReplaceUnmarshalError(t *testing.T) {
 
 func TestCache_Clear(t *testing.T) {
 	tempDir := t.TempDir()
-	c, err := NewCache(tempDir)
+	c, err := NewCache(tempDir, "AzurePublicCloud")
 	require.NoError(t, err)
 
 	// Export some data first
@@ -169,7 +191,7 @@ func TestCache_MultipleProcessSimulation(t *testing.T) {
 		go func(processID int) {
 			// Each "process" creates its own cache instance but uses the same cache directory
 			// This simulates multiple kubelogin processes run by same user
-			c, err := NewCache(tempDir)
+			c, err := NewCache(tempDir, "AzurePublicCloud")
 			if err != nil {
 				done <- fmt.Errorf("process %d: failed to create cache: %w", processID, err)
 				return
@@ -215,7 +237,7 @@ func TestCache_MultipleProcessSimulation(t *testing.T) {
 	}
 
 	// Final verification: ensure the cache is in a consistent state
-	c, err := NewCache(tempDir)
+	c, err := NewCache(tempDir, "AzurePublicCloud")
 	require.NoError(t, err)
 
 	unmarshaler := &mockUnmarshaler{}
@@ -230,10 +252,10 @@ func TestCache_Isolation(t *testing.T) {
 	// Test that different cache instances with different names are isolated
 	tempDir := t.TempDir()
 
-	cache1, err := NewCache(filepath.Join(tempDir, "cache1"))
+	cache1, err := NewCache(filepath.Join(tempDir, "cache1"), "AzurePublicCloud")
 	require.NoError(t, err)
 
-	cache2, err := NewCache(filepath.Join(tempDir, "cache2"))
+	cache2, err := NewCache(filepath.Join(tempDir, "cache2"), "AzurePublicCloud")
 	require.NoError(t, err)
 
 	// Export different data to each cache
@@ -261,30 +283,40 @@ func TestCache_Isolation(t *testing.T) {
 
 func TestGetPoPCacheFilePath(t *testing.T) {
 	tests := []struct {
-		name     string
-		cacheDir string
-		expected string
+		name        string
+		cacheDir    string
+		environment string
+		expected    string
 	}{
 		{
-			name:     "unix path",
-			cacheDir: "/home/user/.cache/kubelogin",
-			expected: "/home/user/.cache/kubelogin/pop_tokens.cache",
+			name:        "unix path",
+			cacheDir:    "/home/user/.cache/kubelogin",
+			environment: "AzurePublicCloud",
+			expected:    "/home/user/.cache/kubelogin/pop_tokens_azurepubliccloud.cache",
 		},
 		{
-			name:     "relative path",
-			cacheDir: "cache",
-			expected: "cache/pop_tokens.cache",
+			name:        "relative path",
+			cacheDir:    "cache",
+			environment: "AzurePublicCloud",
+			expected:    "cache/pop_tokens_azurepubliccloud.cache",
 		},
 		{
-			name:     "empty path",
-			cacheDir: "",
-			expected: "pop_tokens.cache",
+			name:        "empty path",
+			cacheDir:    "",
+			environment: "AzurePublicCloud",
+			expected:    "pop_tokens_azurepubliccloud.cache",
+		},
+		{
+			name:        "different environment",
+			cacheDir:    "/home/user/.cache/kubelogin",
+			environment: "AzureChinaCloud",
+			expected:    "/home/user/.cache/kubelogin/pop_tokens_azurechinacloud.cache",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := getPoPCacheFilePath(tt.cacheDir)
+			result := getPoPCacheFilePath(tt.cacheDir, tt.environment)
 			require.Equal(t, tt.expected, result)
 		})
 	}

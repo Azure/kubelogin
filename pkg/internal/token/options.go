@@ -399,7 +399,7 @@ func (o *Options) GetPoPKeyProvider() PoPKeyProvider {
 
 // getCacheDir returns the cache directory path if caching is enabled, empty string otherwise
 func (o *Options) getCacheDir() string {
-	if o.popTokenCache != nil {
+	if o.IsPoPTokenEnabled && o.AuthRecordCacheDir != "" {
 		return o.AuthRecordCacheDir
 	}
 	return ""
