@@ -1,0 +1,89 @@
+name: Publish Azure kubelogin to winget
+
+on:
+  # Manual trigger so the workflow can be run on demand when the installer is available
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version of kubelogin to publish (e.g., 0.2.12)'
+        required: true
+
+permissions: {}
+
+env:
+  # winget-create will read the following environment variable to access the GitHub token needed for submitting a PR
+  # See https://aka.ms/winget-create-token
+  WINGET_CREATE_GITHUB_TOKEN: ${{ secrets.WINGET_TOKEN }}
+  WINGET_PACKAGE_ID: Microsoft.Azure.Kubelogin
+
+jobs:
+  publish-winget:
+    runs-on: windows-latest
+    steps:
+      - name: Normalize and set version
+        id: normalize_version
+        shell: pwsh
+        run: |
+          $version = '${{ github.event.inputs.version }}'.TrimStart('v')
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          Write-Host "Normalized version: $version" -ForegroundColor Cyan
+
+      - name: Set installer URL
+        id: set_url
+        shell: pwsh
+        run: |
+          $version = '${{ steps.normalize_version.outputs.version }}'
+          $url = "https://packages.aks.azure.com/dalec-packages/kubelogin/$version/windows/amd64/kubelogin_${version}-1_amd64.zip"
+          "url=$url" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          Write-Host "Installer URL: $url" -ForegroundColor Cyan
+
+      - name: Validate installer availability
+        shell: pwsh
+        run: |
+          $installerUrl = '${{ steps.set_url.outputs.url }}'
+          Write-Host "Checking installer availability at $installerUrl" -ForegroundColor Cyan
+          try {
+            $response = Invoke-WebRequest -Uri $installerUrl -Method Head -UseBasicParsing -ErrorAction Stop
+            if ($response.StatusCode -ne 200) {
+              Write-Error "Installer not found. Received HTTP status code $($response.StatusCode)."
+              exit 1
+            } else {
+              Write-Host "Installer found (HTTP $($response.StatusCode)). Proceeding..." -ForegroundColor Green
+            }
+          } catch {
+            Write-Error "Failed to access the installer URL: $($_.Exception.Message)"
+            exit 1
+          }
+
+      - name: Download wingetcreate
+        shell: pwsh
+        run: |
+          Write-Host "Downloading wingetcreate..." -ForegroundColor Cyan
+          & curl.exe -JLO https://aka.ms/wingetcreate/latest
+          if (-not (Test-Path .\wingetcreate.exe)) {
+            Write-Error "Failed to download wingetcreate.exe"
+            exit 1
+          }
+          Write-Host "wingetcreate downloaded successfully" -ForegroundColor Green
+
+      - name: Publish to winget
+        shell: pwsh
+        run: |
+          # Use the constructed installer URL and the normalized version
+          $installerUrl = '${{ steps.set_url.outputs.url }}'
+          $version = '${{ steps.normalize_version.outputs.version }}'
+          $packageId = '${{ env.WINGET_PACKAGE_ID }}'
+          
+          Write-Host "Publishing $packageId version $version to winget..." -ForegroundColor Cyan
+          
+          & .\wingetcreate.exe update $packageId `
+            --urls $installerUrl `
+            --version $version `
+            --submit
+          
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "wingetcreate failed with exit code $LASTEXITCODE"
+            exit $LASTEXITCODE
+          }
+          
+          Write-Host "Successfully submitted to winget!" -ForegroundColor Green
