@@ -55,6 +55,12 @@ asdf install kubelogin latest
 asdf set kubelogin latest
 ```
 
+### Using [mise](https://github.com/jdx/mise)
+
+```sh
+mise use -g kubelogin@latest
+```
+
 ## Windows
 
 ### Using winget
