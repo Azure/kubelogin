@@ -58,7 +58,7 @@ asdf set kubelogin latest
 ### Using [mise](https://github.com/jdx/mise)
 
 ```sh
-mise use -g kubelogin@latest
+mise use -g azure-kubelogin@latest
 ```
 
 ## Windows
