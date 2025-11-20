@@ -1,5 +1,27 @@
 # Change Log
 
+## [0.2.13]
+
+### What's Changed
+
+* Mention PEM support for client certificates by @ijrsvt in https://github.com/Azure/kubelogin/pull/717
+* added winget publish actions by @weinong in https://github.com/Azure/kubelogin/pull/718
+* Fix PoP token keychain storage conflict by @fangluguomsft in https://github.com/Azure/kubelogin/pull/723
+* docs(installation): add alternative mise installation method by @jylenhof in https://github.com/Azure/kubelogin/pull/724
+
+### Maintenance
+
+* Bump Go to 1.24.9 to address stdlib CVEs by @Copilot in https://github.com/Azure/kubelogin/pull/726
+* Bump golang.org/x/crypto from 0.40.0 to 0.45.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/727
+
+### New Contributors
+
+* @ijrsvt made their first contribution in https://github.com/Azure/kubelogin/pull/717
+* @fangluguomsft made their first contribution in https://github.com/Azure/kubelogin/pull/723
+* @jylenhof made their first contribution in https://github.com/Azure/kubelogin/pull/724
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.12...v0.2.13
+
 ## [0.2.12]
 
 ### What's Changed
