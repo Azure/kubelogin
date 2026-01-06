@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.2.14]
+
+### Maintenance
+
+* Bump Go to 1.24.11 and golangci-lint to v2.7.2 to address CVE-2025-61727 and CVE-2025-61729 by @Copilot in https://github.com/Azure/kubelogin/pull/731
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.13...v0.2.14
+
 ## [0.2.13]
 
 ### What's Changed
