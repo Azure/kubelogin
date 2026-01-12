@@ -9,7 +9,8 @@
 FROM scratch
 
 # Build arguments for multi-architecture support
-ARG TARGETARCH=amd64
+ARG TARGETOS
+ARG TARGETARCH
 ARG VERSION=""
 
 # OpenContainers Image Spec labels
@@ -19,7 +20,7 @@ LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.version="${VERSION}"
 
 # Copy the pre-built binary from local build to /usr/local/bin
-COPY bin/linux_${TARGETARCH}/kubelogin /usr/local/bin/kubelogin
+COPY bin/${TARGETOS}_${TARGETARCH}/kubelogin /usr/local/bin/kubelogin
 
 # Set the entrypoint
 ENTRYPOINT ["/usr/local/bin/kubelogin"]
