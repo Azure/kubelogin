@@ -31,7 +31,6 @@ var errAuthenticateNotSupported = errors.New("authenticate is not supported")
 
 func New(o *Options) (ExecCredentialPlugin, error) {
 	klog.V(10).Info(o.ToString())
-
 	// Initialize PoP token cache in Options if enabled
 	if o.IsPoPTokenEnabled && o.popTokenCache == nil {
 		// Create PoP token cache using the official MSAL & MSAL extension libraries.
@@ -39,7 +38,7 @@ func New(o *Options) (ExecCredentialPlugin, error) {
 		if err != nil {
 			// Continue without caching; leave popTokenCache unset (nil field)
 			// so GetPoPTokenCache() returns an untyped nil interface.
-			klog.V(2).Infof("PoP token caching disabled: %v", err)
+			klog.Warningf("PoP token caching disabled: %v", err)
 		} else {
 			o.setPoPTokenCache(popTokenCache)
 		}
