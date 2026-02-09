@@ -36,9 +36,9 @@ func New(o *Options) (ExecCredentialPlugin, error) {
 		// Create PoP token cache using the official MSAL & MSAL extension libraries.
 		popTokenCache, err := popcache.NewCache(o.AuthRecordCacheDir)
 		if err != nil {
-			// Continue without caching; leave popTokenCache unset (nil field)
-			// so GetPoPTokenCache() returns an untyped nil interface.
-			klog.Warningf("PoP token caching disabled: %v", err)
+			// Fallback: Log warning and continue without PoP token caching when cache creation fails
+			// Leave popTokenCache unset (nil field) so GetPoPTokenCache() returns an untyped nil interface.
+			klog.Warningf("PoP token caching disabled due to secure storage failure (likely container environment): %v", err)
 		} else {
 			o.setPoPTokenCache(popTokenCache)
 		}
