@@ -1,5 +1,44 @@
 # Change Log
 
+## [0.2.14]
+
+### Maintenance
+
+* Bump Go to 1.24.11 and golangci-lint to v2.7.2 to address CVE-2025-61727 and CVE-2025-61729 by @Copilot in https://github.com/Azure/kubelogin/pull/731
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.13...v0.2.14
+
+## [0.2.13]
+
+### What's Changed
+
+* Mention PEM support for client certificates by @ijrsvt in https://github.com/Azure/kubelogin/pull/717
+* added winget publish actions by @weinong in https://github.com/Azure/kubelogin/pull/718
+* Fix PoP token keychain storage conflict by @fangluguomsft in https://github.com/Azure/kubelogin/pull/723
+* docs(installation): add alternative mise installation method by @jylenhof in https://github.com/Azure/kubelogin/pull/724
+
+### Maintenance
+
+* Bump Go to 1.24.9 to address stdlib CVEs by @Copilot in https://github.com/Azure/kubelogin/pull/726
+* Bump golang.org/x/crypto from 0.40.0 to 0.45.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/727
+
+### New Contributors
+
+* @ijrsvt made their first contribution in https://github.com/Azure/kubelogin/pull/717
+* @fangluguomsft made their first contribution in https://github.com/Azure/kubelogin/pull/723
+* @jylenhof made their first contribution in https://github.com/Azure/kubelogin/pull/724
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.12...v0.2.13
+
+## [0.2.12]
+
+### What's Changed
+
+* Support Azure Pipelines Environment Variables for AzurePipelinesCredential by @Copilot in https://github.com/Azure/kubelogin/pull/713
+* [PoP token Cache] Fallback to no caching when encrypted cache creation fails  by @vineeth-thumma in https://github.com/Azure/kubelogin/pull/715
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.11...v0.2.12
+
 ## [0.2.11]
 
 ### What's Changed
