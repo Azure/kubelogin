@@ -681,3 +681,40 @@ func TestAuthorityHostValidation(t *testing.T) {
 		})
 	}
 }
+
+// TestGetPoPTokenCache_NilReturnsUntypedNil verifies that GetPoPTokenCache()
+// returns a true untyped nil (not a typed nil *Cache wrapped in an interface)
+// when the cache field is not set.
+func TestGetPoPTokenCache_NilReturnsUntypedNil(t *testing.T) {
+	t.Run("nil cache field returns interface-nil", func(t *testing.T) {
+		o := &Options{}
+		// popTokenCache is its zero value (nil *popcache.Cache)
+
+		cache := o.GetPoPTokenCache()
+
+		// This is the critical assertion: the returned interface must be nil.
+		if cache != nil {
+			t.Fatal("GetPoPTokenCache() returned non-nil interface for nil cache field; this would cause a nil pointer panic in MSAL")
+		}
+	})
+
+	t.Run("valid cache field returns non-nil", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		o := &Options{
+			IsPoPTokenEnabled:  true,
+			AuthRecordCacheDir: tmpDir,
+		}
+
+		// Initialize via New() which calls setPoPTokenCache on success
+		_, err := New(o)
+		if err != nil {
+			t.Fatalf("New() failed: %v", err)
+		}
+
+		// If cache creation succeeded (depends on environment), verify it's non-nil
+		cache := o.GetPoPTokenCache()
+		if o.popTokenCache != nil && cache == nil {
+			t.Fatal("GetPoPTokenCache() returned nil interface for non-nil cache field")
+		}
+	})
+}
