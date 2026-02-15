@@ -2,12 +2,29 @@ package cmd
 
 import (
 	"github.com/Azure/kubelogin/pkg/internal/converter"
+	"github.com/Azure/kubelogin/pkg/internal/options"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
 // newConvertCmd provides a cobra command for convert sub command
 func newConvertCmd() *cobra.Command {
+	// Use unified options if feature flag is enabled
+	if useUnifiedOptions() {
+		return options.NewUnifiedCommand(options.ConvertCommand)
+	}
+
+	// Fallback to legacy implementation
+	return newConvertCmdLegacy()
+}
+
+// Feature flag for gradual rollout
+func useUnifiedOptions() bool {
+	return options.UseUnifiedOptions()
+}
+
+// newConvertCmdLegacy provides the legacy converter command implementation
+func newConvertCmdLegacy() *cobra.Command {
 	o := converter.New()
 
 	cmd := &cobra.Command{

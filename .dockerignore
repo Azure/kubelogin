@@ -21,6 +21,7 @@ SECURITY.md
 **/*_test.go
 **/testdata/
 **/*VCR.yaml
+test/integration/
 
 # Development files
 .github/dependabot.yml
