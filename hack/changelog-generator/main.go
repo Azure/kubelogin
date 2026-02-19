@@ -157,10 +157,15 @@ func decodePRStream(data []byte) ([]GitHubPR, error) {
 // (e.g. "v0.2.14 release") so they can be excluded from the changelog.
 var releasePRTitle = regexp.MustCompile(`(?i)^v?\d+\.\d+\.\d+`)
 
+// changelogPRTitle matches PR titles that represent a changelog update
+// (e.g. "chore: update CHANGELOG.md for v0.2.15") so they can be excluded.
+var changelogPRTitle = regexp.MustCompile(`(?i)update.{0,10}changelog|changelog.{0,10}update`)
+
 // isReleasePR returns true when the PR title looks like a release commit
-// (e.g. "v0.2.14 release", "0.2.14 release").
+// (e.g. "v0.2.14 release", "0.2.14 release") or a changelog update.
 func isReleasePR(title string) bool {
-	return releasePRTitle.MatchString(strings.TrimSpace(title))
+	t := strings.TrimSpace(title)
+	return releasePRTitle.MatchString(t) || changelogPRTitle.MatchString(t)
 }
 
 // getMergedPRsSince returns all merged PRs after the given time.

@@ -145,6 +145,10 @@ func TestIsReleasePR(t *testing.T) {
 		{"0.2.14 release", true},
 		{"v1.0.0", true},
 		{"v0.2.14", true},
+		// Changelog update PRs — must be filtered
+		{"chore: update CHANGELOG.md for v0.2.15", true},
+		{"chore: update changelog for v0.2.15", true},
+		{"Update CHANGELOG for v1.0.0", true},
 		// Regular PRs — must NOT be filtered
 		{"fix: nil pointer", false},
 		{"feat: add new login flow", false},
