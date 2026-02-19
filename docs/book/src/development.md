@@ -62,7 +62,7 @@ The project includes an automated changelog generation tool that creates properl
 
 The workflow will:
 - Fetch all merged PRs since the previous version
-- Categorize them (What's Changed, Enhancements, Bug Fixes, Maintenance, Doc Update)
+- Categorize them (What's Changed, Maintenance, Enhancements, Bug Fixes, Doc Update)
 - Identify new contributors
 - Generate a formatted changelog entry
 - Create a pull request with the updated CHANGELOG.md
