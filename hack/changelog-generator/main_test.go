@@ -135,3 +135,27 @@ func TestGenerateChangelogEntry(t *testing.T) {
 		}
 	}
 }
+
+func TestIsReleasePR(t *testing.T) {
+	cases := []struct {
+		title    string
+		expected bool
+	}{
+		{"v0.2.14 release", true},
+		{"0.2.14 release", true},
+		{"v1.0.0", true},
+		{"v0.2.14", true},
+		// Regular PRs — must NOT be filtered
+		{"fix: nil pointer", false},
+		{"feat: add new login flow", false},
+		{"Bump Go to 1.24.11", false},
+		{"docs: update readme", false},
+		{"[Bug Fix] - PoP token crash", false},
+	}
+	for _, tc := range cases {
+		got := isReleasePR(tc.title)
+		if got != tc.expected {
+			t.Errorf("isReleasePR(%q) = %v; want %v", tc.title, got, tc.expected)
+		}
+	}
+}

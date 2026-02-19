@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -152,6 +153,16 @@ func decodePRStream(data []byte) ([]GitHubPR, error) {
 	return prs, nil
 }
 
+// releasePRTitle matches PR titles that represent a version release
+// (e.g. "v0.2.14 release") so they can be excluded from the changelog.
+var releasePRTitle = regexp.MustCompile(`(?i)^v?\d+\.\d+\.\d+`)
+
+// isReleasePR returns true when the PR title looks like a release commit
+// (e.g. "v0.2.14 release", "0.2.14 release").
+func isReleasePR(title string) bool {
+	return releasePRTitle.MatchString(strings.TrimSpace(title))
+}
+
 // getMergedPRsSince returns all merged PRs after the given time.
 func getMergedPRsSince(repo string, since time.Time) ([]GitHubPR, error) {
 	out, err := ghAPI(
@@ -168,7 +179,7 @@ func getMergedPRsSince(repo string, since time.Time) ([]GitHubPR, error) {
 	}
 	var prs []GitHubPR
 	for _, pr := range all {
-		if !pr.MergedAt.IsZero() && pr.MergedAt.After(since) {
+		if !pr.MergedAt.IsZero() && pr.MergedAt.After(since) && !isReleasePR(pr.Title) {
 			prs = append(prs, pr)
 		}
 	}
