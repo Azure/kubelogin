@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -119,10 +118,7 @@ func getLatestTag(repo string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	var tag string
-	if err := json.Unmarshal(bytes.TrimSpace(out), &tag); err != nil {
-		return "", fmt.Errorf("parse latest tag: %w", err)
-	}
+	tag := strings.TrimSpace(string(out))
 	if tag == "" {
 		return "", fmt.Errorf("no releases found in repository %s", repo)
 	}
@@ -138,11 +134,7 @@ func getTagDate(repo, tag string) (time.Time, error) {
 	if err != nil {
 		return time.Time{}, err
 	}
-	var dateStr string
-	if err := json.Unmarshal(bytes.TrimSpace(out), &dateStr); err != nil {
-		return time.Time{}, fmt.Errorf("parse tag date: %w", err)
-	}
-	return time.Parse(time.RFC3339, dateStr)
+	return time.Parse(time.RFC3339, strings.TrimSpace(string(out)))
 }
 
 // decodePRStream decodes newline-delimited JSON objects produced by
