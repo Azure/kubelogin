@@ -8,17 +8,16 @@ This tool automatically generates CHANGELOG.md entries for kubelogin releases by
 - Automatically categorizes PRs into:
   - What's Changed (general changes)
   - Enhancements (new features)
+  - Bug Fixes (bug fixes)
   - Maintenance (dependency updates, CVE fixes, chores)
   - Doc Update (documentation changes)
 - Identifies and lists new contributors
 - Generates a Full Changelog comparison link
 - Follows the existing CHANGELOG.md format
 
-## Usage
+## Quick Start
 
 ### Via GitHub Actions (Recommended)
-
-The easiest way to generate a changelog is through the GitHub Actions workflow:
 
 1. Go to the [Actions tab](https://github.com/Azure/kubelogin/actions/workflows/update-changelog.yml)
 2. Click "Run workflow"
@@ -26,21 +25,35 @@ The easiest way to generate a changelog is through the GitHub Actions workflow:
    - **Version number**: e.g., `0.2.15` (without the 'v' prefix)
    - **Previous version tag**: e.g., `v0.2.14` (with the 'v' prefix)
 4. Click "Run workflow"
+5. Review and merge the generated PR
+6. Trigger the [Release workflow](https://github.com/Azure/kubelogin/actions/workflows/release.yml)
 
-The workflow will:
-- Generate the changelog entry
-- Update CHANGELOG.md
-- Create a pull request with the changes
-
-### Manual Usage
-
-You can also run the tool locally:
+### Via Make Target
 
 ```bash
-# Set your GitHub token
 export GITHUB_TOKEN="your_github_token"
 
-# Run the generator
+# SINCE_TAG is optional; omit it to auto-detect the latest tag
+VERSION=0.2.15 make changelog
+
+# Or specify the previous tag explicitly
+VERSION=0.2.15 SINCE_TAG=v0.2.14 make changelog
+```
+
+This generates a `changelog-entry.md` file that you can manually insert into CHANGELOG.md.
+
+### Running Directly
+
+```bash
+export GITHUB_TOKEN="your_github_token"
+
+# SINCE_TAG is optional; omit it to auto-detect the latest tag
+go run hack/changelog-generator/main.go \
+  --version="0.2.15" \
+  --repo="Azure/kubelogin" \
+  --output="changelog-entry.md"
+
+# Or specify the previous tag explicitly
 go run hack/changelog-generator/main.go \
   --version="0.2.15" \
   --since-tag="v0.2.14" \
@@ -48,47 +61,21 @@ go run hack/changelog-generator/main.go \
   --output="changelog-entry.md"
 ```
 
-This will create a `changelog-entry.md` file with the generated entry that you can manually insert into CHANGELOG.md.
+## PR Categorization
 
-## How It Works
+PRs are categorized first by **GitHub labels**, then by **title patterns**:
 
-### PR Categorization
-
-The tool categorizes PRs based on:
-
-1. **GitHub Labels**: Checks for labels like `maintenance`, `enhancement`, `documentation`, etc.
-2. **Title Patterns**: Analyzes PR titles for common prefixes:
-   - `bump `, `update `, `CVE-` → Maintenance
-   - `docs:`, `doc:` → Documentation
-   - `feat:`, `feature:` → Enhancement
+| Category | Labels | Title prefixes / patterns |
+|---|---|---|
+| Bug Fixes | `bug`, `fix` | `fix:`, `bugfix:`, `bug fix:`, `hotfix:` |
+| Enhancements | `enhancement`, `feature` | `feat:`, `feature:`, `add support`, `new feature` |
+| Maintenance | `maintenance`, `dependencies`, `chore` | `bump `, `update `, `CVE-`, `fix cve`, `chore` |
+| Doc Update | `documentation`, `docs` | `docs:`, `doc:`, `documentation`, `install doc` |
+| What's Changed | *(default)* | *(everything else)* |
 
 ### New Contributor Detection
 
-The tool identifies new contributors by:
-1. Fetching all historical PRs before the previous release tag
-2. Building a list of existing contributors
-3. Comparing current PR authors against this list
-4. Marking contributors who don't appear in the historical list as "new"
-
-## Customization
-
-You can customize the categorization logic by editing the `categorizeByLabelsAndTitle` function in `main.go`.
-
-## Integration with Release Workflow
-
-After the changelog PR is merged:
-1. The updated CHANGELOG.md is now in the main branch
-2. Trigger the [Release workflow](https://github.com/Azure/kubelogin/actions/workflows/release.yml)
-3. The release workflow will:
-   - Read the version from CHANGELOG.md
-   - Create a draft release
-   - Build binaries
-   - Publish artifacts
-
-## Requirements
-
-- GitHub Personal Access Token with `repo` scope
-- Go 1.24 or later
+A contributor is marked as "new" if they have a merged PR in the current release but **no** merged PRs before the previous release tag.
 
 ## Example Output
 
@@ -99,9 +86,21 @@ After the changelog PR is merged:
 
 * Add new authentication method by @username in https://github.com/Azure/kubelogin/pull/123
 
+### Enhancements
+
+* Add Y support by @username in https://github.com/Azure/kubelogin/pull/124
+
+### Bug Fixes
+
+* Fix nil pointer in cache.Replace by @username in https://github.com/Azure/kubelogin/pull/127
+
 ### Maintenance
 
-* Bump Go to 1.24.12 by @dependabot in https://github.com/Azure/kubelogin/pull/124
+* Bump Go to 1.24.12 by @dependabot in https://github.com/Azure/kubelogin/pull/125
+
+### Doc Update
+
+* Update installation guide by @username in https://github.com/Azure/kubelogin/pull/126
 
 ### New Contributors
 
@@ -109,3 +108,33 @@ After the changelog PR is merged:
 
 **Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.14...v0.2.15
 ```
+
+## Integration with Release Workflow
+
+1. **Generate** changelog entry (this tool) → creates a PR
+2. **Merge** the changelog PR
+3. **Trigger** the [Release workflow](https://github.com/Azure/kubelogin/actions/workflows/release.yml)
+   - Reads version from CHANGELOG.md
+   - Creates a draft release
+   - Builds binaries for all platforms
+   - Publishes artifacts
+
+## Troubleshooting
+
+**"No PRs found"**
+- Verify the tag exists: `git tag -l | grep <tag>`
+- Check that PRs were merged after the `since_tag` date
+
+**"API rate limit exceeded"**
+- Ensure `GITHUB_TOKEN` is set with `repo` scope
+- Wait for rate limit reset (typically 1 hour)
+
+**Wrong categorization**
+- Add appropriate labels to PRs before running the tool
+- Or manually edit the generated changelog before merging
+
+## Requirements
+
+- `GITHUB_TOKEN` environment variable with `repo` scope
+- Go 1.24 or later
+

@@ -9,8 +9,9 @@ name: Update Changelog
         required: true
         type: string
       since_tag:
-        description: 'Previous version tag (e.g., v0.2.14)'
-        required: true
+        description: >-
+          Previous version tag (e.g., v0.2.14); defaults to latest tag
+        required: false
         type: string
       pr_number:
         description: 'PR number to update (optional)'
@@ -43,15 +44,10 @@ jobs:
         id: generate
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ inputs.version }}
-          SINCE_TAG: ${{ inputs.since_tag }}
         run: |
-          # Run the changelog generator script
-          go run hack/changelog-generator/main.go \
-            --version="${VERSION}" \
-            --since-tag="${SINCE_TAG}" \
-            --repo="Azure/kubelogin" \
-            --output="changelog-entry.md"
+          VERSION=${{ inputs.version }} \
+          SINCE_TAG=${{ inputs.since_tag }} \
+          make changelog
 
       - name: Update CHANGELOG.md
         run: |
@@ -77,8 +73,6 @@ jobs:
           body: |
             This PR updates the CHANGELOG.md with release notes for
             version ${{ inputs.version }}.
-
-            **Changes since ${{ inputs.since_tag }}:**
 
             The changelog entry has been automatically generated from
             merged pull requests. Please review and edit as needed

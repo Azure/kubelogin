@@ -44,13 +44,13 @@ type Contributor struct {
 
 func main() {
 	version := flag.String("version", "", "Version number (e.g., 0.2.15)")
-	sinceTag := flag.String("since-tag", "", "Previous version tag (e.g., v0.2.14)")
+	sinceTag := flag.String("since-tag", "", "Previous version tag (e.g., v0.2.14); defaults to the latest tag")
 	repo := flag.String("repo", "Azure/kubelogin", "Repository in format owner/repo")
 	output := flag.String("output", "changelog-entry.md", "Output file path")
 	flag.Parse()
 
-	if *version == "" || *sinceTag == "" {
-		log.Fatal("Both --version and --since-tag are required")
+	if *version == "" {
+		log.Fatal("--version is required")
 	}
 
 	token := os.Getenv("GITHUB_TOKEN")
@@ -59,6 +59,16 @@ func main() {
 	}
 
 	ctx := context.Background()
+
+	// Resolve the previous tag if not provided
+	if *sinceTag == "" {
+		resolved, err := getLatestTag(ctx, *repo, token)
+		if err != nil {
+			log.Fatalf("Failed to resolve previous tag: %v", err)
+		}
+		log.Printf("No --since-tag provided; using latest tag: %s", resolved)
+		*sinceTag = resolved
+	}
 
 	// Get the date of the previous tag
 	tagDate, err := getTagDate(ctx, *repo, *sinceTag, token)
@@ -95,6 +105,39 @@ func main() {
 	}
 
 	log.Printf("Successfully generated changelog entry for version %s", *version)
+}
+
+// getLatestTag returns the most recently created tag in the repository.
+func getLatestTag(ctx context.Context, repo, token string) (string, error) {
+	url := fmt.Sprintf("https://api.github.com/repos/%s/tags?per_page=1", repo)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Accept", "application/vnd.github+json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("GitHub API error: %s - %s", resp.Status, string(body))
+	}
+
+	var tags []struct {
+		Name string `json:"name"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&tags); err != nil {
+		return "", err
+	}
+	if len(tags) == 0 {
+		return "", fmt.Errorf("no tags found in repository %s", repo)
+	}
+	return tags[0].Name, nil
 }
 
 func getTagDate(ctx context.Context, repo, tag, token string) (time.Time, error) {
@@ -280,6 +323,7 @@ type PRCategory struct {
 // Categories holds all categorized PRs
 type Categories struct {
 	Changes         []GitHubPR
+	BugFixes        []GitHubPR
 	Maintenance     []GitHubPR
 	Enhancements    []GitHubPR
 	DocUpdates      []GitHubPR
@@ -289,6 +333,7 @@ type Categories struct {
 func categorizePRs(prs []GitHubPR, existingContributors map[string]bool) Categories {
 	cats := Categories{
 		Changes:         make([]GitHubPR, 0),
+		BugFixes:        make([]GitHubPR, 0),
 		Maintenance:     make([]GitHubPR, 0),
 		Enhancements:    make([]GitHubPR, 0),
 		DocUpdates:      make([]GitHubPR, 0),
@@ -311,6 +356,8 @@ func categorizePRs(prs []GitHubPR, existingContributors map[string]bool) Categor
 		// Categorize based on labels and title
 		category := categorizeByLabelsAndTitle(pr)
 		switch category {
+		case "bugfix":
+			cats.BugFixes = append(cats.BugFixes, pr)
 		case "maintenance":
 			cats.Maintenance = append(cats.Maintenance, pr)
 		case "enhancement":
@@ -331,6 +378,10 @@ func categorizeByLabelsAndTitle(pr GitHubPR) string {
 	// Check labels first
 	for _, label := range pr.Labels {
 		labelName := strings.ToLower(label.Name)
+		if strings.Contains(labelName, "bug") ||
+			strings.Contains(labelName, "fix") {
+			return "bugfix"
+		}
 		if strings.Contains(labelName, "maintenance") ||
 			strings.Contains(labelName, "dependencies") ||
 			strings.Contains(labelName, "chore") {
@@ -347,6 +398,13 @@ func categorizeByLabelsAndTitle(pr GitHubPR) string {
 	}
 
 	// Check title patterns
+	if strings.HasPrefix(title, "fix:") ||
+		strings.HasPrefix(title, "bugfix:") ||
+		strings.HasPrefix(title, "bug fix:") ||
+		strings.HasPrefix(title, "hotfix:") {
+		return "bugfix"
+	}
+
 	if strings.HasPrefix(title, "bump ") ||
 		strings.HasPrefix(title, "update ") ||
 		strings.Contains(title, "cve-") ||
@@ -390,6 +448,14 @@ func generateChangelogEntry(version, sinceTag string, cats Categories, repo stri
 	if len(cats.Enhancements) > 0 {
 		sb.WriteString("\n### Enhancements\n\n")
 		for _, pr := range cats.Enhancements {
+			sb.WriteString(fmt.Sprintf("* %s by @%s in %s\n", pr.Title, pr.User.Login, pr.HTMLURL))
+		}
+	}
+
+	// Bug Fixes
+	if len(cats.BugFixes) > 0 {
+		sb.WriteString("\n### Bug Fixes\n\n")
+		for _, pr := range cats.BugFixes {
 			sb.WriteString(fmt.Sprintf("* %s by @%s in %s\n", pr.Title, pr.User.Login, pr.HTMLURL))
 		}
 	}

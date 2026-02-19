@@ -25,15 +25,23 @@ help:
 	@echo "  test         - Run tests (includes linting)"
 	@echo "  clean        - Remove built binaries"
 	@echo "  build-image  - Build Docker image with kubelogin binary"
+	@echo "  changelog    - Generate a CHANGELOG.md entry for a new release"
 	@echo ""
 	@echo "Docker image build options:"
 	@echo "  make build-image                    # Build with 'latest' tag"
 	@echo "  GIT_TAG=v1.0.0 make build-image   # Build with specific tag"
 	@echo ""
+	@echo "Changelog generation options:"
+	@echo "  VERSION=0.2.15 make changelog                    # auto-detect previous tag"
+	@echo "  VERSION=0.2.15 SINCE_TAG=v0.2.14 make changelog # explicit previous tag"
+	@echo ""
 	@echo "Environment variables:"
 	@echo "  GOOS         - Target OS (default: $(OS))"
 	@echo "  GOARCH       - Target architecture (default: $(ARCH))"
 	@echo "  GIT_TAG      - Git tag for version info and Docker tagging"
+	@echo "  VERSION      - New version number for changelog generation"
+	@echo "  SINCE_TAG    - Previous tag to compare from for changelog"
+	@echo "  GITHUB_TOKEN - GitHub token for changelog generation (API access)"
 
 lint: $(GOLANGCI_LINT)
 	$(GOLANGCI_LINT) run
@@ -46,6 +54,16 @@ $(TARGET): clean
 
 clean:
 	-rm -f $(BIN)
+
+changelog:
+	@if [ -z "$(VERSION)" ]; then \
+		echo "Error: VERSION is required. Usage: VERSION=0.2.15 make changelog"; \
+		exit 1; \
+	fi
+	GITHUB_TOKEN=$(GITHUB_TOKEN) go run hack/changelog-generator/main.go \
+		--version="$(VERSION)" \
+		$(if $(SINCE_TAG),--since-tag="$(SINCE_TAG)",) \
+		--repo="Azure/kubelogin"
 
 # Docker image build target
 IMAGE_NAME    := ghcr.io/azure/kubelogin

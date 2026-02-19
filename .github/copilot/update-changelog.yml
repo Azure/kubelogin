@@ -1,0 +1,38 @@
+name: update-changelog
+description: >
+  Generate and update CHANGELOG.md for a new kubelogin release. Fetches merged
+  pull requests since the previous release tag, categorizes them, identifies new
+  contributors, and prepares a properly formatted changelog entry.
+schema:
+  inputs:
+    version:
+      type: string
+      description: >
+        New version number without the 'v' prefix (e.g., 0.2.15).
+      required: true
+    since_tag:
+      type: string
+      description: >
+        Previous release tag to compare from, with the 'v' prefix
+        (e.g., v0.2.14). Defaults to the latest tag in the repository.
+      required: false
+steps:
+  - name: Generate changelog entry
+    run: VERSION={{ version }}{{ if since_tag }} SINCE_TAG={{ since_tag }}{{ end }} make changelog
+    description: >
+      Runs the changelog generator to produce a changelog-entry.md file
+      containing the formatted changelog entry for the new release.
+  - name: Update CHANGELOG.md
+    run: |
+      {
+        head -n 2 CHANGELOG.md
+        echo ""
+        cat changelog-entry.md
+        echo ""
+        tail -n +3 CHANGELOG.md
+      } > CHANGELOG.md.new
+      mv CHANGELOG.md.new CHANGELOG.md
+      rm changelog-entry.md
+    description: >
+      Inserts the generated entry after the "# Change Log" header in
+      CHANGELOG.md, then removes the temporary changelog-entry.md file.
