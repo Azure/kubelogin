@@ -65,7 +65,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: >-
             docs: update CHANGELOG.md for v${{ inputs.version }}
-          title: "Update CHANGELOG.md for v${{ inputs.version }}"
+          title: "v${{ inputs.version }} release"
           body: |
             This PR updates the CHANGELOG.md with release notes for
             version ${{ inputs.version }}.
