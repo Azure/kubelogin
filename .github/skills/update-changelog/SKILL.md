@@ -4,8 +4,8 @@ description: >
   Generate and update CHANGELOG.md for a new kubelogin release. Use this
   when asked to prepare release notes or update the changelog for a new
   version. Fetches merged pull requests since the previous release,
-  categorizes them, identifies new contributors, and inserts a formatted
-  entry at the top of CHANGELOG.md.
+  categorizes them, identifies new contributors, and prepares a formatted
+  entry for CHANGELOG.md.
 ---
 
 ## Overview
@@ -26,8 +26,6 @@ The `make changelog` target runs `hack/changelog-generator/main.go`, which:
 5. Identifies first-time contributors by comparing PR authors against all
    prior merged PR authors.
 6. Writes a formatted entry to `changelog-entry.md`.
-7. Inserts that entry immediately after the `# Change Log` header in
-   `CHANGELOG.md`.
 
 ## Steps to follow
 

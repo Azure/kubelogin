@@ -136,5 +136,5 @@ A contributor is marked as "new" if they have a merged PR in the current release
 ## Requirements
 
 - [`gh` CLI](https://cli.github.com/) authenticated via `gh auth login`
-- Go 1.24 or later
+- Go 1.24.11 or later
 

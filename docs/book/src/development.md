@@ -62,24 +62,24 @@ The project includes an automated changelog generation tool that creates properl
 
 The workflow will:
 - Fetch all merged PRs since the previous version
-- Categorize them (What's Changed, Maintenance, Enhancements, Doc Update)
+- Categorize them (What's Changed, Enhancements, Bug Fixes, Maintenance, Doc Update)
 - Identify new contributors
 - Generate a formatted changelog entry
 - Create a pull request with the updated CHANGELOG.md
 
 #### Running Locally
 
-You can also generate a changelog entry locally:
+You can generate a changelog entry locally using the `gh` CLI and `make`:
 
 ```bash
-export GITHUB_TOKEN="your_github_token"
+# Authenticate with the gh CLI (one-time setup)
+gh auth login
 
-go run hack/changelog-generator/main.go \
-  --version="0.2.15" \
-  --since-tag="v0.2.14" \
-  --repo="Azure/kubelogin" \
-  --output="changelog-entry.md"
+VERSION=0.2.15 make changelog
 ```
+
+The tool uses `gh api` for all GitHub API calls, so only `gh auth login`
+is required. In CI the `GH_TOKEN` environment variable is used instead.
 
 See [hack/changelog-generator/README.md](../../hack/changelog-generator/README.md) for more details.
 
