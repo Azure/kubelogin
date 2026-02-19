@@ -34,13 +34,32 @@ The `make changelog` target runs `hack/changelog-generator/main.go`, which:
    - If the previous tag is not provided, the tool will auto-detect the
      latest stable release.
 
-2. Generate the changelog entry and update `CHANGELOG.md`:
+2. Run `make changelog` to generate the changelog entry:
 
    ```bash
    # SINCE_TAG is optional – omit to auto-detect the latest release tag
    VERSION=0.2.15 make changelog
    # or explicitly:
    VERSION=0.2.15 SINCE_TAG=v0.2.14 make changelog
+   ```
+
+   This writes the formatted entry to `changelog-entry.md`. When using the
+   [GitHub Actions workflow](../../.github/workflows/update-changelog.yml),
+   the workflow then inserts `changelog-entry.md` after the header of
+   `CHANGELOG.md` and opens a pull request automatically.
+
+   When running locally, insert the content manually:
+
+   ```bash
+   # Insert after the "# Change Log" header
+   {
+     head -n 2 CHANGELOG.md
+     echo ""
+     cat changelog-entry.md
+     echo ""
+     tail -n +3 CHANGELOG.md
+   } > CHANGELOG.md.new && mv CHANGELOG.md.new CHANGELOG.md
+   rm changelog-entry.md
    ```
 
    Authentication is handled automatically by the `gh` CLI. Ensure you
