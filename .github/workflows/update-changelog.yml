@@ -1,0 +1,95 @@
+name: Update Changelog
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 0.2.15)'
+        required: true
+        type: string
+      since_tag:
+        description: 'Previous version tag to compare from (e.g., v0.2.14)'
+        required: true
+        type: string
+      pr_number:
+        description: 'PR number to update (optional - creates new PR if not provided)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-changelog:
+    name: Generate and Update Changelog
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
+
+      - name: Set up Go
+        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+        with:
+          go-version-file: "go.mod"
+          cache: true
+
+      - name: Generate changelog entry
+        id: generate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+          SINCE_TAG: ${{ inputs.since_tag }}
+        run: |
+          # Run the changelog generator script
+          go run hack/changelog-generator/main.go \
+            --version="${VERSION}" \
+            --since-tag="${SINCE_TAG}" \
+            --repo="Azure/kubelogin" \
+            --output="changelog-entry.md"
+
+      - name: Update CHANGELOG.md
+        run: |
+          # Read the generated entry
+          ENTRY=$(cat changelog-entry.md)
+          
+          # Create a temporary file with the new entry inserted after the header
+          {
+            # Keep the header
+            head -n 2 CHANGELOG.md
+            # Insert blank line
+            echo ""
+            # Insert new entry
+            cat changelog-entry.md
+            # Insert blank line
+            echo ""
+            # Keep rest of changelog (skip first 2 lines which are header)
+            tail -n +3 CHANGELOG.md
+          } > CHANGELOG.md.new
+          
+          # Replace the original
+          mv CHANGELOG.md.new CHANGELOG.md
+          
+          # Clean up
+          rm changelog-entry.md
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "docs: update CHANGELOG.md for v${{ inputs.version }}"
+          title: "Update CHANGELOG.md for v${{ inputs.version }}"
+          body: |
+            This PR updates the CHANGELOG.md with the release notes for version ${{ inputs.version }}.
+            
+            **Changes since ${{ inputs.since_tag }}:**
+            
+            The changelog entry has been automatically generated from merged pull requests.
+            Please review and edit as needed before merging.
+            
+            After merging, you can trigger the release workflow to create the release.
+          branch: changelog/v${{ inputs.version }}
+          delete-branch: true
+          labels: documentation
