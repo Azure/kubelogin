@@ -1,0 +1,81 @@
+---
+name: Update Changelog
+
+"on":
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 0.2.15)'
+        required: true
+        type: string
+      since_tag:
+        description: >-
+          Previous version tag (e.g., v0.2.14); defaults to latest tag
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-changelog:
+    name: Generate and Update Changelog
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        # v4.1.1
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+        with:
+          fetch-depth: 0  # Fetch all history
+
+      - name: Set up Go
+        # v4.1.0
+        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe
+        with:
+          go-version-file: "go.mod"
+          cache: true
+
+      - name: Generate changelog entry
+        id: generate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=${{ inputs.version }} \
+          SINCE_TAG=${{ inputs.since_tag }} \
+          make changelog
+
+      - name: Update CHANGELOG.md
+        run: |
+          # Create a temporary file with entry after header
+          {
+            head -n 2 CHANGELOG.md
+            echo ""
+            cat changelog-entry.md
+            echo ""
+            tail -n +3 CHANGELOG.md
+          } > CHANGELOG.md.new
+
+          mv CHANGELOG.md.new CHANGELOG.md
+          rm changelog-entry.md
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: >-
+            docs: update CHANGELOG.md for v${{ inputs.version }}
+          title: "v${{ inputs.version }} release"
+          body: |
+            This PR updates the CHANGELOG.md with release notes for
+            version ${{ inputs.version }}.
+
+            The changelog entry has been automatically generated from
+            merged pull requests. Please review and edit as needed
+            before merging.
+
+            After merging, you can trigger the release workflow to
+            create the release.
+          branch: changelog/v${{ inputs.version }}
+          delete-branch: true
+          labels: documentation
