@@ -13,10 +13,6 @@ name: Update Changelog
           Previous version tag (e.g., v0.2.14); defaults to latest tag
         required: false
         type: string
-      pr_number:
-        description: 'PR number to update (optional)'
-        required: false
-        type: string
 
 permissions:
   contents: write
