@@ -296,7 +296,8 @@ func categorizeByLabelsAndTitle(pr GitHubPR) string {
 		strings.Contains(title, "cve-") ||
 		strings.Contains(title, "fix cve") ||
 		strings.Contains(title, "dependencies") ||
-		strings.HasPrefix(title, "chore") {
+		strings.HasPrefix(title, "chore:") ||
+		strings.HasPrefix(title, "chore ") {
 		return "maintenance"
 	}
 
