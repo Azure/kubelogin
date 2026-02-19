@@ -1240,6 +1240,53 @@ sudo dnf install libsecret-devel
 <pre><code class="language-bash">make test
 </code></pre>
 <p><strong>Note</strong>: Tests require the system dependencies listed above. If you encounter errors related to <code>libsecret-1.so</code> or “encrypted storage isn’t possible”, ensure the libsecret library is installed.</p>
+<h2 id="releases"><a class="header" href="#releases">Releases</a></h2>
+<h3 id="automated-changelog-generation"><a class="header" href="#automated-changelog-generation">Automated Changelog Generation</a></h3>
+<p>The project includes an automated changelog generation tool that creates properly formatted CHANGELOG.md entries from merged pull requests.</p>
+<h4 id="using-the-github-actions-workflow"><a class="header" href="#using-the-github-actions-workflow">Using the GitHub Actions Workflow</a></h4>
+<ol>
+<li>Navigate to the <a href="https://github.com/Azure/kubelogin/actions/workflows/update-changelog.yml">Update Changelog workflow</a></li>
+<li>Click “Run workflow”</li>
+<li>Provide the required inputs:
+<ul>
+<li><strong>Version number</strong>: The new version (e.g., <code>0.2.15</code>) without the ‘v’ prefix</li>
+<li><strong>Previous version tag</strong>: The tag to compare from (e.g., <code>v0.2.14</code>) with the ‘v’ prefix</li>
+</ul>
+</li>
+<li>Click “Run workflow”</li>
+</ol>
+<p>The workflow will:</p>
+<ul>
+<li>Fetch all merged PRs since the previous version</li>
+<li>Categorize them (What’s Changed, Maintenance, Enhancements, Bug Fixes, Doc Update)</li>
+<li>Identify new contributors</li>
+<li>Generate a formatted changelog entry</li>
+<li>Create a pull request with the updated CHANGELOG.md</li>
+</ul>
+<h4 id="running-locally"><a class="header" href="#running-locally">Running Locally</a></h4>
+<p>You can generate a changelog entry locally using the <code>gh</code> CLI and <code>make</code>:</p>
+<pre><code class="language-bash"># Authenticate with the gh CLI (one-time setup)
+gh auth login
+
+VERSION=0.2.15 make changelog
+</code></pre>
+<p>The tool uses <code>gh api</code> for all GitHub API calls, so only <code>gh auth login</code>
+is required. In CI the <code>GH_TOKEN</code> environment variable is used instead.</p>
+<p>See <a href="../../hack/changelog-generator/README.html">hack/changelog-generator/README.md</a> for more details.</p>
+<h3 id="release-process"><a class="header" href="#release-process">Release Process</a></h3>
+<p>After the changelog is updated:</p>
+<ol>
+<li>Review and merge the changelog PR</li>
+<li>Trigger the <a href="https://github.com/Azure/kubelogin/actions/workflows/release.yml">Release workflow</a></li>
+<li>The workflow will:
+<ul>
+<li>Read the version from CHANGELOG.md</li>
+<li>Create a draft GitHub release</li>
+<li>Build binaries for all platforms</li>
+<li>Upload artifacts to the release</li>
+</ul>
+</li>
+</ol>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="releasing"><a class="header" href="#releasing">Releasing</a></h1>
 <p>To make a new release and publish please follow the following steps.</p>
 <ol>
