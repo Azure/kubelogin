@@ -145,21 +145,35 @@ func TestIsReleasePR(t *testing.T) {
 		{"0.2.14 release", true},
 		{"v1.0.0", true},
 		{"v0.2.14", true},
-		// Changelog update PRs — must be filtered
-		{"chore: update CHANGELOG.md for v0.2.15", true},
-		{"chore: update changelog for v0.2.15", true},
-		{"Update CHANGELOG for v1.0.0", true},
 		// Regular PRs — must NOT be filtered
 		{"fix: nil pointer", false},
 		{"feat: add new login flow", false},
 		{"Bump Go to 1.24.11", false},
 		{"docs: update readme", false},
 		{"[Bug Fix] - PoP token crash", false},
+		{"chore: update CHANGELOG.md for v0.2.15", false},
 	}
 	for _, tc := range cases {
 		got := isReleasePR(tc.title)
 		if got != tc.expected {
 			t.Errorf("isReleasePR(%q) = %v; want %v", tc.title, got, tc.expected)
 		}
+	}
+}
+
+func TestHasLabel(t *testing.T) {
+	pr := GitHubPR{Labels: []Label{{Name: "release"}, {Name: "chore"}}}
+	if !hasLabel(pr, "release") {
+		t.Error("expected hasLabel to return true for 'release'")
+	}
+	if !hasLabel(pr, "Release") {
+		t.Error("expected hasLabel to be case-insensitive")
+	}
+	if hasLabel(pr, "bug") {
+		t.Error("expected hasLabel to return false for 'bug'")
+	}
+	empty := GitHubPR{}
+	if hasLabel(empty, "release") {
+		t.Error("expected hasLabel to return false for PR with no labels")
 	}
 }
