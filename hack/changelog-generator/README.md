@@ -31,7 +31,8 @@ This tool automatically generates CHANGELOG.md entries for kubelogin releases by
 ### Via Make Target
 
 ```bash
-export GITHUB_TOKEN="your_github_token"
+# Authenticate once with the gh CLI (one-time setup):
+gh auth login
 
 # SINCE_TAG is optional; omit it to auto-detect the latest tag
 VERSION=0.2.15 make changelog
@@ -45,9 +46,8 @@ This generates a `changelog-entry.md` file that you can manually insert into CHA
 ### Running Directly
 
 ```bash
-export GITHUB_TOKEN="your_github_token"
-
-# SINCE_TAG is optional; omit it to auto-detect the latest tag
+# Authenticate once with the gh CLI (one-time setup):
+gh auth login
 go run hack/changelog-generator/main.go \
   --version="0.2.15" \
   --repo="Azure/kubelogin" \
@@ -126,7 +126,7 @@ A contributor is marked as "new" if they have a merged PR in the current release
 - Check that PRs were merged after the `since_tag` date
 
 **"API rate limit exceeded"**
-- Ensure `GITHUB_TOKEN` is set with `repo` scope
+- Run `gh auth login` if you haven't already
 - Wait for rate limit reset (typically 1 hour)
 
 **Wrong categorization**
@@ -135,6 +135,6 @@ A contributor is marked as "new" if they have a merged PR in the current release
 
 ## Requirements
 
-- `GITHUB_TOKEN` environment variable with `repo` scope
+- [`gh` CLI](https://cli.github.com/) authenticated via `gh auth login`
 - Go 1.24 or later
 

@@ -43,7 +43,7 @@ jobs:
       - name: Generate changelog entry
         id: generate
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=${{ inputs.version }} \
           SINCE_TAG=${{ inputs.since_tag }} \
