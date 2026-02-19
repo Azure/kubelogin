@@ -279,10 +279,10 @@ type PRCategory struct {
 
 // Categories holds all categorized PRs
 type Categories struct {
-	Changes        []GitHubPR
-	Maintenance    []GitHubPR
-	Enhancements   []GitHubPR
-	DocUpdates     []GitHubPR
+	Changes         []GitHubPR
+	Maintenance     []GitHubPR
+	Enhancements    []GitHubPR
+	DocUpdates      []GitHubPR
 	NewContributors []Contributor
 }
 
@@ -331,42 +331,42 @@ func categorizeByLabelsAndTitle(pr GitHubPR) string {
 	// Check labels first
 	for _, label := range pr.Labels {
 		labelName := strings.ToLower(label.Name)
-		if strings.Contains(labelName, "maintenance") || 
-		   strings.Contains(labelName, "dependencies") ||
-		   strings.Contains(labelName, "chore") {
+		if strings.Contains(labelName, "maintenance") ||
+			strings.Contains(labelName, "dependencies") ||
+			strings.Contains(labelName, "chore") {
 			return "maintenance"
 		}
-		if strings.Contains(labelName, "enhancement") || 
-		   strings.Contains(labelName, "feature") {
+		if strings.Contains(labelName, "enhancement") ||
+			strings.Contains(labelName, "feature") {
 			return "enhancement"
 		}
-		if strings.Contains(labelName, "documentation") || 
-		   strings.Contains(labelName, "docs") {
+		if strings.Contains(labelName, "documentation") ||
+			strings.Contains(labelName, "docs") {
 			return "documentation"
 		}
 	}
 
 	// Check title patterns
-	if strings.HasPrefix(title, "bump ") || 
-	   strings.HasPrefix(title, "update ") ||
-	   strings.Contains(title, "cve-") ||
-	   strings.Contains(title, "fix cve") ||
-	   strings.Contains(title, "dependencies") ||
-	   strings.HasPrefix(title, "chore") {
+	if strings.HasPrefix(title, "bump ") ||
+		strings.HasPrefix(title, "update ") ||
+		strings.Contains(title, "cve-") ||
+		strings.Contains(title, "fix cve") ||
+		strings.Contains(title, "dependencies") ||
+		strings.HasPrefix(title, "chore") {
 		return "maintenance"
 	}
 
-	if strings.HasPrefix(title, "docs:") || 
-	   strings.HasPrefix(title, "doc:") ||
-	   strings.Contains(title, "documentation") ||
-	   strings.Contains(title, "install doc") {
+	if strings.HasPrefix(title, "docs:") ||
+		strings.HasPrefix(title, "doc:") ||
+		strings.Contains(title, "documentation") ||
+		strings.Contains(title, "install doc") {
 		return "documentation"
 	}
 
-	if strings.HasPrefix(title, "feat:") || 
-	   strings.HasPrefix(title, "feature:") ||
-	   strings.Contains(title, "add support") ||
-	   strings.Contains(title, "new feature") {
+	if strings.HasPrefix(title, "feat:") ||
+		strings.HasPrefix(title, "feature:") ||
+		strings.Contains(title, "add support") ||
+		strings.Contains(title, "new feature") {
 		return "enhancement"
 	}
 
@@ -424,7 +424,7 @@ func generateChangelogEntry(version, sinceTag string, cats Categories, repo stri
 
 	// Full Changelog link
 	currentTag := "v" + version
-	sb.WriteString(fmt.Sprintf("\n**Full Changelog**: https://github.com/%s/compare/%s...%s\n", 
+	sb.WriteString(fmt.Sprintf("\n**Full Changelog**: https://github.com/%s/compare/%s...%s\n",
 		repo, sinceTag, currentTag))
 
 	return sb.String()
