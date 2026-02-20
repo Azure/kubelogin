@@ -1,5 +1,17 @@
 # Change Log
 
+## [0.2.15]
+
+### Bug Fixes
+
+* PoP token flow crash with nil pointer in cache.Replace when running non-root by @vineeth-thumma in https://github.com/Azure/kubelogin/pull/736
+
+### Enhancements
+
+* feat: automate CHANGELOG.md generation for releases by @Copilot in https://github.com/Azure/kubelogin/pull/737
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.14...v0.2.15
+
 ## [0.2.14]
 
 ### Maintenance

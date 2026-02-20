@@ -151,11 +151,29 @@ func TestIsReleasePR(t *testing.T) {
 		{"Bump Go to 1.24.11", false},
 		{"docs: update readme", false},
 		{"[Bug Fix] - PoP token crash", false},
+		{"chore: update CHANGELOG.md for v0.2.15", false},
 	}
 	for _, tc := range cases {
 		got := isReleasePR(tc.title)
 		if got != tc.expected {
 			t.Errorf("isReleasePR(%q) = %v; want %v", tc.title, got, tc.expected)
 		}
+	}
+}
+
+func TestHasLabel(t *testing.T) {
+	pr := GitHubPR{Labels: []Label{{Name: "release"}, {Name: "chore"}}}
+	if !hasLabel(pr, "release") {
+		t.Error("expected hasLabel to return true for 'release'")
+	}
+	if !hasLabel(pr, "Release") {
+		t.Error("expected hasLabel to be case-insensitive")
+	}
+	if hasLabel(pr, "bug") {
+		t.Error("expected hasLabel to return false for 'bug'")
+	}
+	empty := GitHubPR{}
+	if hasLabel(empty, "release") {
+		t.Error("expected hasLabel to return false for PR with no labels")
 	}
 }

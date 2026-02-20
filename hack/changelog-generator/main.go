@@ -163,6 +163,16 @@ func isReleasePR(title string) bool {
 	return releasePRTitle.MatchString(strings.TrimSpace(title))
 }
 
+// hasLabel returns true if the PR has a label with the given name (case-insensitive).
+func hasLabel(pr GitHubPR, name string) bool {
+	for _, l := range pr.Labels {
+		if strings.EqualFold(l.Name, name) {
+			return true
+		}
+	}
+	return false
+}
+
 // getMergedPRsSince returns all merged PRs after the given time.
 func getMergedPRsSince(repo string, since time.Time) ([]GitHubPR, error) {
 	out, err := ghAPI(
@@ -179,7 +189,7 @@ func getMergedPRsSince(repo string, since time.Time) ([]GitHubPR, error) {
 	}
 	var prs []GitHubPR
 	for _, pr := range all {
-		if !pr.MergedAt.IsZero() && pr.MergedAt.After(since) && !isReleasePR(pr.Title) {
+		if !pr.MergedAt.IsZero() && pr.MergedAt.After(since) && !isReleasePR(pr.Title) && !hasLabel(pr, "release") {
 			prs = append(prs, pr)
 		}
 	}
