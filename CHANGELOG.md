@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.2.16]
+
+### Maintenance
+
+* Bump Go to 1.24.13 to address CVE-2025-68121, CVE-2025-61726, CVE-2025-61728, CVE-2025-61730 by @Copilot in https://github.com/Azure/kubelogin/pull/741
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.15...v0.2.16
+
 ## [0.2.15]
 
 ### Bug Fixes
