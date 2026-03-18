@@ -24,7 +24,9 @@ func acquireProcessLock(path string) func() {
 		return func() {}
 	}
 	return func() {
-		syscall.Flock(int(f.Fd()), syscall.LOCK_UN)
+		if err := syscall.Flock(int(f.Fd()), syscall.LOCK_UN); err != nil {
+			klog.V(5).Infof("failed to release lock on %s: %v", path, err)
+		}
 		f.Close()
 	}
 }

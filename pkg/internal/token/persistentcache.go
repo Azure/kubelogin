@@ -10,9 +10,7 @@ import (
 
 // cacheNewFunc is the function used to create a new persistent cache.
 // It is a variable to allow overriding in tests.
-var cacheNewFunc = func(opts *cache.Options) (azidentity.Cache, error) {
-	return cache.New(opts)
-}
+var cacheNewFunc = cache.New
 
 // newPersistentCache creates a persistent token cache with cross-process
 // synchronization to prevent a race condition when multiple kubelogin
