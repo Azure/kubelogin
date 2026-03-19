@@ -1,6 +1,7 @@
 package token
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -25,15 +26,31 @@ var cacheNewFunc = cache.New
 //
 // See https://github.com/Azure/kubelogin/issues/740
 func newPersistentCache() (azidentity.Cache, error) {
-	lockDir, err := os.UserCacheDir()
-	if err != nil {
-		lockDir = os.TempDir()
-	}
-	if err := os.MkdirAll(lockDir, 0700); err != nil {
-		lockDir = os.TempDir()
-	}
-	lockPath := filepath.Join(lockDir, "kubelogin-cache-test.lock")
+	lockDir := lockFileDir()
+	lockPath := filepath.Join(lockDir, "cache-test.lock")
 	unlock := acquireProcessLock(lockPath)
 	defer unlock()
 	return cacheNewFunc(nil)
+}
+
+// lockFileDir returns a user-scoped directory for the lock file.
+// It prefers os.UserCacheDir()/kubelogin and falls back to
+// os.TempDir()/kubelogin-<uid> so that the lock file is never
+// placed directly in a shared, world-writable directory.
+func lockFileDir() string {
+	if cacheDir, err := os.UserCacheDir(); err == nil {
+		dir := filepath.Join(cacheDir, "kubelogin")
+		if err := os.MkdirAll(dir, 0700); err == nil {
+			return dir
+		}
+	}
+	// Fallback: use a UID-scoped subdirectory under the temp dir
+	// so the lock file is not directly in a world-writable location.
+	dir := filepath.Join(os.TempDir(), fmt.Sprintf("kubelogin-%d", os.Getuid()))
+	if err := os.MkdirAll(dir, 0700); err != nil {
+		// Last resort: use temp dir directly. The lock is best-effort,
+		// so this is acceptable.
+		return os.TempDir()
+	}
+	return dir
 }
