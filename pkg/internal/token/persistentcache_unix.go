@@ -4,8 +4,8 @@ package token
 
 import (
 	"os"
-	"syscall"
 
+	"golang.org/x/sys/unix"
 	"k8s.io/klog/v2"
 )
 
@@ -18,13 +18,13 @@ func acquireProcessLock(path string) func() {
 		klog.V(5).Infof("failed to open lock file %s: %v", path, err)
 		return func() {}
 	}
-	if err := syscall.Flock(int(f.Fd()), syscall.LOCK_EX); err != nil {
+	if err := unix.Flock(int(f.Fd()), unix.LOCK_EX); err != nil {
 		klog.V(5).Infof("failed to acquire lock on %s: %v", path, err)
 		f.Close()
 		return func() {}
 	}
 	return func() {
-		if err := syscall.Flock(int(f.Fd()), syscall.LOCK_UN); err != nil {
+		if err := unix.Flock(int(f.Fd()), unix.LOCK_UN); err != nil {
 			klog.V(5).Infof("failed to release lock on %s: %v", path, err)
 		}
 		f.Close()

@@ -25,7 +25,14 @@ var cacheNewFunc = cache.New
 //
 // See https://github.com/Azure/kubelogin/issues/740
 func newPersistentCache() (azidentity.Cache, error) {
-	lockPath := filepath.Join(os.TempDir(), "kubelogin-cache-test.lock")
+	lockDir, err := os.UserCacheDir()
+	if err != nil {
+		lockDir = os.TempDir()
+	}
+	if err := os.MkdirAll(lockDir, 0700); err != nil {
+		lockDir = os.TempDir()
+	}
+	lockPath := filepath.Join(lockDir, "kubelogin-cache-test.lock")
 	unlock := acquireProcessLock(lockPath)
 	defer unlock()
 	return cacheNewFunc(nil)
