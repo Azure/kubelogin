@@ -1,5 +1,17 @@
 # Change Log
 
+## [0.2.17]
+
+### Bug Fixes
+
+* fix: add cross-process lock around cache.New to prevent macOS keychain race by @weinong in https://github.com/Azure/kubelogin/pull/744
+
+### Maintenance
+
+* chore: upgrade Go toolchain from 1.24 to 1.25.9 by @Copilot in https://github.com/Azure/kubelogin/pull/745
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.16...v0.2.17
+
 ## [0.2.16]
 
 ### Maintenance
