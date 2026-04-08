@@ -10,4 +10,4 @@ This is directory which stores Go modules with pinned buildable package that is 
 
 ## Requirements
 
-* Go 1.24.x or 1.25.x
+* Go 1.25.x or 1.26.x
