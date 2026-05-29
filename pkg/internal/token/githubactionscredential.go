@@ -74,6 +74,7 @@ func (c *GithubActionsCredential) NeedAuthenticate() bool {
 	return false
 }
 
+//nolint:gosec // ACTIONS_ID_TOKEN_REQUEST_URL is provided by GitHub Actions runtime.
 func getGitHubToken(ctx context.Context) (string, error) {
 	reqToken := os.Getenv(actionsIDTokenRequestToken)
 	reqURL := os.Getenv(actionsIDTokenRequestURL)
