@@ -1,5 +1,18 @@
 # Change Log
 
+## [0.2.18]
+
+### What's Changed
+
+* Add kubelogin-version.txt as a release asset to avoid GitHub API rate limits by @Copilot in https://github.com/Azure/kubelogin/pull/749
+
+### Maintenance
+
+* Bump kubelogin build toolchain pins to Go 1.26.3 for CVE-2026-27137 remediation by @Copilot in https://github.com/Azure/kubelogin/pull/753
+* Update README with official Azure kubelogin sources by @bcho in https://github.com/Azure/kubelogin/pull/751
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.17...v0.2.18
+
 ## [0.2.17]
 
 ### Bug Fixes
