@@ -11,6 +11,8 @@ import (
 // For go install binary, this value stays empty.
 var gitTag string
 
+const unknownVersionInfo = "unknown"
+
 type Version struct {
 	Version   string
 	GoVersion string
@@ -20,9 +22,9 @@ type Version struct {
 
 func loadVersion() Version {
 	rv := Version{
-		Version:   "unknown",
-		GoVersion: "unknown",
-		BuildTime: "unknown",
+		Version:   unknownVersionInfo,
+		GoVersion: unknownVersionInfo,
+		BuildTime: unknownVersionInfo,
 		Platform:  runtime.GOOS + "/" + runtime.GOARCH,
 	}
 	if gitTag != "" {
