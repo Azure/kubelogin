@@ -19,7 +19,7 @@ jobs:
       tag_version: "v${{ steps.changelog_reader.outputs.version }}"
     steps:
       - name: Check out code into the Go module directory
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         
       # Read changelog and read versions etc.
       - name: Check version is mentioned in Changelog.md
@@ -58,7 +58,7 @@ jobs:
     if: ${{ needs.create-release.outputs.release_id != '' }}
     steps:
       - name: Check out code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Get tags
         run: git fetch --tags
@@ -137,7 +137,7 @@ jobs:
     if: ${{ needs.create-release.outputs.release_id != '' }}
     steps:
       - name: Check out code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Get tags
         run: git fetch --tags
