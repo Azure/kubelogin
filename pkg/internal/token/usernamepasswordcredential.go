@@ -7,7 +7,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity/cache"
 	"k8s.io/klog/v2"
 )
 
@@ -35,7 +34,7 @@ func newUsernamePasswordCredential(opts *Options, record azidentity.Authenticati
 		err error
 	)
 	if opts.UsePersistentCache {
-		c, err = cache.New(nil)
+		c, err = newPersistentCache()
 		if err != nil {
 			klog.V(5).Infof("failed to create cache: %v", err)
 		}

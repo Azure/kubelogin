@@ -21,3 +21,6 @@ coverage.txt
 
 # JetBrains IDE folder
 .idea
+
+# hack/changelog-generator binary
+hack/changelog-generator/changelog-generator

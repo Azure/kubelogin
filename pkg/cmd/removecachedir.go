@@ -1,11 +1,11 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/Azure/kubelogin/pkg/internal/token"
 	"github.com/spf13/cobra"
-	klog "k8s.io/klog/v2"
 )
 
 // newRemoveAuthRecordCacheCmd provides a cobra command for removing token cache sub command
@@ -18,7 +18,7 @@ func newRemoveAuthRecordCacheCmd() *cobra.Command {
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) error {
 			if err := os.RemoveAll(authRecordCacheDir); err != nil {
-				klog.V(5).Infof("unable to delete authentication record cache in '%s': %s", authRecordCacheDir, err)
+				return fmt.Errorf("unable to delete authentication record cache in %q: %w", authRecordCacheDir, err)
 			}
 			return nil
 		},

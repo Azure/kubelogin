@@ -17,6 +17,7 @@ import (
 	"github.com/Azure/kubelogin/pkg/internal/env"
 	"github.com/Azure/kubelogin/pkg/internal/pop"
 	popcache "github.com/Azure/kubelogin/pkg/internal/pop/cache"
+	msalcache "github.com/AzureAD/microsoft-authentication-library-for-go/apps/cache"
 )
 
 // PoPKeyProvider provides PoP keys based on the configured cache policy
@@ -378,9 +379,14 @@ func (o *Options) AddCompletions(cmd *cobra.Command) {
 	})
 }
 
-// GetPoPTokenCache returns the PoP token cache if available.
-// Returns nil if PoP is disabled or cache creation failed (e.g., container environments).
-func (o *Options) GetPoPTokenCache() *popcache.Cache {
+// GetPoPTokenCache returns the PoP token cache if available, or nil if PoP is
+// disabled or cache creation failed (e.g., container environments).
+// It returns the interface type so that a nil field produces an untyped nil,
+// which correctly compares as nil in downstream interface checks.
+func (o *Options) GetPoPTokenCache() msalcache.ExportReplace {
+	if o.popTokenCache == nil {
+		return nil
+	}
 	return o.popTokenCache
 }
 

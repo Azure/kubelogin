@@ -10,6 +10,13 @@ This is a [client-go credential (exec) plugin](https://kubernetes.io/docs/refere
 
 Check out [the official doc page](https://azure.github.io/kubelogin/index.html) for more details
 
+> [!NOTE]
+> The official sources for the Azure `kubelogin` project are the documentation site at
+> https://azure.github.io/kubelogin/ and the GitHub repository at
+> https://github.com/Azure/kubelogin.
+> The Azure Kubernetes Service team does not maintain or endorse any other websites
+> representing themselves as the official site for Azure `kubelogin`.
+
 ## Installation
 
 https://azure.github.io/kubelogin/install.html

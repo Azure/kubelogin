@@ -1,5 +1,50 @@
 # Change Log
 
+## [0.2.18]
+
+### What's Changed
+
+* Add kubelogin-version.txt as a release asset to avoid GitHub API rate limits by @Copilot in https://github.com/Azure/kubelogin/pull/749
+
+### Maintenance
+
+* Bump kubelogin build toolchain pins to Go 1.26.3 for CVE-2026-27137 remediation by @Copilot in https://github.com/Azure/kubelogin/pull/753
+* Update README with official Azure kubelogin sources by @bcho in https://github.com/Azure/kubelogin/pull/751
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.17...v0.2.18
+
+## [0.2.17]
+
+### Bug Fixes
+
+* fix: add cross-process lock around cache.New to prevent macOS keychain race by @weinong in https://github.com/Azure/kubelogin/pull/744
+
+### Maintenance
+
+* chore: upgrade Go toolchain from 1.24 to 1.25.9 by @Copilot in https://github.com/Azure/kubelogin/pull/745
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.16...v0.2.17
+
+## [0.2.16]
+
+### Maintenance
+
+* Bump Go to 1.24.13 to address CVE-2025-68121, CVE-2025-61726, CVE-2025-61728, CVE-2025-61730 by @Copilot in https://github.com/Azure/kubelogin/pull/741
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.15...v0.2.16
+
+## [0.2.15]
+
+### Bug Fixes
+
+* PoP token flow crash with nil pointer in cache.Replace when running non-root by @vineeth-thumma in https://github.com/Azure/kubelogin/pull/736
+
+### Enhancements
+
+* feat: automate CHANGELOG.md generation for releases by @Copilot in https://github.com/Azure/kubelogin/pull/737
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.14...v0.2.15
+
 ## [0.2.14]
 
 ### Maintenance
