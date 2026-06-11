@@ -31,7 +31,7 @@ jobs:
 
       - name: Set up Go
         # v4.1.0
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c
         with:
           go-version-file: "go.mod"
           cache: true
