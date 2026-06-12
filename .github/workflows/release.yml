@@ -119,13 +119,13 @@ jobs:
           tar -czf windows-kubelogin.tar.gz bin/windows_*
 
       - name: Upload Linux artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linux-binaries
           path: linux-kubelogin.tar.gz
       
       - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-binaries
           path: windows-kubelogin.tar.gz
@@ -169,7 +169,7 @@ jobs:
           tar -czf macos-kubelogin.tar.gz bin/darwin_*
 
       - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: macos-binaries
           path: macos-kubelogin.tar.gz
