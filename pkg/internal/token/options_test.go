@@ -22,6 +22,7 @@ func TestOptions(t *testing.T) {
 		if err := o.Validate(); err != nil {
 			t.Fatalf("option validation failed: %s", err)
 		}
+
 		dir, _ := filepath.Split(o.authRecordCacheFile)
 		if dir != DefaultAuthRecordCacheDir {
 			t.Fatalf("token cache directory is expected to be %s, got %s", DefaultAuthRecordCacheDir, dir)
@@ -223,6 +224,34 @@ func TestOptions(t *testing.T) {
 		}
 	})
 
+}
+
+func TestOptionsSubscriptionFlag(t *testing.T) {
+	t.Run("long form subscription flag", func(t *testing.T) {
+		o := defaultOptions()
+		fs := &pflag.FlagSet{}
+		o.AddFlags(fs)
+
+		if err := fs.Parse([]string{"--subscription", "test-subscription"}); err != nil {
+			t.Fatalf("failed to parse --subscription flag: %v", err)
+		}
+		if o.SubscriptionID != "test-subscription" {
+			t.Fatalf("expected SubscriptionID to be %q, got %q", "test-subscription", o.SubscriptionID)
+		}
+	})
+
+	t.Run("short form subscription flag", func(t *testing.T) {
+		o := defaultOptions()
+		fs := &pflag.FlagSet{}
+		o.AddFlags(fs)
+
+		if err := fs.Parse([]string{"-s", "test-subscription"}); err != nil {
+			t.Fatalf("failed to parse -s flag: %v", err)
+		}
+		if o.SubscriptionID != "test-subscription" {
+			t.Fatalf("expected SubscriptionID to be %q, got %q", "test-subscription", o.SubscriptionID)
+		}
+	})
 }
 
 func defaultOptions() Options {

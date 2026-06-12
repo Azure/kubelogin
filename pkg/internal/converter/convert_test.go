@@ -21,6 +21,7 @@ func TestConvert(t *testing.T) {
 		clientID           = "clientID"
 		spClientID         = "spClientID"
 		tenantID           = "tenantID"
+		subscriptionID     = "subscriptionID"
 		clientSecret       = "foosecret"
 		clientCert         = "/tmp/clientcert"
 		clientCertPassword = "clientcertsecret"
@@ -571,6 +572,28 @@ func TestConvert(t *testing.T) {
 				argServerID, serverID,
 				argLoginMethod, token.AzureCLILogin,
 				argTenantID, tenantID,
+			},
+			command: execName,
+		},
+		{
+			name: "with exec format kubeconfig, convert from azurecli to azurecli with --subscription",
+			execArgItems: []string{
+				getTokenCommand,
+				argEnvironment, envName,
+				argServerID, serverID,
+				argClientID, clientID,
+				argTenantID, tenantID,
+				argLoginMethod, token.AzureCLILogin,
+			},
+			overrideFlags: map[string]string{
+				flagLoginMethod:    token.AzureCLILogin,
+				flagSubscriptionID: subscriptionID,
+			},
+			expectedArgs: []string{
+				getTokenCommand,
+				argServerID, serverID,
+				argLoginMethod, token.AzureCLILogin,
+				argSubscriptionID, subscriptionID,
 			},
 			command: execName,
 		},

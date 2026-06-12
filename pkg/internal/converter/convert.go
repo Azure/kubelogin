@@ -22,6 +22,7 @@ const (
 	argClientID                          = "--client-id"
 	argServerID                          = "--server-id"
 	argTenantID                          = "--tenant-id"
+	argSubscriptionID                    = "--subscription"
 	argEnvironment                       = "--environment"
 	argClientSecret                      = "--client-secret"
 	argClientCert                        = "--client-certificate"
@@ -47,6 +48,7 @@ const (
 	flagContext                           = "context"
 	flagServerID                          = "server-id"
 	flagTenantID                          = "tenant-id"
+	flagSubscriptionID                    = "subscription"
 	flagEnvironment                       = "environment"
 	flagClientSecret                      = "client-secret"
 	flagClientCert                        = "client-certificate"
@@ -308,6 +310,9 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 			// see https://github.com/Azure/kubelogin/issues/123#issuecomment-1209652342
 			if o.isSet(flagTenantID) {
 				exec.Args = append(exec.Args, argTenantID, o.TokenOptions.TenantID)
+			}
+			if o.isSet(flagSubscriptionID) {
+				exec.Args = append(exec.Args, argSubscriptionID, o.TokenOptions.SubscriptionID)
 			}
 
 		case token.DeviceCodeLogin:
