@@ -24,7 +24,7 @@ jobs:
       # Read changelog and read versions etc.
       - name: Check version is mentioned in Changelog.md
         id: changelog_reader
-        uses: mindsers/changelog-reader-action@b97ce03a10d9bdbb07beb491c76a5a01d78cd3ef # v2.2.2
+        uses: mindsers/changelog-reader-action@1faaf50aa09d5793d9a100819973df801febfb31 # v2.4.0
         with:
           validation_depth: 10
           path: "CHANGELOG.md"
