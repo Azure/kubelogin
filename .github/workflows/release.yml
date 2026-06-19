@@ -19,19 +19,19 @@ jobs:
       tag_version: "v${{ steps.changelog_reader.outputs.version }}"
     steps:
       - name: Check out code into the Go module directory
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         
       # Read changelog and read versions etc.
       - name: Check version is mentioned in Changelog.md
         id: changelog_reader
-        uses: mindsers/changelog-reader-action@b97ce03a10d9bdbb07beb491c76a5a01d78cd3ef # v2.2.2
+        uses: mindsers/changelog-reader-action@1faaf50aa09d5793d9a100819973df801febfb31 # v2.4.0
         with:
           validation_depth: 10
           path: "CHANGELOG.md"
 
       # Check if the newest tag already exists
       - name: Check if tag exist
-        uses: mukunku/tag-exists-action@bdad1eaa119ce71b150b952c97351c75025c06a9 # v1.6.0
+        uses: mukunku/tag-exists-action@5c39604fe8aef7e65acb6fbcf96ec580f7680313 # v1.7.0
         id: check-tag-exists
         with:
           tag: "v${{ steps.changelog_reader.outputs.version }} release"
@@ -42,7 +42,7 @@ jobs:
       - name: Create Kubelogin Draft Release
         id: create_release
         if: ${{ steps.check-tag-exists.outputs.exists == 'false'}}
-        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -58,7 +58,7 @@ jobs:
     if: ${{ needs.create-release.outputs.release_id != '' }}
     steps:
       - name: Check out code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Get tags
         run: git fetch --tags
@@ -119,13 +119,13 @@ jobs:
           tar -czf windows-kubelogin.tar.gz bin/windows_*
 
       - name: Upload Linux artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linux-binaries
           path: linux-kubelogin.tar.gz
       
       - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-binaries
           path: windows-kubelogin.tar.gz
@@ -137,7 +137,7 @@ jobs:
     if: ${{ needs.create-release.outputs.release_id != '' }}
     steps:
       - name: Check out code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Get tags
         run: git fetch --tags
@@ -169,7 +169,7 @@ jobs:
           tar -czf macos-kubelogin.tar.gz bin/darwin_*
 
       - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: macos-binaries
           path: macos-kubelogin.tar.gz
@@ -183,7 +183,7 @@ jobs:
     if: ${{ needs.create-release.outputs.release_id != '' }}
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: bin
 
