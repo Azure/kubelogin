@@ -11,7 +11,7 @@ import (
 )
 
 type UsernamePasswordCredential struct {
-	cred *azidentity.UsernamePasswordCredential
+	cred *azidentity.UsernamePasswordCredential //nolint:staticcheck // ROPC is deprecated but kubelogin must support it for backwards compatibility
 }
 
 var _ CredentialProvider = (*UsernamePasswordCredential)(nil)
@@ -40,7 +40,7 @@ func newUsernamePasswordCredential(opts *Options, record azidentity.Authenticati
 		}
 	}
 
-	azOpts := &azidentity.UsernamePasswordCredentialOptions{
+	azOpts := &azidentity.UsernamePasswordCredentialOptions{ //nolint:staticcheck // ROPC is deprecated but kubelogin must support it for backwards compatibility
 		ClientOptions:            azcore.ClientOptions{Cloud: opts.GetCloudConfiguration()},
 		AuthenticationRecord:     record,
 		Cache:                    c,

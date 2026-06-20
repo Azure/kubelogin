@@ -174,7 +174,7 @@ func AcquirePoPTokenByUsernamePassword(
 	}
 
 	// Username/password login (first time, user switch, or after cache cleared due to silent acquisition failure)
-	result, err := client.AcquireTokenByUsernamePassword(
+	result, err := client.AcquireTokenByUsernamePassword( //nolint:staticcheck // ROPC is deprecated but kubelogin must support it for backwards compatibility
 		ctx,
 		scopes,
 		username,
