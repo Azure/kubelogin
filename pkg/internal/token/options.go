@@ -35,6 +35,7 @@ type Options struct {
 	Password                          string
 	ServerID                          string
 	TenantID                          string
+	SubscriptionID                    string
 	Environment                       string
 	IsLegacy                          bool
 	Timeout                           time.Duration
@@ -126,6 +127,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	_ = fs.MarkDeprecated("token-cache-dir", "use --cache-dir instead")
 	fs.StringVar(&o.AuthRecordCacheDir, "cache-dir", o.AuthRecordCacheDir, "directory to cache authentication record")
 	fs.StringVarP(&o.TenantID, "tenant-id", "t", o.TenantID, fmt.Sprintf("AAD tenant ID. It may be specified in %s environment variable. For Azure Pipelines login, it may be specified in %s environment variable", env.AzureTenantID, env.AzureSubscriptionTenantID))
+	fs.StringVarP(&o.SubscriptionID, "subscription", "s", o.SubscriptionID, "Azure subscription ID or name. Used in azurecli login method")
 	fs.StringVarP(&o.Environment, "environment", "e", o.Environment, "Azure environment name")
 	fs.BoolVar(&o.IsLegacy, "legacy", o.IsLegacy, "set to true to get token with 'spn:' prefix in audience claim")
 	fs.BoolVar(&o.UseAzureRMTerraformEnv, "use-azurerm-env-vars", o.UseAzureRMTerraformEnv,
@@ -318,6 +320,7 @@ func (o *Options) ToString() string {
 		fmt.Sprintf("Login Method: %s", o.LoginMethod),
 		fmt.Sprintf("Environment: %s", o.Environment),
 		fmt.Sprintf("TenantID: %s", o.TenantID),
+		fmt.Sprintf("SubscriptionID: %s", o.SubscriptionID),
 		fmt.Sprintf("ServerID: %s", o.ServerID),
 		fmt.Sprintf("ClientID: %s", o.ClientID),
 		fmt.Sprintf("IsLegacy: %t", o.IsLegacy),

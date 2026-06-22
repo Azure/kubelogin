@@ -17,7 +17,8 @@ var _ CredentialProvider = (*AzureCLICredential)(nil)
 
 func newAzureCLICredential(opts *Options) (CredentialProvider, error) {
 	cred, err := azidentity.NewAzureCLICredential(&azidentity.AzureCLICredentialOptions{
-		TenantID: opts.TenantID,
+		TenantID:     opts.TenantID,
+		Subscription: opts.SubscriptionID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create azure cli credential: %w", err)
