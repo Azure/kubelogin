@@ -21,7 +21,7 @@ kubelogin convert-kubeconfig -l azurecli
 kubectl get nodes
 ```
 
-To use a specific Azure subscription instead of Azure CLI's active account, specify `--subscription` (or `-s`) with `convert-kubeconfig` or `get-token`.
+To use a specific Azure subscription instead of Azure CLI's active subscription, specify `--subscription` (or `-s`) with `convert-kubeconfig` or `get-token`.
 
 When Azure CLI's config directory is outside the `${HOME}` directory, `--azure-config-dir` should be specified in `convert-kubeconfig` subcommand. It will generate the kubeconfig with environment variable configured. The same thing can also be achieved by setting environment variable `AZURE_CONFIG_DIR` to this directory while running `kubectl` command.
 
