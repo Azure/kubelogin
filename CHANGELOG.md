@@ -1,5 +1,40 @@
 # Change Log
 
+## [0.2.19]
+
+### What's Changed
+
+* Add optional Azure CLI subscription selection via `--subscription` (`-s`) by @Copilot in https://github.com/Azure/kubelogin/pull/767
+* Return errors when cache cleanup fails by @pathei-kosmos in https://github.com/Azure/kubelogin/pull/760
+
+### Maintenance
+
+* Bump MSAL Go v1.4.2→v1.7.2 and azidentity v1.8.0→v1.14.0 to use form_post response mode by default for AcquireTokenInteractive by @vineeth-thumma in https://github.com/Azure/kubelogin/pull/778
+* Bump softprops/action-gh-release from 3.0.0 to 3.0.1 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/779
+* Bump actions/checkout from 6.0.3 to 7.0.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/777
+* Bump mindsers/changelog-reader-action from 2.2.2 to 2.4.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/775
+* Bump docker/login-action from 3.0.0 to 4.2.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/774
+* Bump golangci/golangci-lint-action from 8.0.0 to 9.2.1 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/773
+* Bump docker/build-push-action from 5.1.0 to 7.2.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/772
+* Bump actions/upload-artifact from 4 to 7 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/771
+* Bump softprops/action-gh-release from 1 to 3 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/770
+* Bump mukunku/tag-exists-action from 1.6.0 to 1.7.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/769
+* Bump codecov/codecov-action from 6.0.1 to 7.0.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/768
+* Bump actions/checkout from 3.6.0 to 6.0.3 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/766
+* Bump actions/setup-go from 4.1.0 to 6.4.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/765
+* Bump peaceiris/actions-gh-pages from 3.9.3 to 4.1.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/764
+* Bump actions/download-artifact from 4 to 8 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/763
+* Bump peter-evans/create-pull-request from 5 to 8 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/759
+* Bump codecov/codecov-action from 5.1.2 to 6.0.1 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/758
+* Bump docker/setup-buildx-action from 3.0.0 to 4.1.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/757
+* Bump actions/dependency-review-action from 2.5.1 to 5.0.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/756
+
+### New Contributors
+
+* @pathei-kosmos made their first contribution in https://github.com/Azure/kubelogin/pull/760
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.18...v0.2.19
+
 ## [0.2.18]
 
 ### What's Changed
