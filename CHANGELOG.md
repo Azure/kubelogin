@@ -9,6 +9,7 @@
 
 ### Maintenance
 
+* Bump golang.org/x/crypto to v0.52.0 and Go to 1.26.4 by @Copilot in https://github.com/Azure/kubelogin/pull/781
 * Bump MSAL Go v1.4.2→v1.7.2 and azidentity v1.8.0→v1.14.0 to use form_post response mode by default for AcquireTokenInteractive by @vineeth-thumma in https://github.com/Azure/kubelogin/pull/778
 * Bump softprops/action-gh-release from 3.0.0 to 3.0.1 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/779
 * Bump actions/checkout from 6.0.3 to 7.0.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/777
