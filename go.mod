@@ -20,7 +20,7 @@ require (
 	go.uber.org/mock v0.5.0
 	golang.org/x/crypto v0.52.0
 	golang.org/x/sys v0.45.0
-	gopkg.in/dnaeon/go-vcr.v4 v4.0.2
+	gopkg.in/dnaeon/go-vcr.v4 v4.0.6
 	k8s.io/apimachinery v0.29.3
 	k8s.io/cli-runtime v0.29.3
 	k8s.io/client-go v0.29.3
@@ -69,6 +69,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
+	go.yaml.in/yaml/v4 v4.0.0-rc.3 // indirect
 	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
