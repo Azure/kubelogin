@@ -21,6 +21,25 @@ kubectl get nodes
 
 ```
 
+## Using Interactive Mode Instead
+
+Device code login asks the user to open a URL and type a code by hand. Entra ID does not return the
+optional `verification_uri_complete` field from [RFC 8628](https://datatracker.ietf.org/doc/html/rfc8628#section-3.3.1),
+so the URL and the code cannot be combined into a single link. When the machine running `kubectl`
+has a browser, [web browser interactive mode](./interactive.md) avoids the copying altogether.
+
+If the kubeconfig was provisioned for you and already pins `--login=devicecode` in its exec args,
+you don't have to edit it. Environment variables are applied after the flags are parsed, so
+`AAD_LOGIN_METHOD` takes precedence over the login mode stored in the kubeconfig:
+
+```sh
+export AAD_LOGIN_METHOD=interactive
+
+kubectl get nodes
+```
+
+Passing `--disable-environment-override` turns this off and keeps the login mode from the kubeconfig.
+
 ## Restrictions
 
 - Device code login mode doesn't work when Conditional Access policy is configured on AAD tenant. Use [web browser interactive mode](./interactive.md) instead.
