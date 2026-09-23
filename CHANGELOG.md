@@ -1,5 +1,39 @@
 # Change Log
 
+## [0.2.20]
+
+### Bug Fixes
+
+* Fix release asset publishing by replacing skx/github-action-publish-binaries with GitHub CLI by @Copilot in https://github.com/Azure/kubelogin/pull/815
+
+### Maintenance
+
+* Pin GitHub Actions to full-length commit SHAs by @danfiedler-msft in https://github.com/Azure/kubelogin/pull/799
+* Add test coverage for NeedAuthenticate across all credential types by @NaeemH in https://github.com/Azure/kubelogin/pull/794
+* Add unit tests for client certificate PEM/PKCS helpers by @NaeemH in https://github.com/Azure/kubelogin/pull/793
+* Bump golang.org/x/sys from 0.45.0 to 0.48.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/808
+* Bump golang.org/x/crypto to v0.56.0 by @harsh-im in https://github.com/Azure/kubelogin/pull/806
+* Bump gopkg.in/dnaeon/go-vcr.v4 from 4.0.2 to 4.0.7 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/804
+* Bump docker/setup-buildx-action from 4.1.0 to 4.3.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/800
+* Bump actions/checkout from 7.0.0 to 7.0.1 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/798
+* Bump docker/login-action from 4.2.0 to 4.6.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/797
+* Bump docker/build-push-action from 7.2.0 to 7.3.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/790
+* Bump golangci/golangci-lint-action from 9.2.1 to 9.3.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/789
+* Bump actions/setup-go from 6.4.0 to 6.5.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/788
+
+### Doc Update
+
+* Explain how to switch device code login to interactive by @1fanwang in https://github.com/Azure/kubelogin/pull/795
+
+### New Contributors
+
+* @1fanwang made their first contribution in https://github.com/Azure/kubelogin/pull/795
+* @NaeemH made their first contribution in https://github.com/Azure/kubelogin/pull/794
+* @danfiedler-msft made their first contribution in https://github.com/Azure/kubelogin/pull/799
+* @harsh-im made their first contribution in https://github.com/Azure/kubelogin/pull/806
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.19...v0.2.20
+
 ## [0.2.19]
 
 ### What's Changed
