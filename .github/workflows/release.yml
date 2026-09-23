@@ -255,9 +255,27 @@ jobs:
         run: echo -n "${{ needs.create-release.outputs.tag_version }}" > kubelogin-version.txt
 
       - name: Publish
-        uses: skx/github-action-publish-binaries@44887b225ceca96efd8a912d39c09ad70312af31 # master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          args: kubelogin.zip kubelogin-win-amd64.zip kubelogin-win-arm64.zip kubelogin-darwin-amd64.zip kubelogin-darwin-arm64.zip kubelogin-linux-amd64.zip kubelogin-linux-arm64.zip kubelogin-linux-armv7.zip kubelogin.zip.sha256 kubelogin-win-amd64.zip.sha256 kubelogin-win-arm64.zip.sha256 kubelogin-darwin-amd64.zip.sha256 kubelogin-darwin-arm64.zip.sha256 kubelogin-linux-amd64.zip.sha256 kubelogin-linux-arm64.zip.sha256 kubelogin-linux-armv7.zip.sha256 kubelogin-version.txt
-          releaseId: ${{ needs.create-release.outputs.release_id }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ needs.create-release.outputs.tag_version }}
+        run: |
+          gh release upload "$RELEASE_TAG" \
+            kubelogin.zip \
+            kubelogin.zip.sha256 \
+            kubelogin-win-amd64.zip \
+            kubelogin-win-amd64.zip.sha256 \
+            kubelogin-win-arm64.zip \
+            kubelogin-win-arm64.zip.sha256 \
+            kubelogin-darwin-amd64.zip \
+            kubelogin-darwin-amd64.zip.sha256 \
+            kubelogin-darwin-arm64.zip \
+            kubelogin-darwin-arm64.zip.sha256 \
+            kubelogin-linux-amd64.zip \
+            kubelogin-linux-amd64.zip.sha256 \
+            kubelogin-linux-arm64.zip \
+            kubelogin-linux-arm64.zip.sha256 \
+            kubelogin-linux-armv7.zip \
+            kubelogin-linux-armv7.zip.sha256 \
+            kubelogin-version.txt \
+            --clobber
