@@ -1,5 +1,22 @@
 # Change Log
 
+## [0.2.21]
+
+### Maintenance
+
+* chore: bump Go to 1.26.6 to fix stdlib CVEs by @psletsjooe in https://github.com/Azure/kubelogin/pull/819
+* Bump codecov/codecov-action from 7.1.0 to 7.1.1 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/818
+* Bump docker/setup-buildx-action from 4.3.0 to 4.4.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/813
+* Bump docker/build-push-action from 7.3.0 to 7.4.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/812
+* Bump codecov/codecov-action from 7.0.0 to 7.1.0 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/811
+* Bump softprops/action-gh-release from 3.0.1 to 3.0.3 by @dependabot[bot] in https://github.com/Azure/kubelogin/pull/809
+
+### New Contributors
+
+* @psletsjooe made their first contribution in https://github.com/Azure/kubelogin/pull/819
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.20...v0.2.21
+
 ## [0.2.20]
 
 ### Bug Fixes
