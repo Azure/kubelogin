@@ -1,8 +1,12 @@
 package converter
 
 import (
+	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/Azure/kubelogin/pkg/internal/token"
@@ -1767,4 +1771,272 @@ func contains(a []string, x string) bool {
 		}
 	}
 	return false
+}
+
+func TestConvertOutFile(t *testing.T) {
+	const (
+		serverID = "serverID"
+		clientID = "clientID"
+		tenantID = "tenantID"
+		caFile   = "ca.crt"
+	)
+	authProviderConfig := map[string]string{
+		cfgApiserverID: serverID,
+		cfgClientID:    clientID,
+		cfgTenantID:    tenantID,
+		cfgConfigMode:  "1",
+	}
+	expectedArgs := []string{
+		getTokenCommand,
+		argServerID, serverID,
+		argClientID, clientID,
+		argTenantID, tenantID,
+		argLoginMethod, token.DeviceCodeLogin,
+	}
+
+	testData := []struct {
+		name string
+		// sources holds the user names stored in each source kubeconfig file.
+		// More than one entry loads them as a merged KUBECONFIG.
+		sources [][2]string
+		// explicitKubeconfig passes the first source with --kubeconfig instead of KUBECONFIG
+		explicitKubeconfig bool
+		// missingKubeconfig points KUBECONFIG at a file that does not exist
+		missingKubeconfig bool
+		// outFile is relative to the test directory; empty leaves --outfile unset
+		outFile string
+		// alias makes outFile a "symlink" or "hardlink" to the first source before converting
+		alias         string
+		context       string
+		expectedError string
+	}{
+		{
+			name:               "outfile with --kubeconfig leaves the source untouched",
+			sources:            [][2]string{{"aks1", "aks2"}},
+			explicitKubeconfig: true,
+			outFile:            "converted.yaml",
+		},
+		{
+			name:    "outfile with merged KUBECONFIG files gets the merged result",
+			sources: [][2]string{{"aks1", "aks2"}, {"aks3", "aks4"}},
+			outFile: "converted.yaml",
+		},
+		{
+			name:               "outfile with --context converts only the targeted user",
+			sources:            [][2]string{{"aks1", "aks2"}},
+			explicitKubeconfig: true,
+			outFile:            "converted.yaml",
+			context:            "aks1",
+		},
+		{
+			name:               "outfile in a missing directory creates the directory",
+			sources:            [][2]string{{"aks1", "aks2"}},
+			explicitKubeconfig: true,
+			outFile:            filepath.Join("generated", "team", "config"),
+		},
+		{
+			name:               "outfile whose parent is a regular file fails",
+			sources:            [][2]string{{"aks1", "aks2"}},
+			explicitKubeconfig: true,
+			outFile:            filepath.Join("source-0", "config", "converted.yaml"),
+			expectedError:      "unable to write kubeconfig to",
+		},
+		{
+			name:               "outfile that is the --kubeconfig source fails",
+			sources:            [][2]string{{"aks1", "aks2"}},
+			explicitKubeconfig: true,
+			outFile:            filepath.Join("source-0", "config"),
+			expectedError:      "is the same file as source kubeconfig",
+		},
+		{
+			name:               "outfile that is a symlink to the source fails",
+			sources:            [][2]string{{"aks1", "aks2"}},
+			explicitKubeconfig: true,
+			outFile:            "link.yaml",
+			alias:              "symlink",
+			expectedError:      "is the same file as source kubeconfig",
+		},
+		{
+			name:               "outfile that is a hard link to the source fails",
+			sources:            [][2]string{{"aks1", "aks2"}},
+			explicitKubeconfig: true,
+			outFile:            "link.yaml",
+			alias:              "hardlink",
+			expectedError:      "is the same file as source kubeconfig",
+		},
+		{
+			name:          "outfile that is one of the merged KUBECONFIG files fails",
+			sources:       [][2]string{{"aks1", "aks2"}, {"aks3", "aks4"}},
+			outFile:       filepath.Join("source-1", "config"),
+			expectedError: "is the same file as source kubeconfig",
+		},
+		{
+			name:               "outfile that is an existing directory fails",
+			sources:            [][2]string{{"aks1", "aks2"}},
+			explicitKubeconfig: true,
+			outFile:            "source-0",
+			expectedError:      "unable to write kubeconfig to",
+		},
+		{
+			name:              "outfile with no kubeconfig to convert fails and writes nothing",
+			missingKubeconfig: true,
+			outFile:           "converted.yaml",
+			expectedError:     "no kubeconfig found to convert",
+		},
+		{
+			name:               "without outfile the source kubeconfig is converted in place",
+			sources:            [][2]string{{"aks1", "aks2"}},
+			explicitKubeconfig: true,
+		},
+		{
+			name:    "without outfile merged KUBECONFIG files are converted in place",
+			sources: [][2]string{{"aks1", "aks2"}, {"aks3", "aks4"}},
+		},
+	}
+
+	for _, data := range testData {
+		t.Run(data.name, func(t *testing.T) {
+			tmpDir := t.TempDir()
+
+			var sourceFiles []string
+			before := map[string][]byte{}
+			for i, names := range data.sources {
+				config := createValidTestConfigs(names[0], names[1], "", azureAuthProvider, authProviderConfig, nil, "")
+				for _, cluster := range config.Clusters {
+					// relative to the source file, so the outfile must not keep it as is
+					cluster.CertificateAuthority = caFile
+				}
+				file := filepath.Join(tmpDir, fmt.Sprintf("source-%d", i), "config")
+				if err := clientcmd.WriteToFile(*config, file); err != nil {
+					t.Fatalf("unable to write source kubeconfig: %s", err)
+				}
+				content, err := os.ReadFile(file)
+				if err != nil {
+					t.Fatalf("unable to read source kubeconfig: %s", err)
+				}
+				sourceFiles = append(sourceFiles, file)
+				before[file] = content
+			}
+			kubeconfigEnv := strings.Join(sourceFiles, string(os.PathListSeparator))
+			if data.missingKubeconfig {
+				kubeconfigEnv = filepath.Join(tmpDir, "missing", "config")
+			}
+			t.Setenv(clientcmd.RecommendedConfigPathEnvVar, kubeconfigEnv)
+
+			o := New()
+			fs := &pflag.FlagSet{}
+			o.Flags = fs
+			o.AddFlags(fs)
+			overrideFlags := map[string]string{}
+			if data.explicitKubeconfig {
+				overrideFlags["kubeconfig"] = sourceFiles[0]
+			}
+			outFile := ""
+			if data.outFile != "" {
+				outFile = filepath.Join(tmpDir, data.outFile)
+				switch data.alias {
+				case "symlink":
+					if err := os.Symlink(sourceFiles[0], outFile); err != nil {
+						t.Skipf("symlinks are not supported: %s", err)
+					}
+				case "hardlink":
+					if err := os.Link(sourceFiles[0], outFile); err != nil {
+						t.Skipf("hard links are not supported: %s", err)
+					}
+				}
+				overrideFlags[flagOutFile] = outFile
+			}
+			if data.context != "" {
+				overrideFlags[flagContext] = data.context
+			}
+			for k, v := range overrideFlags {
+				if err := o.setFlag(k, v); err != nil {
+					t.Fatalf("unable to add flag: %s, err: %s", k, err)
+				}
+			}
+
+			// same wiring as the convert-kubeconfig command
+			pathOptions := clientcmd.NewDefaultPathOptions()
+			pathOptions.LoadingRules.ExplicitPath, _ = o.Flags.GetString("kubeconfig")
+
+			err := Convert(o, pathOptions)
+			if data.expectedError != "" {
+				if err == nil || !strings.Contains(err.Error(), data.expectedError) {
+					t.Fatalf("expected error containing %q, got: %v", data.expectedError, err)
+				}
+			} else if err != nil {
+				t.Fatalf("unexpected error from Convert: %v", err)
+			}
+
+			if outFile == "" {
+				// old behaviour: every source file is converted in place
+				for i, file := range sourceFiles {
+					got, err := clientcmd.LoadFromFile(file)
+					if err != nil {
+						t.Fatalf("unable to load source kubeconfig: %s", err)
+					}
+					for _, name := range data.sources[i] {
+						validate(t, name, got.AuthInfos[name], expectedArgs, "", "", nil)
+					}
+				}
+				return
+			}
+
+			for _, file := range sourceFiles {
+				after, err := os.ReadFile(file)
+				if err != nil {
+					t.Fatalf("unable to read source kubeconfig: %s", err)
+				}
+				if !bytes.Equal(before[file], after) {
+					t.Fatalf("source kubeconfig %s was modified:\nbefore:\n%s\nafter:\n%s", file, before[file], after)
+				}
+			}
+
+			if data.expectedError != "" {
+				if data.missingKubeconfig {
+					if _, err := os.Stat(outFile); !os.IsNotExist(err) {
+						t.Fatalf("expected no outfile to be written, got: %v", err)
+					}
+				}
+				return
+			}
+
+			info, err := os.Stat(outFile)
+			if err != nil {
+				t.Fatalf("outfile was not written: %s", err)
+			}
+			if runtime.GOOS != "windows" && info.Mode().Perm() != 0o600 {
+				t.Fatalf("expected outfile mode 0600, got %o", info.Mode().Perm())
+			}
+
+			got, err := clientcmd.LoadFromFile(outFile)
+			if err != nil {
+				t.Fatalf("unable to load outfile: %s", err)
+			}
+			if got.CurrentContext != data.sources[0][0] {
+				t.Fatalf("expected current context %q, got %q", data.sources[0][0], got.CurrentContext)
+			}
+			total := 0
+			for i, names := range data.sources {
+				for _, name := range names {
+					total++
+					if data.context != "" && name != data.context {
+						validateAuthInfoThatShouldNotChange(t, name, got.AuthInfos[name], authProviderConfig)
+					} else {
+						validate(t, name, got.AuthInfos[name], expectedArgs, "", "", nil)
+					}
+					if got.Contexts[name] == nil || got.Clusters[name] == nil {
+						t.Fatalf("[context:%s]: context or cluster missing from outfile", name)
+					}
+					expectedCA := filepath.Join(filepath.Dir(sourceFiles[i]), caFile)
+					if got.Clusters[name].CertificateAuthority != expectedCA {
+						t.Fatalf("[context:%s]: expected certificate-authority %q, got %q", name, expectedCA, got.Clusters[name].CertificateAuthority)
+					}
+				}
+			}
+			if len(got.AuthInfos) != total || len(got.Contexts) != total || len(got.Clusters) != total {
+				t.Fatalf("expected %d users, contexts and clusters in outfile, got %d, %d, %d", total, len(got.AuthInfos), len(got.Contexts), len(got.Clusters))
+			}
+		})
+	}
 }
