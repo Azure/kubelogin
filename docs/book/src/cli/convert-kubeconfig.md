@@ -4,6 +4,12 @@ This subcommand converts kubeconfig to [Exec plugin](../concepts/exec-plugin.md)
 
 Note that when `--context` is specified, only the matching kubeconfig context will be converted. Otherwise, every kubeconfig context that uses azure auth or Exec plugin will be converted.
 
+By default, the kubeconfig is converted in place. Use `--outfile` to write the converted kubeconfig to a new file and leave the source kubeconfig untouched. When `KUBECONFIG` lists several files, the outfile gets the merged and converted result.
+
+```sh
+kubelogin convert-kubeconfig -l azurecli --kubeconfig ~/.kube/config --outfile ./azurecli-kubeconfig
+```
+
 ## Usage
 
 ```sh
@@ -33,6 +39,7 @@ Flags:
       --legacy                               set to true to get token with 'spn:' prefix in audience claim
   -l, --login string                         Login method. Supported methods: devicecode, interactive, spn, ropc, msi, azurecli, azd, workloadidentity, azurepipelines. It may be specified in AAD_LOGIN_METHOD environment variable (default "devicecode")
       --login-hint string                    The login hint to pre-fill the username in the interactive login flow.
+      --outfile string                       Write the converted kubeconfig to this file instead of modifying the source kubeconfig
       --password string                      password for ropc login flow. It may be specified in AAD_USER_PRINCIPAL_PASSWORD or AZURE_PASSWORD environment variable
       --pop-claims key=val,key2=val2         contains a comma-separated list of claims to attach to the pop token in the format key=val,key2=val2. At minimum, specify the ARM ID of the cluster as `u=ARM_ID`
       --pop-enabled                          set to true to use a PoP token for authentication or false to use a regular bearer token

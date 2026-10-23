@@ -16,6 +16,9 @@ type Options struct {
 	// context is the kubeconfig context name
 	context        string
 	azureConfigDir string
+	// outFile is the path the converted kubeconfig is written to; when empty,
+	// the source kubeconfig is modified in place
+	outFile string
 }
 
 func stringptr(str string) *string { return &str }
@@ -34,6 +37,7 @@ func (o *Options) AddFlags(fs *pflag.FlagSet) {
 	}
 	fs.StringVar(&o.context, flagContext, "", "The name of the kubeconfig context to use")
 	fs.StringVar(&o.azureConfigDir, flagAzureConfigDir, "", "Azure CLI config path")
+	fs.StringVar(&o.outFile, flagOutFile, "", "Write the converted kubeconfig to this file instead of modifying the source kubeconfig")
 	o.TokenOptions.AddFlags(fs)
 }
 
@@ -63,6 +67,7 @@ func (o *Options) AddCompletions(cmd *cobra.Command) {
 	_ = cmd.RegisterFlagCompletionFunc(flagContext, completeContexts(o))
 	_ = cmd.MarkFlagDirname(flagAzureConfigDir)
 	_ = cmd.MarkFlagFilename("kubeconfig", "")
+	_ = cmd.MarkFlagFilename(flagOutFile, "")
 
 	o.TokenOptions.AddCompletions(cmd)
 

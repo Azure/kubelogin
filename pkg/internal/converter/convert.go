@@ -2,6 +2,7 @@ package converter
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"k8s.io/client-go/tools/clientcmd"
@@ -46,6 +47,7 @@ const (
 	flagAzureConfigDir                    = "azure-config-dir"
 	flagClientID                          = "client-id"
 	flagContext                           = "context"
+	flagOutFile                           = "outfile"
 	flagServerID                          = "server-id"
 	flagTenantID                          = "tenant-id"
 	flagSubscriptionID                    = "subscription"
@@ -494,8 +496,44 @@ func Convert(o Options, pathOptions *clientcmd.PathOptions) error {
 		authInfo.Exec = exec
 		authInfo.AuthProvider = nil
 	}
+
+	if o.outFile != "" {
+		// write the whole (possibly merged) converted kubeconfig to a new file and leave the source files untouched
+		if len(config.Contexts) == 0 && len(config.AuthInfos) == 0 {
+			return fmt.Errorf("no kubeconfig found to convert, refusing to write an empty %s", o.outFile)
+		}
+		if err := rejectSourceOutFile(o.outFile, kubeconfigs); err != nil {
+			return err
+		}
+		klog.V(5).Infof("Writing converted kubeconfig to %s", o.outFile)
+		if err := clientcmd.WriteToFile(config, o.outFile); err != nil {
+			return fmt.Errorf("unable to write kubeconfig to %s: %w", o.outFile, err)
+		}
+		return nil
+	}
+
 	err = clientcmd.ModifyConfig(pathOptions, config, true)
 	return err
+}
+
+// rejectSourceOutFile returns an error if outFile is the same file as any of the source kubeconfigs,
+// including through symlinks and hard links, so that the sources are never overwritten.
+func rejectSourceOutFile(outFile string, sources []string) error {
+	outInfo, err := os.Stat(outFile)
+	if err != nil {
+		// a file that does not exist yet can not alias a source
+		return nil
+	}
+	for _, source := range sources {
+		sourceInfo, err := os.Stat(source)
+		if err != nil {
+			continue
+		}
+		if os.SameFile(outInfo, sourceInfo) {
+			return fmt.Errorf("--%s %q is the same file as source kubeconfig %q; choose a different path", flagOutFile, outFile, source)
+		}
+	}
+	return nil
 }
 
 // get the item in Exec.Args[] right after someArg
