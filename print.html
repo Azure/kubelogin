@@ -747,6 +747,9 @@ Use &quot;kubelogin [command] --help&quot; for more information about a command.
 <div style="break-before: page; page-break-before: always;"></div><h1 id="convert-kubeconfig"><a class="header" href="#convert-kubeconfig">convert-kubeconfig</a></h1>
 <p>This subcommand converts kubeconfig to <a href="cli/../concepts/exec-plugin.html">Exec plugin</a> using <code>kubelogin get-token</code> with specified <a href="cli/../concepts/login-modes.html">login mode</a>.</p>
 <p>Note that when <code>--context</code> is specified, only the matching kubeconfig context will be converted. Otherwise, every kubeconfig context that uses azure auth or Exec plugin will be converted.</p>
+<p>By default, the kubeconfig is converted in place. Use <code>--outfile</code> to write the converted kubeconfig to a new file and leave the source kubeconfig untouched. When <code>KUBECONFIG</code> lists several files, the outfile gets the merged and converted result.</p>
+<pre><code class="language-sh">kubelogin convert-kubeconfig -l azurecli --kubeconfig ~/.kube/config --outfile ./azurecli-kubeconfig
+</code></pre>
 <h2 id="usage"><a class="header" href="#usage">Usage</a></h2>
 <pre><code class="language-sh">kubelogin convert-kubeconfig -h
 convert kubeconfig to use exec auth module
@@ -774,6 +777,7 @@ Flags:
       --legacy                               set to true to get token with 'spn:' prefix in audience claim
   -l, --login string                         Login method. Supported methods: devicecode, interactive, spn, ropc, msi, azurecli, azd, workloadidentity, azurepipelines. It may be specified in AAD_LOGIN_METHOD environment variable (default &quot;devicecode&quot;)
       --login-hint string                    The login hint to pre-fill the username in the interactive login flow.
+      --outfile string                       Write the converted kubeconfig to this file instead of modifying the source kubeconfig
       --password string                      password for ropc login flow. It may be specified in AAD_USER_PRINCIPAL_PASSWORD or AZURE_PASSWORD environment variable
       --pop-claims key=val,key2=val2         contains a comma-separated list of claims to attach to the pop token in the format key=val,key2=val2. At minimum, specify the ARM ID of the cluster as `u=ARM_ID`
       --pop-enabled                          set to true to use a PoP token for authentication or false to use a regular bearer token
