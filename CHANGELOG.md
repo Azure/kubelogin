@@ -1,5 +1,21 @@
 # Change Log
 
+## [0.2.22]
+
+### What's Changed
+
+* Add `--outfile` flag to convert-kubeconfig by @akshat-lakhera in https://github.com/Azure/kubelogin/pull/823
+
+### Maintenance
+
+* Bump Go to 1.26.10 for CVE-2026-111943 by @weinong in https://github.com/Azure/kubelogin/pull/824
+
+### New Contributors
+
+* @akshat-lakhera made their first contribution in https://github.com/Azure/kubelogin/pull/823
+
+**Full Changelog**: https://github.com/Azure/kubelogin/compare/v0.2.21...v0.2.22
+
 ## [0.2.21]
 
 ### Maintenance
